@@ -99,7 +99,7 @@ ColumnLayout {
                 if (treeModel.getIsRowDomain(currentIndex)) {
                     stackView.clear()
                 } else {
-                    rootWindow.showTopicEndpointView(treeModel.getDomain(currentIndex), treeModel.getName(currentIndex))
+                    showTopicEndpointView(treeModel.getDomain(currentIndex), treeModel.getName(currentIndex))
                 }
             }
         }

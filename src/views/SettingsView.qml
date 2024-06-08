@@ -18,44 +18,52 @@ import QtQuick.Layouts
 import org.eclipse.cyclonedds.insight
 
 
-Popup {
-    anchors.centerIn: parent
-    modal: true
-    height: 150
-    width: 300
+Rectangle {
+    id: settingsViewId
+    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
 
-    GridLayout {
-        columns: 2
+    ScrollView {
         anchors.fill: parent
-        anchors.margins: 10
-        rowSpacing: 10
-        columnSpacing: 10
 
-        Label {
-            text: qsTr("Settings")
-            font.bold: true
-            Layout.alignment: Qt.AlignHCenter
-        }
-        Item {}
+        GridLayout {
+            columns: 2
+            anchors.fill: parent
+            anchors.margins: 10
+            rowSpacing: 10
+            columnSpacing: 10
 
-        Label {
-            text: "CYCLONEDDS_URI:"
-        }
-        TextField {
-            id: login
-            text: CYCLONEDDS_URI
-            Layout.fillWidth: true
-            readOnly: true
-            activeFocusOnPress: false
-        }
+            Label {
+                text: qsTr("Settings")
+                font.bold: true
+                Layout.alignment: Qt.AlignHCenter
+            }
+            Item {}
 
-        Label {
-            text: qsTr("Appearance:")
+            Label {
+                id: cycloneUriLabelId
+                text: "CYCLONEDDS_URI:"
+            }
+            TextField {
+                id: login
+                text: CYCLONEDDS_URI
+                Layout.preferredWidth: settingsViewId.width - cycloneUriLabelId.width - 30
+                Layout.minimumWidth: 200
+                readOnly: true
+                activeFocusOnPress: false
+            }
+
+            Label {
+                text: qsTr("Appearance:")
+            }
+            RadioButton {
+                text: "Automatic (System)"
+                checked: true
+                checkable: false
+            }   
+            Item {
+                Layout.columnSpan: 2
+                Layout.fillHeight: true
+            }
         }
-        RadioButton {
-            text: "Automatic (System)"
-            checked: true
-            checkable: false
-        }   
     }
 }

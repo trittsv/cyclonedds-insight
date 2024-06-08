@@ -12,10 +12,9 @@
 
 import logging
 from enum import Enum
-from cyclonedds import core, domain, builtin, qos
-from cyclonedds.internal import feature_typelib
+from cyclonedds import core, domain, builtin
 from cyclonedds.util import duration
-from utils import EntityType, OrderedEnum
+from utils import EntityType
 
 IGNORE_TOPICS = ["DCPSParticipant", "DCPSPublication", "DCPSSubscription"]
 

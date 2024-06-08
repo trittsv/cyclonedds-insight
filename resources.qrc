@@ -28,5 +28,7 @@
         <file>src/views/TopicOverview.qml</file>
         <file>src/views/TopicEndpointView.qml</file>
         <file>src/views/WarningTriangle.qml</file>
+        <file>src/views/IdlFileDropArea.qml</file>
+        <file>src/views/Overview.qml</file>
     </qresource>
 </RCC>
