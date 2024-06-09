@@ -21,8 +21,8 @@ import org.eclipse.cyclonedds.insight
 
 Rectangle {
     id: dataModelOverviewId
-    implicitHeight: 350
-    SplitView.minimumWidth: 50
+    implicitHeight: parent.height
+    implicitWidth: parent.width
     color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
 
     Component.onCompleted: {
