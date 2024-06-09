@@ -67,5 +67,13 @@ DropArea {
             font.pixelSize: 30
             color: "black"
         }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                console.log("CLKCED ON THE FILES HERE")
+                parent.visible = false
+            }
+        }
     }
 }

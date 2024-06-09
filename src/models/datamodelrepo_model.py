@@ -46,7 +46,7 @@ class DatamodelRepoModel(QAbstractListModel):
             return None
         row = index.row()
         if role == self.NameRole:
-            return self._studend_list[row]
+            return ".".join(self._studend_list[row])
         elif False:
             pass
 
@@ -62,8 +62,9 @@ class DatamodelRepoModel(QAbstractListModel):
 
     def add_student(self, student: str) -> None:
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self._studend_list.append(student)
+        self._studend_list.append((student,student))
         self.endInsertRows()
+
 
 
 
@@ -180,9 +181,8 @@ class DatamodelRepoModel(QAbstractListModel):
         else:
             print(f"Folder does not exist: {folder_path}")
 
+    @Slot()
     def loadModules(self):
-
-
         #self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         #self._studend_list.append(source_file)
         #self.endInsertRows()
@@ -198,11 +198,10 @@ class DatamodelRepoModel(QAbstractListModel):
                 module = importlib.import_module(module_name)
                 all_types = getattr(module, '__all__', [])
                 for type_name in all_types:
-
                     cls = getattr(importlib.import_module(module_name), type_name)
                     if inspect.isclass(cls):
                         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-                        self._studend_list.append(cls.__name__)
+                        self._studend_list.append((module_name, cls.__name__))
                         self.endInsertRows()
 
             except Exception as e:

@@ -24,13 +24,35 @@ SplitView {
 
     property var childView
 
-    Rectangle {
-        id: domainSplit
+    SplitView {
+        orientation: Qt.Vertical
+
         implicitWidth: 350
         SplitView.minimumWidth: 50
-        color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+        
 
-        TopicOverview {}
+        Rectangle {
+            id: domainSplit
+            color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+
+            SplitView.minimumHeight: 50
+            SplitView.fillHeight: true
+
+            TopicOverview {}
+        }
+
+        Rectangle {
+            id: datamodelSplit
+            color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+
+            SplitView.minimumHeight: 50
+            SplitView.preferredHeight: parent.height / 3
+
+            DataModelOverview {
+
+            }
+        }
+
     }
     Rectangle {
         id: centerItem
@@ -38,10 +60,45 @@ SplitView {
         SplitView.fillWidth: true
         color: rootWindow.isDarkMode ? Constants.darkMainContentBackground : Constants.lightMainContentBackground
 
-        StackView {
-            id: stackView
+        Column {
             anchors.fill: parent
 
+            TabBar {
+                id: bar
+                width: parent.width
+                TabButton {
+                    text: qsTr("Selected Topic")
+                    width: implicitWidth + 20
+                }
+                TabButton {
+                    text: qsTr("Listener")
+                    width: implicitWidth + 20
+                }
+            }
+            StackLayout {
+                id: mainLayoutId
+                width: parent.width
+                height: parent.height - bar.height
+                currentIndex: bar.currentIndex
+                Item {
+                    id: inspectTab
+
+                    Label {
+                        text: "No Topic Selected"
+                        anchors.centerIn: parent
+                    }
+
+                    StackView {
+                        id: stackView
+                        anchors.fill: parent
+                    }
+                }
+                Item {
+                    id: listenerTab
+
+                    ListenerView {}
+                }
+            }
         }
     }
 

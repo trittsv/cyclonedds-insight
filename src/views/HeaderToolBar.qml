@@ -42,15 +42,9 @@ ToolBar {
             Layout.fillWidth: true
         }
         ToolButton {
-            text: "Overview"
+            text: "Home"
             onClicked: {
                 layout.currentIndex = 1
-            }
-        }
-        ToolButton {
-            text: "Data Model"
-            onClicked: {
-                layout.currentIndex = 2
             }
         }
         ToolButton {
