@@ -49,7 +49,6 @@ Rectangle {
                 Layout.preferredWidth: settingsViewId.width - cycloneUriLabelId.width - 30
                 Layout.minimumWidth: 200
                 readOnly: true
-                activeFocusOnPress: false
             }
 
             Label {

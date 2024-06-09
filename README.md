@@ -32,6 +32,8 @@ pyside6-rcc ./resources.qrc -o ./src/qrc_file.py && python3 ./src/main.py
 ## How to build a standalone MacOS App / Installer
 
 ```bash
+pip3 install -e .
+
 # Execute
 export CYCLONEDDS_HOME=<path-to-cyclonedds-install-folder> &&\
 export CYCLONEDDS_PYTHON_HOME=<path-to-cyclonedds-python-repo> &&\

@@ -45,11 +45,11 @@ DropArea {
                     console.log("Dropped file is not a .idl file:" + url);
                 }
             }
-
         }
 
         if (rejectedCount === 0) {
             drag.accept(Qt.CopyAction)
+            datamodelRepoModel.addUrls(drag.urls)
         }
     }
 

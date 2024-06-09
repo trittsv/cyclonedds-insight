@@ -30,5 +30,7 @@
         <file>src/views/WarningTriangle.qml</file>
         <file>src/views/IdlFileDropArea.qml</file>
         <file>src/views/Overview.qml</file>
+        <file>src/views/DataModelOverview.qml</file>
+        <file>src/views/ReadWriteTester.qml</file>
     </qresource>
 </RCC>

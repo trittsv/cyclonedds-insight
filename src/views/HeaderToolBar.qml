@@ -48,6 +48,12 @@ ToolBar {
             }
         }
         ToolButton {
+            text: "Data Model"
+            onClicked: {
+                layout.currentIndex = 2
+            }
+        }
+        ToolButton {
             text: "Settings"
             onClicked: {
                 layout.currentIndex = 0

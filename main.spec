@@ -11,6 +11,7 @@
 """
 
 import os
+import platform
 
 cyclonedds_home = os.getenv('CYCLONEDDS_HOME', './')
 print('cyclonedds_home: ' + cyclonedds_home)
@@ -20,9 +21,13 @@ print('cyclonedds_python_home: ' + cyclonedds_python_home)
 
 bins = []
 
-if os.name == 'nt':
+if platform.system() == 'Windows':
     bins.append((f"{cyclonedds_home}/bin/*.dll", '.'))
     bins.append((f"{cyclonedds_home}/bin/idlc.exe", '.'))
+elif platform.system() == 'Darwin':
+    bins.append((f"{cyclonedds_home}/bin/idlc", '.'))
+    bins.append((f"{cyclonedds_python_home}/cyclonedds/_idlpy.*", '.'))
+    #/opt/homebrew/lib/python3.12/site-packages/cyclonedds/
 
 a = Analysis(
     ['src/main.py'],
