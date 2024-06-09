@@ -10,7 +10,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 """
 
-from PySide6.QtCore import Qt, QModelIndex, QAbstractListModel, Qt, QByteArray, QStandardPaths, QFile, QDir, QProcess
+from PySide6.QtCore import Qt, QModelIndex, QAbstractListModel, Qt, QByteArray, QStandardPaths, QFile, QDir, QProcess, QThread
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QApplication, QTreeView
 from PySide6.QtQuick import QQuickView
@@ -24,18 +24,33 @@ import subprocess
 import glob
 import dds_data
 from dds_qos import dds_qos_policy_id
-
+from dataclasses import dataclass
 import typing
+import time
 
+from cyclonedds.core import Listener, Qos, Policy
+from cyclonedds.domain import DomainParticipant
+from cyclonedds.topic import Topic
+from cyclonedds.sub import Subscriber, DataReader
+from cyclonedds.util import duration
+
+
+@dataclass
+class DataModelItem:
+    id: str
+    parts: dict
 
 
 class DatamodelRepoModel(QAbstractListModel):
 
     NameRole = Qt.UserRole + 1
 
+    newDataArrived = Signal(str)
+
     def __init__(self, parent=QObject | None) -> None:
         super().__init__()
-        self._studend_list = []
+        self.dataModelItems = {}
+        self.threads = {}
         self.app_data_dir = QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
         self.datamodel_dir = os.path.join(self.app_data_dir, "datamodel")
         self.destination_folder_idl = os.path.join(self.datamodel_dir, "idl")
@@ -46,7 +61,7 @@ class DatamodelRepoModel(QAbstractListModel):
             return None
         row = index.row()
         if role == self.NameRole:
-            return ".".join(self._studend_list[row])
+            return str(list(self.dataModelItems.keys())[row])
         elif False:
             pass
 
@@ -58,11 +73,11 @@ class DatamodelRepoModel(QAbstractListModel):
         }
 
     def rowCount(self, index: QModelIndex = QModelIndex()) -> int:
-        return len(self._studend_list)
+        return len(self.dataModelItems.keys())
 
     def add_student(self, student: str) -> None:
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self._studend_list.append((student,student))
+        self.dataModelItems.append((student,student))
         self.endInsertRows()
 
 
@@ -92,7 +107,7 @@ class DatamodelRepoModel(QAbstractListModel):
 
     @Slot(list)
     def addUrls(self, urls):
-        print("add urls:", urls)
+        logging.info("add urls:" + str(urls))
         for url in urls:
             if url.isLocalFile():
 
@@ -167,7 +182,7 @@ class DatamodelRepoModel(QAbstractListModel):
     def clear(self):
         self.beginResetModel()
         self.delete_folder(self.datamodel_dir)
-        self._studend_list.clear()
+        self.dataModelItems.clear()
         self.endResetModel()
 
     def delete_folder(self, folder_path):
@@ -184,7 +199,7 @@ class DatamodelRepoModel(QAbstractListModel):
     @Slot()
     def loadModules(self):
         #self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        #self._studend_list.append(source_file)
+        #self.dataModelItems.append(source_file)
         #self.endInsertRows()
 
         parent_dir = self.destination_folder_py
@@ -200,10 +215,86 @@ class DatamodelRepoModel(QAbstractListModel):
                 for type_name in all_types:
                     cls = getattr(importlib.import_module(module_name), type_name)
                     if inspect.isclass(cls):
-                        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-                        self._studend_list.append((module_name, cls.__name__))
-                        self.endInsertRows()
+                        sId: str = f"{module_name}.{cls.__name__}"
+                        if sId not in self.dataModelItems:
+                            self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
+                            self.dataModelItems[sId] = DataModelItem(sId, [module_name, cls.__name__])
+                            self.endInsertRows()
 
             except Exception as e:
                 print(f"Error importing {module_name}: {e}")
 
+
+    @Slot(int, str, str, str, str, str)
+    def addReader(self, domain_id, topic_name, topic_type, q_own, q_dur, q_rel):
+        print(domain_id, topic_name, topic_type, q_own, q_dur, q_rel)
+        logging.debug("try add reader")
+
+        if topic_type in self.dataModelItems:
+            module_type = importlib.import_module(self.dataModelItems[topic_type].parts[0])
+            class_type = getattr(module_type, self.dataModelItems[topic_type].parts[1])
+
+            print(module_type)
+            print(class_type)
+
+            qos = Qos(
+                Policy.Reliability.BestEffort,
+                Policy.Deadline(duration(microseconds=10)),
+                Policy.Durability.TransientLocal,
+                Policy.History.KeepLast(10)
+            )
+
+            if domain_id in self.threads:
+                pass # TODO
+            else:
+                self.threads[domain_id] = WorkerThread(domain_id, topic_name, class_type, qos)
+                self.threads[domain_id].data_emitted.connect(self.update_label)
+                self.threads[domain_id].start()
+
+            #self.listen(domain_id, topic_name, class_type, qos)
+
+        logging.debug("try add reader ... DONE")
+
+    @Slot(str)
+    def update_label(self, data):
+        print("UPDATE LABEL")
+        self.newDataArrived.emit(data)
+
+    @Slot()
+    def closeRequest(self):
+        for key in list(self.threads.keys()):
+            if self.threads[key]:
+                self.threads[key].stop()
+                self.threads[key].wait()
+
+class WorkerThread(QThread):
+    # Define a signal to emit data
+    data_emitted = Signal(str)
+    
+    def __init__(self, domain_id, topic_name, topic_type, qos, parent=None):
+        super().__init__(parent)
+        self.domain_id = domain_id
+        self.topic_name = topic_name
+        self.topic_type = topic_type
+        self.qos = qos
+        self.running = True
+
+    @Slot(int, str)
+    def receive_data(self, new_param1, new_param2):
+        self.param1 = new_param1
+        self.param2 = new_param2
+
+    def run(self):
+        domain_participant = DomainParticipant(self.domain_id)
+        topic = Topic(domain_participant, self.topic_name, self.topic_type, qos=self.qos)
+        subscriber = Subscriber(domain_participant)
+        reader = DataReader(subscriber, topic)
+
+        while self.running:
+            time.sleep(0.5)
+            for sample in reader.take_iter(timeout=duration(seconds=1)):
+                print(sample)
+                self.data_emitted.emit(str(sample))
+
+    def stop(self):
+        self.running = False

@@ -75,9 +75,18 @@ ApplicationWindow {
         id: idlFileDropAreaId
     }
 
+    ReaderTester {
+        id: readerTesterDialogId
+    }
+
     function getDarkMode() {
         var isDarkModeVal = (mySysPalette.windowText.hsvValue > mySysPalette.window.hsvValue)
         console.log("darkmode:", isDarkModeVal)
         return isDarkModeVal
     }
+
+    /*onClosing: {
+        datamodelRepoModel.closeRequest()
+        close.accepted = true
+    }*/
 }

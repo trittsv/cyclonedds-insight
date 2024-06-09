@@ -27,21 +27,24 @@ Rectangle {
     property bool autoScrollEnabled: true
     property string logCache: ""
 
-    function logOutput(out) {
-        if (autoScrollEnabled) {
-            listenerTextArea.append(out)
-            if (listenerTextArea.text.length >= 5000) {
-                listenerTextArea.remove(0, 2500)
-                listenerTextArea.insert(0, "Previous output was removed.\n")
-            }
-        } else {
-            logCache += out + "\n"
-        }
-    }
-
     function logClear() {
         listenerTextArea.text = ""
         logCache = ""
+    }
+
+    Connections {
+        target: datamodelRepoModel
+        function onNewDataArrived(out) {
+            if (autoScrollEnabled) {
+                listenerTextArea.append(out)
+                if (listenerTextArea.text.length >= 5000) {
+                    listenerTextArea.remove(0, 2500)
+                    listenerTextArea.insert(0, "Previous output was removed.\n")
+                }
+            } else {
+                logCache += out + "\n"
+            }
+        }
     }
 
     ColumnLayout {

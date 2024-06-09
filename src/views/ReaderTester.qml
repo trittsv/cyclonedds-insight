@@ -18,26 +18,37 @@ import QtQuick.Layouts
 import org.eclipse.cyclonedds.insight
 
 
-Rectangle {
-    id: readWriteId
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+Popup {
+    id: readerTesterDiaId
+    //color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+
+    anchors.centerIn: parent
+    modal: true
+    x: (rootWindow.width - width) / 2
+    y: (rootWindow.height - height) / 2
+
+    width: 600
+    height: 350
 
     property int domainId: 0
     property string topicType
 
     Component.onCompleted: {
-        console.log("ReadWriteTester", readWriteId.topicType)
+        console.log("Reader", readerTesterDiaId.topicType)
     }
 
-
+    function setType(topicType) {
+        topicNameTextFieldId.text = topicType.replace(".", "_")
+        readerTesterDiaId.topicType = topicType
+    }
 
     Column {
         anchors.fill: parent
-        spacing: 10
-        padding: 10
+        spacing: 5
+        padding: 0
 
         Label {
-            text: "Create Reader or Writer"
+            text: "Create Reader"
             font.bold: true
             font.pixelSize: 30
             Layout.alignment: Qt.AlignHCenter
@@ -48,7 +59,7 @@ Rectangle {
             font.bold: true
         }
         Label {
-            text: readWriteId.topicType
+            text: readerTesterDiaId.topicType
         }
 
         Label {
@@ -56,9 +67,8 @@ Rectangle {
             font.bold: true
         }
         TextField {
-            id: login
-            placeholderText: "Enter Topic Name"
-            width: readWriteId.width - 20
+            id: topicNameTextFieldId
+            width: readerTesterDiaId.width - 20
         }
 
         Label {
@@ -66,8 +76,9 @@ Rectangle {
             font.bold: true
         }
         ComboBox {
+            id: ownershipComboId
             model: ["DDS_OWNERSHIP_SHARED", "DDS_OWNERSHIP_EXCLUSIVE"]
-            width: readWriteId.width - 20
+            width: readerTesterDiaId.width - 20
         }
 
         Label {
@@ -75,8 +86,9 @@ Rectangle {
             font.bold: true
         }
         ComboBox {
+            id: durabilityComboId
             model: ["DDS_DURABILITY_VOLATILE", "DDS_DURABILITY_TRANSIENT_LOCAL", "DDS_DURABILITY_TRANSIENT", "DDS_DURABILITY_PERSISTENT"]
-            width: readWriteId.width - 20
+            width: readerTesterDiaId.width - 20
         }
 
         Label {
@@ -84,29 +96,32 @@ Rectangle {
             font.bold: true
         }
         ComboBox {
+            id: reliabilityComboId
             model: ["DDS_RELIABILITY_BEST_EFFORT", "DDS_RELIABILITY_RELIABLE"]
-            width: readWriteId.width - 20
+            width: readerTesterDiaId.width - 20
         }
 
         Row {
             Button {
                 text: qsTr("Create Reader")
                 onClicked: {
-
+                    datamodelRepoModel.addReader(
+                        0,
+                        topicNameTextFieldId.text,
+                        topicType,
+                        ownershipComboId.currentText,
+                        durabilityComboId.currentText,
+                        reliabilityComboId.currentText
+                    )
+                    readerTesterDiaId.close()
                 }
             }
             Button {
-                text: qsTr("Create Writer")
-                onClicked: {
-
-                }
-            }
-            /*Button {
                 text: qsTr("Cancel")
                 onClicked: {
-
+                    readerTesterDiaId.close()
                 }
-            }*/
+            }
         }
     }
 

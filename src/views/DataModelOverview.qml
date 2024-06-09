@@ -78,9 +78,29 @@ Rectangle {
             delegate: Item {
                 implicitWidth: dataModelOverviewId.width
                 implicitHeight: nameLabel.implicitHeight * 1.5
+
                 Label {
                     id: nameLabel
                     text: name
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: {
+                        contextMenu.popup()
+                    }
+
+                    Menu {
+                        id: contextMenu
+                        MenuItem {
+                            text: "Creader Reader"
+                            onTriggered: {
+                                readerTesterDialogId.setType(name)
+                                readerTesterDialogId.open()
+                            }
+                        }
+                    }
                 }
             }
         }

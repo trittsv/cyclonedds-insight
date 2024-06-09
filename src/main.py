@@ -86,6 +86,7 @@ if __name__ == "__main__":
     logging.info("qt ... DONE")
 
     # Clean up threads
+    datamodelRepoModel.closeRequest()
     data.join_observer()
 
     sys.exit(ret_code)
