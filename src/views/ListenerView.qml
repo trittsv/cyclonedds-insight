@@ -82,6 +82,7 @@ Rectangle {
             }
             Button {
                 text: "Delete All Readers"
+                onClicked: datamodelRepoModel.deleteAllReaders()
             }
         }
 

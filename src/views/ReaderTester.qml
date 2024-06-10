@@ -28,7 +28,7 @@ Popup {
     y: (rootWindow.height - height) / 2
 
     width: 600
-    height: 350
+    height: 400
 
     property int domainId: 0
     property string topicType
@@ -52,6 +52,18 @@ Popup {
             font.bold: true
             font.pixelSize: 30
             Layout.alignment: Qt.AlignHCenter
+        }
+
+        Label {
+            text: "Domain"
+            font.bold: true
+        }
+        SpinBox {
+            id: readerDomainIdSpinBox
+            value: 0
+            editable: false
+            from: 0
+            to: 232
         }
 
         Label {
@@ -106,7 +118,7 @@ Popup {
                 text: qsTr("Create Reader")
                 onClicked: {
                     datamodelRepoModel.addReader(
-                        0,
+                        readerDomainIdSpinBox.value,
                         topicNameTextFieldId.text,
                         topicType,
                         ownershipComboId.currentText,

@@ -27,8 +27,9 @@ from dds_qos import dds_qos_policy_id
 from dataclasses import dataclass
 import typing
 import time
+import datetime
 
-from cyclonedds.core import Listener, Qos, Policy
+from cyclonedds.core import Listener, Qos, Policy, WaitSet, ReadCondition, SampleState, ViewState, InstanceState
 from cyclonedds.domain import DomainParticipant
 from cyclonedds.topic import Topic
 from cyclonedds.sub import Subscriber, DataReader
@@ -74,14 +75,6 @@ class DatamodelRepoModel(QAbstractListModel):
 
     def rowCount(self, index: QModelIndex = QModelIndex()) -> int:
         return len(self.dataModelItems.keys())
-
-    def add_student(self, student: str) -> None:
-        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self.dataModelItems.append((student,student))
-        self.endInsertRows()
-
-
-
 
     def execute_command(self, command, cwd):
         logging.debug("start executing command ...")
@@ -224,7 +217,6 @@ class DatamodelRepoModel(QAbstractListModel):
             except Exception as e:
                 print(f"Error importing {module_name}: {e}")
 
-
     @Slot(int, str, str, str, str, str)
     def addReader(self, domain_id, topic_name, topic_type, q_own, q_dur, q_rel):
         print(domain_id, topic_name, topic_type, q_own, q_dur, q_rel)
@@ -245,30 +237,29 @@ class DatamodelRepoModel(QAbstractListModel):
             )
 
             if domain_id in self.threads:
-                pass # TODO
+                self.threads[domain_id].receive_data(topic_name, class_type, qos)
             else:
                 self.threads[domain_id] = WorkerThread(domain_id, topic_name, class_type, qos)
-                self.threads[domain_id].data_emitted.connect(self.update_label)
+                self.threads[domain_id].data_emitted.connect(self.received_data)
                 self.threads[domain_id].start()
-
-            #self.listen(domain_id, topic_name, class_type, qos)
 
         logging.debug("try add reader ... DONE")
 
     @Slot(str)
-    def update_label(self, data):
-        print("UPDATE LABEL")
+    def received_data(self, data: str):
         self.newDataArrived.emit(data)
 
     @Slot()
-    def closeRequest(self):
+    def deleteAllReaders(self):
         for key in list(self.threads.keys()):
             if self.threads[key]:
                 self.threads[key].stop()
                 self.threads[key].wait()
+        self.threads.clear()
+
 
 class WorkerThread(QThread):
-    # Define a signal to emit data
+
     data_emitted = Signal(str)
     
     def __init__(self, domain_id, topic_name, topic_type, qos, parent=None):
@@ -278,23 +269,50 @@ class WorkerThread(QThread):
         self.topic_type = topic_type
         self.qos = qos
         self.running = True
+        self.readerData = []
 
-    @Slot(int, str)
-    def receive_data(self, new_param1, new_param2):
-        self.param1 = new_param1
-        self.param2 = new_param2
+    @Slot()
+    def receive_data(self, topic_name, topic_type, qos):
+        logging.info("Add reader")
+
+        topic = Topic(self.domain_participant, topic_name, topic_type, qos=qos)
+        subscriber = Subscriber(self.domain_participant)
+        reader = DataReader(subscriber, topic)
+        readCondition = ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
+        self.waitset.attach(readCondition)
+
+        self.readerData.append((topic,subscriber, reader, readCondition))
 
     def run(self):
-        domain_participant = DomainParticipant(self.domain_id)
-        topic = Topic(domain_participant, self.topic_name, self.topic_type, qos=self.qos)
-        subscriber = Subscriber(domain_participant)
+        logging.info(f"Worker thread for domain({str(self.domain_id)}) ...")
+
+        self.domain_participant = DomainParticipant(self.domain_id)
+        self.waitset = WaitSet(self.domain_participant)
+
+        topic = Topic(self.domain_participant, self.topic_name, self.topic_type, qos=self.qos)
+        subscriber = Subscriber(self.domain_participant)
         reader = DataReader(subscriber, topic)
+    
+        readCondition = ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
+        self.waitset.attach(readCondition)
+    
+        self.readerData.append((topic,subscriber, reader, readCondition))
 
         while self.running:
-            time.sleep(0.5)
-            for sample in reader.take_iter(timeout=duration(seconds=1)):
-                print(sample)
-                self.data_emitted.emit(str(sample))
+            amount_triggered = 0
+            try:
+                amount_triggered = self.waitset.wait(duration(milliseconds=100))
+            except:
+                pass
+            if amount_triggered == 0:
+                continue
+
+            for (topicItem, subsItem, readItem, condItem) in self.readerData:
+                for sample in readItem.take(condition=condItem):
+                    self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
+         
+        logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
 
     def stop(self):
+        logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
         self.running = False
