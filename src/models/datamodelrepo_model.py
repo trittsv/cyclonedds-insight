@@ -125,7 +125,7 @@ class DatamodelRepoModel(QAbstractListModel):
                 if not QDir(self.destination_folder_py).exists():
                     QDir().mkpath(self.destination_folder_py)
 
-                arguments = ["-l", "py"]
+                arguments = ["-l"]
                 application_path = "./"
 
                 if getattr(sys, 'frozen', False):
@@ -135,12 +135,12 @@ class DatamodelRepoModel(QAbstractListModel):
                     matching_files = glob.glob(search_pattern)
                     matching_files.sort()
                     if matching_files:
-                        arguments.append("-y")
                         arguments.append(matching_files[0])
                         logging.debug("Found _idlpy: " + matching_files[0])
                     else:
-                        logging.warn("No _idlpy lib found")
+                        logging.critical("No _idlpy lib found")
                 else:
+                    arguments.append("py")
                     # Started as python program
                     #   - use idlc from cyclonedds_home
                     #   - use _idlpy from pip package
