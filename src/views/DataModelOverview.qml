@@ -74,7 +74,7 @@ Rectangle {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: dataModelItemMouseArea.hovered ? rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground : "transparent"
+                    color: (dataModelItemMouseArea.hovered || contextMenu.visible)? rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground : "transparent"
                     opacity: 0.3
                 }
 
@@ -102,11 +102,14 @@ Rectangle {
                     Menu {
                         id: contextMenu
                         MenuItem {
-                            text: "Creader Reader"
+                            text: "Create Reader (Listener)"
                             onTriggered: {
                                 readerTesterDialogId.setType(name)
                                 readerTesterDialogId.open()
                             }
+                        }
+                        MenuItem {
+                            text: "Create Writer (Tester)"
                         }
                     }
                 }
