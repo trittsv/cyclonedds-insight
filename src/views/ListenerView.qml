@@ -54,8 +54,12 @@ Rectangle {
         RowLayout {
             Layout.minimumHeight: 40
             Layout.maximumHeight: 40
-            spacing: 0
+            spacing: 10
 
+            Item {
+                implicitHeight: 1
+                implicitWidth: 1
+            }
             Button {
                 text: "Clear Messages"
                 onClicked: logClear()
@@ -84,30 +88,39 @@ Rectangle {
                 text: "Delete All Readers"
                 onClicked: datamodelRepoModel.deleteAllReaders()
             }
+            Item {
+                implicitHeight: 1
+                implicitWidth: 1
+            }
         }
 
-        Flickable {
-            id: scrollView
+       Rectangle {
+            color: rootWindow.isDarkMode ? "black" : "white"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            boundsBehavior: Flickable.StopAtBounds
-            interactive: true
-            ScrollBar.vertical: ScrollBar {}
 
-            TextArea.flickable: TextArea {
-                id: listenerTextArea
-                readOnly: true
-                tabStopDistance: 40
-                wrapMode: TextArea.Wrap
-                selectByMouse: true
-                selectByKeyboard: true
-                onContentHeightChanged: {
-                    if (listenerTabId.autoScrollEnabled) {
-                        listenerTextArea.cursorPosition = listenerTextArea.length
-                        scrollView.contentY = listenerTextArea.height - scrollView.height
+            Flickable {
+                id: scrollView
+                anchors.fill: parent
+                boundsBehavior: Flickable.StopAtBounds
+                interactive: true
+                ScrollBar.vertical: ScrollBar {}
+
+                TextArea.flickable: TextArea {
+                    id: listenerTextArea
+                    readOnly: true
+                    tabStopDistance: 40
+                    wrapMode: TextArea.Wrap
+                    selectByMouse: true
+                    selectByKeyboard: true
+                    onContentHeightChanged: {
+                        if (listenerTabId.autoScrollEnabled) {
+                            listenerTextArea.cursorPosition = listenerTextArea.length
+                            scrollView.contentY = listenerTextArea.height - scrollView.height
+                        }
                     }
+                    onPressed: listenerTabId.autoScrollEnabled = false
                 }
-                onPressed: listenerTabId.autoScrollEnabled = false
             }
         }
     }

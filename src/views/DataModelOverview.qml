@@ -60,13 +60,6 @@ Rectangle {
                     datamodelRepoModel.clear()
                 }
             }
-            Button {
-                text: "Test"
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                onClicked: {
-                    addReadWriteTester("vehicle")
-                }
-            }
         }
 
         ListView {
@@ -79,16 +72,31 @@ Rectangle {
                 implicitWidth: dataModelOverviewId.width
                 implicitHeight: nameLabel.implicitHeight * 1.5
 
+                Rectangle {
+                    anchors.fill: parent
+                    color: dataModelItemMouseArea.hovered ? rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground : "transparent"
+                    opacity: 0.3
+                }
+
                 Label {
                     id: nameLabel
                     text: name
                 }
 
                 MouseArea {
+                    id: dataModelItemMouseArea
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    hoverEnabled: true
+                    property bool hovered: false
                     onClicked: {
                         contextMenu.popup()
+                    }
+                    onEntered: {
+                        hovered = true
+                    }
+                    onExited: {
+                        hovered = false
                     }
 
                     Menu {
