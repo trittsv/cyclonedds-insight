@@ -54,10 +54,6 @@ ApplicationWindow {
         Overview {
             id: overviewId
         }
-
-        DataModelOverview {
-            id: dataModelOverviewId
-        }
     }
 
     AddDomainView {

@@ -101,9 +101,9 @@ class DatamodelRepoModel(QAbstractListModel):
     @Slot(list)
     def addUrls(self, urls):
         logging.info("add urls:" + str(urls))
+
         for url in urls:
             if url.isLocalFile():
-
                 # Copy idl source file
                 source_file = url.toLocalFile()
                 logging.debug("IDL-Folder: " + self.destination_folder_idl)
@@ -121,6 +121,15 @@ class DatamodelRepoModel(QAbstractListModel):
                     logging.error("Failed to copy file.")
                     break
 
+        parent_dir = self.destination_folder_idl
+        idls = [name for name in os.listdir(parent_dir) if os.path.isfile(os.path.join(parent_dir, name))]
+
+        for idl in idls:
+            print(idl)
+            if True:
+
+                destination_file = os.path.join(self.destination_folder_idl, idl)
+
                 # Compile idl to py file
                 if not QDir(self.destination_folder_py).exists():
                     QDir().mkpath(self.destination_folder_py)
@@ -135,7 +144,7 @@ class DatamodelRepoModel(QAbstractListModel):
                     matching_files = glob.glob(search_pattern)
                     matching_files.sort()
                     if matching_files:
-                        arguments.append(matching_files[0])
+                        arguments.append(os.path.normpath(matching_files[0]))
                         logging.debug("Found _idlpy: " + matching_files[0])
                     else:
                         logging.critical("No _idlpy lib found")
@@ -148,10 +157,10 @@ class DatamodelRepoModel(QAbstractListModel):
                         application_path = os.environ["CYCLONEDDS_HOME"] + "/bin"
 
                 arguments.append("-o")
-                arguments.append(self.destination_folder_py)
-                arguments.append(destination_file)
+                arguments.append(os.path.normpath(self.destination_folder_py))
+                arguments.append(os.path.normpath(destination_file))
 
-                command = f"{application_path}/idlc"
+                command = os.path.normpath(f"{application_path}/idlc")
 
                 logging.info("Execute: " + command + " " + " ".join(arguments))
 
@@ -191,10 +200,7 @@ class DatamodelRepoModel(QAbstractListModel):
 
     @Slot()
     def loadModules(self):
-        #self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        #self.dataModelItems.append(source_file)
-        #self.endInsertRows()
-
+        logging.debug("")
         parent_dir = self.destination_folder_py
         sys.path.insert(0, parent_dir)
 
@@ -202,20 +208,45 @@ class DatamodelRepoModel(QAbstractListModel):
 
         for submodule in submodules:
             module_name = submodule
+            logging.debug("Inspecting "  + module_name)
             try:
+                logging.debug("a")
                 module = importlib.import_module(module_name)
+                logging.debug("b")
                 all_types = getattr(module, '__all__', [])
                 for type_name in all_types:
-                    cls = getattr(importlib.import_module(module_name), type_name)
+                    logging.debug("Inspecting "  + module_name+ " " + type_name)
+                    try:
+                        cls = getattr(importlib.import_module(module_name), type_name)
+                    except Exception as e:
+                        logging.error(f"Error importing 2 {module_name} : {type_name} : {e}")
                     if inspect.isclass(cls):
-                        sId: str = f"{module_name}.{cls.__name__}"
-                        if sId not in self.dataModelItems:
-                            self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-                            self.dataModelItems[sId] = DataModelItem(sId, [module_name, cls.__name__])
-                            self.endInsertRows()
+
+                        if type_name == "T_AudioFormatType":
+                            self.print_class_attributes(cls)
+
+                        if not self.has_nested_annotation(cls) and not self.is_enum(cls):
+                            logging.debug(f"Not nested !? {str(cls)}") 
+                            sId: str = f"{module_name}.{cls.__name__}"
+                            if sId not in self.dataModelItems:
+                                self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
+                                self.dataModelItems[sId] = DataModelItem(sId, [module_name, cls.__name__])
+                                self.endInsertRows()
 
             except Exception as e:
-                print(f"Error importing {module_name}: {e}")
+                logging.error(f"Error importing {module_name}: {e}")
+
+    def has_nested_annotation(self, cls):
+        return 'nested' in getattr(cls, '__idl_annotations__', {})
+
+    def is_enum(self, cls):
+        return getattr(cls, '__doc__', None) == "An enumeration."
+
+
+    def print_class_attributes(self, cls):
+        logging.debug(f"Attributes of class {cls.__name__}:")
+        for attr_name in dir(cls):
+            logging.debug(f"  {attr_name}: {getattr(cls, attr_name)}")
 
     @Slot(int, str, str, str, str, str)
     def addReader(self, domain_id, topic_name, topic_type, q_own, q_dur, q_rel):
@@ -274,44 +305,51 @@ class WorkerThread(QThread):
     @Slot()
     def receive_data(self, topic_name, topic_type, qos):
         logging.info("Add reader")
+        try:
+            topic = Topic(self.domain_participant, topic_name, topic_type, qos=qos)
+            subscriber = Subscriber(self.domain_participant)
+            reader = DataReader(subscriber, topic)
+            readCondition = ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
+            self.waitset.attach(readCondition)
 
-        topic = Topic(self.domain_participant, topic_name, topic_type, qos=qos)
-        subscriber = Subscriber(self.domain_participant)
-        reader = DataReader(subscriber, topic)
-        readCondition = ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
-        self.waitset.attach(readCondition)
-
-        self.readerData.append((topic,subscriber, reader, readCondition))
+            self.readerData.append((topic,subscriber, reader, readCondition))
+        except Exception as e:
+            logging.error(f"Error creating reader {topic_name}: {e}")
 
     def run(self):
         logging.info(f"Worker thread for domain({str(self.domain_id)}) ...")
 
-        self.domain_participant = DomainParticipant(self.domain_id)
-        self.waitset = WaitSet(self.domain_participant)
+        try:
 
-        topic = Topic(self.domain_participant, self.topic_name, self.topic_type, qos=self.qos)
-        subscriber = Subscriber(self.domain_participant)
-        reader = DataReader(subscriber, topic)
-    
-        readCondition = ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
-        self.waitset.attach(readCondition)
-    
-        self.readerData.append((topic,subscriber, reader, readCondition))
+            self.domain_participant = DomainParticipant(self.domain_id)
+            self.waitset = WaitSet(self.domain_participant)
 
-        while self.running:
-            amount_triggered = 0
-            try:
-                amount_triggered = self.waitset.wait(duration(milliseconds=100))
-            except:
-                pass
-            if amount_triggered == 0:
-                continue
+            topic = Topic(self.domain_participant, self.topic_name, self.topic_type, qos=self.qos)
+            subscriber = Subscriber(self.domain_participant)
+            reader = DataReader(subscriber, topic)
+        
+            readCondition = ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
+            self.waitset.attach(readCondition)
+        
+            self.readerData.append((topic,subscriber, reader, readCondition))
 
-            for (topicItem, subsItem, readItem, condItem) in self.readerData:
-                for sample in readItem.take(condition=condItem):
-                    self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
-         
-        logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
+            while self.running:
+                amount_triggered = 0
+                try:
+                    amount_triggered = self.waitset.wait(duration(milliseconds=100))
+                except:
+                    pass
+                if amount_triggered == 0:
+                    continue
+
+                for (topicItem, subsItem, readItem, condItem) in self.readerData:
+                    for sample in readItem.take(condition=condItem):
+                        self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
+
+            logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
+
+        except Exception as e:
+            logging.error(f"Error creating reader {self.topic_name}: {e}")
 
     def stop(self):
         logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
