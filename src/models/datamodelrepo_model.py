@@ -319,11 +319,10 @@ class WorkerThread(QThread):
     def run(self):
         logging.info(f"Worker thread for domain({str(self.domain_id)}) ...")
 
+        self.domain_participant = DomainParticipant(self.domain_id)
+        self.waitset = WaitSet(self.domain_participant)
+
         try:
-
-            self.domain_participant = DomainParticipant(self.domain_id)
-            self.waitset = WaitSet(self.domain_participant)
-
             topic = Topic(self.domain_participant, self.topic_name, self.topic_type, qos=self.qos)
             subscriber = Subscriber(self.domain_participant)
             reader = DataReader(subscriber, topic)
@@ -333,23 +332,24 @@ class WorkerThread(QThread):
         
             self.readerData.append((topic,subscriber, reader, readCondition))
 
-            while self.running:
-                amount_triggered = 0
-                try:
-                    amount_triggered = self.waitset.wait(duration(milliseconds=100))
-                except:
-                    pass
-                if amount_triggered == 0:
-                    continue
-
-                for (topicItem, subsItem, readItem, condItem) in self.readerData:
-                    for sample in readItem.take(condition=condItem):
-                        self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
-
-            logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
-
         except Exception as e:
-            logging.error(f"Error creating reader {self.topic_name}: {e}")
+            logging.error(f"Error creating {self.topic_name}: {e}")
+
+        while self.running:
+            amount_triggered = 0
+            try:
+                amount_triggered = self.waitset.wait(duration(milliseconds=100))
+            except:
+                pass
+            if amount_triggered == 0:
+                continue
+
+            for (_, _, readItem, condItem) in self.readerData:
+                for sample in readItem.take(condition=condItem):
+                    self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
+
+        logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
+
 
     def stop(self):
         logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
