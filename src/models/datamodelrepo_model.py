@@ -201,6 +201,11 @@ class DatamodelRepoModel(QAbstractListModel):
     @Slot()
     def loadModules(self):
         logging.debug("")
+
+        dir = QDir(self.destination_folder_py)
+        if not dir.exists():
+            return
+
         parent_dir = self.destination_folder_py
         sys.path.insert(0, parent_dir)
 

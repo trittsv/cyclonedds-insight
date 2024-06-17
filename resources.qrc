@@ -17,6 +17,7 @@
         <file>res/images/cyclonedds.png</file>
         <file>res/images/cyclonedds@2x.png</file>
         <file>res/images/cyclonedds@3x.png</file>
+        <file>res/images/spinning.gif</file>
 
         <!-- source files -->
         <file>src/views/main.qml</file>
