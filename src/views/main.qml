@@ -86,12 +86,9 @@ ApplicationWindow {
         close.accepted = true
     }*/
 
-    AnimatedImage {
-        anchors.centerIn: parent
-        source: "qrc:/res/images/spinning.gif"
-        sourceSize.height: 100
-        sourceSize.width: 100
-        height: 100
-        width: 100
+    LoadingView {
+        id: loadingViewId
+        visible: true
     }
+
 }

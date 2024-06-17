@@ -34,5 +34,6 @@
         <file>src/views/DataModelOverview.qml</file>
         <file>src/views/ReaderTester.qml</file>
         <file>src/views/ListenerView.qml</file>
+        <file>src/views/LoadingView.qml</file>
     </qresource>
 </RCC>
