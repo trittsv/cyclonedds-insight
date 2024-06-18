@@ -20,7 +20,6 @@ import org.eclipse.cyclonedds.insight
 
 Popup {
     id: readerTesterDiaId
-    //color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
 
     anchors.centerIn: parent
     modal: true

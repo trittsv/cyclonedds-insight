@@ -194,12 +194,26 @@ class DatamodelModel(QAbstractListModel):
             logging.debug(str(module_type))
             logging.debug(str(class_type))
 
-            qos = Qos(
-                Policy.Reliability.BestEffort,
-                Policy.Deadline(duration(microseconds=10)),
-                Policy.Durability.TransientLocal,
-                Policy.History.KeepLast(10)
-            )
+            qos = Qos()
+
+            if q_own == "DDS_OWNERSHIP_SHARED":
+                qos += Qos(Policy.Ownership.Shared)
+            elif q_own == "DDS_OWNERSHIP_EXCLUSIVE":
+                qos += Qos(Policy.Ownership.Exclusive)
+
+            if q_dur == "DDS_DURABILITY_VOLATILE":
+                qos += Qos(Policy.Durability.Volatile)
+            elif q_dur == "DDS_DURABILITY_TRANSIENT_LOCAL":
+                qos += Qos(Policy.Durability.TransientLocal)
+            elif q_dur == "DDS_DURABILITY_TRANSIENT":
+                qos += Qos(Policy.Durability.Transient)
+            elif q_dur == "DDS_DURABILITY_PERSISTENT":
+                qos += Qos(Policy.Durability.Persistent)
+
+            if q_rel == "DDS_RELIABILITY_BEST_EFFORT":
+                qos += Qos(Policy.Reliability.BestEffort)
+            elif q_rel == "DDS_RELIABILITY_RELIABLE":
+                qos += Qos(Policy.Reliability.Reliable(max_blocking_time=duration(seconds=1)))
 
             if domain_id in self.threads:
                 self.threads[domain_id].receive_data(topic_name, class_type, qos)
