@@ -18,6 +18,8 @@ Features:
 - Show qos mismatches
 - Dark and light mode support
 - Runs on MacOS, Windows, Linux
+- Import idl files
+- Create Reader to Listen to a topic
 
 ## How to run via python
 

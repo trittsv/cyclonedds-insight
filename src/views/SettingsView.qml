@@ -10,6 +10,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 */
 
+import QtCore
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
@@ -58,7 +59,15 @@ Rectangle {
                 text: "Automatic (System)"
                 checked: true
                 checkable: false
-            }   
+            }
+
+            Label {
+                text: qsTr("AppDataLocation:")
+            }
+            Button {
+                text: "Open Folder"
+                onClicked: Qt.openUrlExternally(StandardPaths.writableLocation(StandardPaths.AppDataLocation));
+            }
             Item {
                 Layout.columnSpan: 2
                 Layout.fillHeight: true
