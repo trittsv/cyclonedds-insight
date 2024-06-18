@@ -67,8 +67,8 @@ ApplicationWindow {
         buttons: MessageDialog.Ok;
     }
 
-    IdlFileDropArea {
-        id: idlFileDropAreaId
+    IdlDropArea {
+        id: idlDropAreaId
     }
 
     ReaderTester {

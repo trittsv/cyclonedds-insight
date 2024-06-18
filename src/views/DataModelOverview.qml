@@ -56,7 +56,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     onClicked: {
                         console.log("Import idl files clicked")
-                        idlFileDropAreaId.isEntered = true
+                        idlDropAreaId.isEntered = true
                     }
                 }
                 Button {

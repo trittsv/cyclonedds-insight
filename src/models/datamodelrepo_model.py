@@ -28,13 +28,10 @@ from dataclasses import dataclass
 import typing
 import time
 import datetime
+from dds_service import WorkerThread
 
 from cyclonedds.core import Listener, Qos, Policy, WaitSet, ReadCondition, SampleState, ViewState, InstanceState
-from cyclonedds.domain import DomainParticipant
-from cyclonedds.topic import Topic
-from cyclonedds.sub import Subscriber, DataReader
 from cyclonedds.util import duration
-
 
 @dataclass
 class DataModelItem:
@@ -313,56 +310,3 @@ class IdlcWorkerThread(QThread):
                 logging.debug("Failed to start process:" + str(process.errorString()))
 
         self.doneSignale.emit()
-
-class WorkerThread(QThread):
-
-    data_emitted = Signal(str)
-    
-    def __init__(self, domain_id, topic_name, topic_type, qos, parent=None):
-        super().__init__(parent)
-        self.domain_id = domain_id
-        self.topic_name = topic_name
-        self.topic_type = topic_type
-        self.qos = qos
-        self.running = True
-        self.readerData = []
-
-    @Slot()
-    def receive_data(self, topic_name, topic_type, qos):
-        logging.info("Add reader")
-        try:
-            topic = Topic(self.domain_participant, topic_name, topic_type, qos=qos)
-            subscriber = Subscriber(self.domain_participant)
-            reader = DataReader(subscriber, topic)
-            readCondition = ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
-            self.waitset.attach(readCondition)
-
-            self.readerData.append((topic,subscriber, reader, readCondition))
-        except Exception as e:
-            logging.error(f"Error creating reader {topic_name}: {e}")
-
-    def run(self):
-        logging.info(f"Worker thread for domain({str(self.domain_id)}) ...")
-
-        self.domain_participant = DomainParticipant(self.domain_id)
-        self.waitset = WaitSet(self.domain_participant)
-        self.receive_data(self.topic_name, self.topic_type, self.qos)
-
-        while self.running:
-            amount_triggered = 0
-            try:
-                amount_triggered = self.waitset.wait(duration(milliseconds=100))
-            except:
-                pass
-            if amount_triggered == 0:
-                continue
-
-            for (_, _, readItem, condItem) in self.readerData:
-                for sample in readItem.take(condition=condItem):
-                    self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
-
-        logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
-
-    def stop(self):
-        logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
-        self.running = False
