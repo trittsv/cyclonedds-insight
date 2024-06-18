@@ -81,14 +81,17 @@ ApplicationWindow {
         return isDarkModeVal
     }
 
-    /*onClosing: {
-        datamodelRepoModel.closeRequest()
-        close.accepted = true
-    }*/
+    Connections {
+        target: datamodelRepoModel
+        function onIsLoadingSignal(loading) {
+            loadingViewId.visible = loading
+        }
+    }
+
 
     LoadingView {
         id: loadingViewId
-        visible: true
+        visible: false
     }
 
 }

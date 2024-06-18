@@ -67,5 +67,13 @@ DropArea {
             font.pixelSize: 30
             color: "black"
         }
+
+        MouseArea {
+            enabled: dropAreaId.isEntered
+            anchors.fill: parent
+            onClicked: {
+                dropAreaId.isEntered = false
+            }
+        }
     }
 }

@@ -24,6 +24,20 @@ if getattr(sys, 'frozen', False):
 else:
     APPLICATION_PATH = os.path.dirname(os.path.abspath(__file__))
 
+    # CycloneDDS
+    cyclonedds_home = os.getenv('CYCLONEDDS_HOME')
+    if not cyclonedds_home:
+        raise Exception('CYCLONEDDS_HOME environment variable is not set.')
+    else:
+        print('cyclonedds_home: ' + cyclonedds_home)
+
+    # CycloneDDS-Python
+    cyclonedds_python_home = os.getenv('CYCLONEDDS_PYTHON_HOME')
+    if not cyclonedds_python_home:
+        raise Exception('CYCLONEDDS_PYTHON_HOME environment variable is not set.')
+    else:
+        print('cyclonedds_python_home: ' + cyclonedds_python_home)
+
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
 from PySide6.QtCore import qInstallMessageHandler, QUrl

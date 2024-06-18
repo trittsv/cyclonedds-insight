@@ -29,7 +29,7 @@ ColumnLayout {
             text: "Overview"
             Layout.leftMargin: 10
         }
-         Item {
+        Item {
             Layout.fillWidth: true
         }
         Button {
@@ -85,6 +85,7 @@ ColumnLayout {
             }
         }
     }
+    
 
     TreeView {
         id: treeView
@@ -92,6 +93,7 @@ ColumnLayout {
         Layout.fillHeight: true
         Layout.leftMargin: 10
         clip: true
+        ScrollBar.vertical: ScrollBar {}
         selectionModel: ItemSelectionModel {
             id: treeSelection
             onCurrentIndexChanged: {

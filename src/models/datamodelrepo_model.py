@@ -47,6 +47,7 @@ class DatamodelRepoModel(QAbstractListModel):
     NameRole = Qt.UserRole + 1
 
     newDataArrived = Signal(str)
+    isLoadingSignal = Signal(bool)
 
     def __init__(self, parent=QObject | None) -> None:
         super().__init__()
@@ -102,83 +103,20 @@ class DatamodelRepoModel(QAbstractListModel):
     def addUrls(self, urls):
         logging.info("add urls:" + str(urls))
 
-        for url in urls:
-            if url.isLocalFile():
-                # Copy idl source file
-                source_file = url.toLocalFile()
-                logging.debug("IDL-Folder: " + self.destination_folder_idl)
-                if not QDir(self.destination_folder_idl).exists():
-                    QDir().mkpath(self.destination_folder_idl)
+        self.isLoadingSignal.emit(True)
 
-                destination_file = os.path.join(self.destination_folder_idl, os.path.basename(source_file))
+        self.idlcWorker = IdlcWorkerThread(urls, self.destination_folder_py, self.destination_folder_idl)
+        self.idlcWorker.doneSignale.connect(self.idlcWorkerDone)
+        self.idlcWorker.start()
 
-                if (QFile.exists(destination_file)):
-                    QFile.remove(destination_file)
+        #self.loadModules()
 
-                if QFile.copy(source_file, destination_file):
-                    logging.debug("File copied successfully. " + os.path.basename(source_file))
-                else:
-                    logging.error("Failed to copy file.")
-                    break
+        #self.isLoadingSignal.emit(False)
 
-        parent_dir = self.destination_folder_idl
-        idls = [name for name in os.listdir(parent_dir) if os.path.isfile(os.path.join(parent_dir, name))]
-
-        for idl in idls:
-            print(idl)
-            if True:
-
-                destination_file = os.path.join(self.destination_folder_idl, idl)
-
-                # Compile idl to py file
-                if not QDir(self.destination_folder_py).exists():
-                    QDir().mkpath(self.destination_folder_py)
-
-                arguments = ["-l"]
-                application_path = "./"
-
-                if getattr(sys, 'frozen', False):
-                    # Bundled as App - use idlc and _idlpy from app binaries
-                    application_path = sys._MEIPASS
-                    search_pattern = os.path.join(application_path, "_idlpy.*")
-                    matching_files = glob.glob(search_pattern)
-                    matching_files.sort()
-                    if matching_files:
-                        arguments.append(os.path.normpath(matching_files[0]))
-                        logging.debug("Found _idlpy: " + matching_files[0])
-                    else:
-                        logging.critical("No _idlpy lib found")
-                else:
-                    arguments.append("py")
-                    # Started as python program
-                    #   - use idlc from cyclonedds_home
-                    #   - use _idlpy from pip package
-                    if "CYCLONEDDS_HOME" in os.environ:
-                        application_path = os.environ["CYCLONEDDS_HOME"] + "/bin"
-
-                arguments.append("-o")
-                arguments.append(os.path.normpath(self.destination_folder_py))
-                arguments.append(os.path.normpath(destination_file))
-
-                command = os.path.normpath(f"{application_path}/idlc")
-
-                logging.info("Execute: " + command + " " + " ".join(arguments))
-
-                process = QProcess()
-                process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
-                process.setWorkingDirectory(self.destination_folder_py)
-                process.start(command, arguments)
-
-                if process.waitForFinished():
-                    if process.exitStatus() == QProcess.NormalExit:
-                        logging.debug(str(process.readAll()))
-                        logging.debug("Process finished successfully.") 
-                    else:
-                        logging.debug("Process failed with error code: " + str(process.exitCode()))
-                else:
-                    logging.debug("Failed to start process:" + str(process.errorString()))
-
+    @Slot()
+    def idlcWorkerDone(self):
         self.loadModules()
+        self.isLoadingSignal.emit(False)
 
     @Slot()
     def clear(self):
@@ -192,11 +130,11 @@ class DatamodelRepoModel(QAbstractListModel):
         if dir.exists():
             success = dir.removeRecursively()
             if success:
-                print(f"Successfully deleted folder: {folder_path}")
+                logging.info(f"Successfully deleted folder: {folder_path}")
             else:
-                print(f"Failed to delete folder: {folder_path}")
+                logging.error(f"Failed to delete folder: {folder_path}")
         else:
-            print(f"Folder does not exist: {folder_path}")
+            logging.error(f"Folder does not exist: {folder_path}")
 
     @Slot()
     def loadModules(self):
@@ -213,25 +151,18 @@ class DatamodelRepoModel(QAbstractListModel):
 
         for submodule in submodules:
             module_name = submodule
-            logging.debug("Inspecting "  + module_name)
+            # logging.debug("Inspecting "  + module_name)
             try:
-                logging.debug("a")
                 module = importlib.import_module(module_name)
-                logging.debug("b")
                 all_types = getattr(module, '__all__', [])
                 for type_name in all_types:
-                    logging.debug("Inspecting "  + module_name+ " " + type_name)
+                    # logging.debug("Inspecting "  + module_name+ " " + type_name)
                     try:
                         cls = getattr(importlib.import_module(module_name), type_name)
                     except Exception as e:
                         logging.error(f"Error importing 2 {module_name} : {type_name} : {e}")
                     if inspect.isclass(cls):
-
-                        if type_name == "T_AudioFormatType":
-                            self.print_class_attributes(cls)
-
                         if not self.has_nested_annotation(cls) and not self.is_enum(cls):
-                            logging.debug(f"Not nested !? {str(cls)}") 
                             sId: str = f"{module_name}.{cls.__name__}"
                             if sId not in self.dataModelItems:
                                 self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
@@ -255,15 +186,14 @@ class DatamodelRepoModel(QAbstractListModel):
 
     @Slot(int, str, str, str, str, str)
     def addReader(self, domain_id, topic_name, topic_type, q_own, q_dur, q_rel):
-        print(domain_id, topic_name, topic_type, q_own, q_dur, q_rel)
-        logging.debug("try add reader")
+        logging.debug("try add reader" + str(domain_id) + str(topic_name) + str(topic_type) + str(q_own) + str(q_dur) + str(q_rel))
 
         if topic_type in self.dataModelItems:
             module_type = importlib.import_module(self.dataModelItems[topic_type].parts[0])
             class_type = getattr(module_type, self.dataModelItems[topic_type].parts[1])
 
-            print(module_type)
-            print(class_type)
+            logging.debug(str(module_type))
+            logging.debug(str(class_type))
 
             qos = Qos(
                 Policy.Reliability.BestEffort,
@@ -293,6 +223,95 @@ class DatamodelRepoModel(QAbstractListModel):
                 self.threads[key].wait()
         self.threads.clear()
 
+
+class IdlcWorkerThread(QThread):
+
+    doneSignale = Signal()
+    
+    def __init__(self, urls, destination_folder_py, destination_folder_idl, parent=None):
+        super().__init__(parent)
+        self.urls = urls
+        self.destination_folder_idl = destination_folder_idl
+        self.destination_folder_py = destination_folder_py
+
+    def run(self):
+        for url in self.urls:
+            logging.debug("Copy " + str(url) + " ...")
+            if url.isLocalFile():
+                # Copy idl source file
+                source_file = url.toLocalFile()
+                logging.debug("IDL-Folder: " + self.destination_folder_idl)
+                if not QDir(self.destination_folder_idl).exists():
+                    QDir().mkpath(self.destination_folder_idl)
+
+                destination_file = os.path.join(self.destination_folder_idl, os.path.basename(source_file))
+
+                if (QFile.exists(destination_file)):
+                    QFile.remove(destination_file)
+
+                if QFile.copy(source_file, destination_file):
+                    logging.debug("File copied successfully. " + os.path.basename(source_file))
+                else:
+                    logging.error("Failed to copy file.")
+                    break
+
+        parent_dir = self.destination_folder_idl
+        idls = [name for name in os.listdir(parent_dir) if os.path.isfile(os.path.join(parent_dir, name))]
+
+        for idl in idls:
+            logging.debug("Process " + idl + " ...")
+
+            destination_file = os.path.join(self.destination_folder_idl, idl)
+
+            # Compile idl to py file
+            if not QDir(self.destination_folder_py).exists():
+                QDir().mkpath(self.destination_folder_py)
+
+            arguments = ["-l"]
+            application_path = "./"
+
+            if getattr(sys, 'frozen', False):
+                # Bundled as App - use idlc and _idlpy from app binaries
+                application_path = sys._MEIPASS
+                search_pattern = os.path.join(application_path, "_idlpy.*")
+                matching_files = glob.glob(search_pattern)
+                matching_files.sort()
+                if matching_files:
+                    arguments.append(os.path.normpath(matching_files[0]))
+                    logging.debug("Found _idlpy: " + matching_files[0])
+                else:
+                    logging.critical("No _idlpy lib found")
+            else:
+                arguments.append("py")
+                # Started as python program
+                #   - use idlc from cyclonedds_home
+                #   - use _idlpy from pip package
+                if "CYCLONEDDS_HOME" in os.environ:
+                    application_path = os.environ["CYCLONEDDS_HOME"] + "/bin"
+
+            arguments.append("-o")
+            arguments.append(os.path.normpath(self.destination_folder_py))
+            arguments.append(os.path.normpath(destination_file))
+
+            command = os.path.normpath(f"{application_path}/idlc")
+
+            logging.info("Execute: " + command + " " + " ".join(arguments))
+
+            process = QProcess()
+            process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+            process.setWorkingDirectory(self.destination_folder_py)
+            process.start(command, arguments)
+
+            if process.waitForFinished():
+                if process.exitStatus() == QProcess.NormalExit:
+                    logging.debug(str(process.readAll()))
+                    logging.debug("Process finished successfully.") 
+                else:
+                    logging.debug("Process failed with error code: " + str(process.exitCode()))
+            else:
+                logging.debug("Failed to start process:" + str(process.errorString()))
+
+        self.doneSignale.emit()
 
 class WorkerThread(QThread):
 
@@ -326,19 +345,7 @@ class WorkerThread(QThread):
 
         self.domain_participant = DomainParticipant(self.domain_id)
         self.waitset = WaitSet(self.domain_participant)
-
-        try:
-            topic = Topic(self.domain_participant, self.topic_name, self.topic_type, qos=self.qos)
-            subscriber = Subscriber(self.domain_participant)
-            reader = DataReader(subscriber, topic)
-        
-            readCondition = ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
-            self.waitset.attach(readCondition)
-        
-            self.readerData.append((topic,subscriber, reader, readCondition))
-
-        except Exception as e:
-            logging.error(f"Error creating {self.topic_name}: {e}")
+        self.receive_data(self.topic_name, self.topic_type, self.qos)
 
         while self.running:
             amount_triggered = 0
@@ -354,7 +361,6 @@ class WorkerThread(QThread):
                     self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
 
         logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
-
 
     def stop(self):
         logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")

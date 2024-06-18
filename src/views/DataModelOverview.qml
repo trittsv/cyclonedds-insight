@@ -33,33 +33,42 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        RowLayout {
-            spacing: 0
+        Rectangle {
+            color: rootWindow.isDarkMode ? Constants.darkHeaderBackground : Constants.lightHeaderBackground
+            Layout.fillWidth: true
+            Layout.preferredHeight: importBtnId.height
 
-            Label {
-                text: "Data Model"
-                Layout.leftMargin: 10
-            }
-            Item {
-                Layout.fillWidth: true
-            }
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
 
-            Button {
-                text: "Import"
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                onClicked: {
-                    console.log("Import idl files clicked")
-                    idlFileDropAreaId.isEntered = true
+                Label {
+                    text: "Data Model"
+                    Layout.leftMargin: 10
+                }
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    id: importBtnId
+                    text: "Import"
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    onClicked: {
+                        console.log("Import idl files clicked")
+                        idlFileDropAreaId.isEntered = true
+                    }
+                }
+                Button {
+                    text: "Clear"
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    onClicked: {
+                        console.log("Clear clicked")
+                        datamodelRepoModel.clear()
+                    }
                 }
             }
-            Button {
-                text: "Clear"
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                onClicked: {
-                    console.log("Clear clicked")
-                    datamodelRepoModel.clear()
-                }
-            }
+
         }
 
         ListView {
@@ -67,6 +76,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.leftMargin: 10
             clip: true
+            ScrollBar.vertical: ScrollBar {}
             model: datamodelRepoModel
             delegate: Item {
                 implicitWidth: dataModelOverviewId.width
@@ -108,9 +118,10 @@ Rectangle {
                                 readerTesterDialogId.open()
                             }
                         }
-                        MenuItem {
+                        /*MenuItem {
                             text: "Create Writer (Tester)"
-                        }
+                            enabled: false
+                        }*/
                     }
                 }
             }

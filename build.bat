@@ -14,6 +14,7 @@ pip install -e . && ^
 pip install -r ..\..\requirements.txt && ^
 cd ..\.. && ^
 set PATH=%PATH%;%CYCLONEDDS_HOME%\bin && ^
+pyside6-rcc ./resources.qrc -o ./src/qrc_file.py && ^
 pyinstaller main.spec --noconfirm --clean && ^
 .\deps\venv\Scripts\deactivate && ^
 iscc setup.iss /DTheAppVersion=0.0.0
