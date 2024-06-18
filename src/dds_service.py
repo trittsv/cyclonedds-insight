@@ -110,7 +110,7 @@ class WorkerThread(QThread):
             logging.error(f"Error creating reader {topic_name}: {e}")
 
     def run(self):
-        logging.info(f"Worker thread for domain({str(self.domain_id)}) ...")
+        logging.info(f"Worker thread for domain({str(self.domain_id)}) ...")    
 
         self.domain_participant = domain.DomainParticipant(self.domain_id)
         self.waitset = core.WaitSet(self.domain_participant)

@@ -24,7 +24,7 @@ else:
 # CycloneDDS-Python
 cyclonedds_python_home = os.getenv('CYCLONEDDS_PYTHON_HOME')
 if not cyclonedds_python_home:
-    raise Exception('CYCLONEDDS_PYTHON_HOME environment variable is not set.')
+    raise Exception('CYCLONEDDS_PYTHON_HOME environment variable is not set - must be install via pip install -e .')
 else:
     print('cyclonedds_python_home: ' + cyclonedds_python_home)
 

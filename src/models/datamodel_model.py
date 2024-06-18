@@ -30,8 +30,9 @@ import time
 import datetime
 from dds_service import WorkerThread
 
-from cyclonedds.core import Listener, Qos, Policy, WaitSet, ReadCondition, SampleState, ViewState, InstanceState
+from cyclonedds.core import Qos, Policy
 from cyclonedds.util import duration
+
 
 @dataclass
 class DataModelItem:
@@ -39,7 +40,7 @@ class DataModelItem:
     parts: dict
 
 
-class DatamodelRepoModel(QAbstractListModel):
+class DatamodelModel(QAbstractListModel):
 
     NameRole = Qt.UserRole + 1
 
