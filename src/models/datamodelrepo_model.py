@@ -51,6 +51,7 @@ class DatamodelRepoModel(QAbstractListModel):
 
     def __init__(self, parent=QObject | None) -> None:
         super().__init__()
+        self.idlcWorker = None
         self.dataModelItems = {}
         self.threads = {}
         self.app_data_dir = QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
@@ -101,6 +102,9 @@ class DatamodelRepoModel(QAbstractListModel):
 
     @Slot(list)
     def addUrls(self, urls):
+        if self.idlcWorker:
+            return
+
         logging.info("add urls:" + str(urls))
 
         self.isLoadingSignal.emit(True)
@@ -109,13 +113,10 @@ class DatamodelRepoModel(QAbstractListModel):
         self.idlcWorker.doneSignale.connect(self.idlcWorkerDone)
         self.idlcWorker.start()
 
-        #self.loadModules()
-
-        #self.isLoadingSignal.emit(False)
-
     @Slot()
     def idlcWorkerDone(self):
         self.loadModules()
+        self.idlcWorker = None
         self.isLoadingSignal.emit(False)
 
     @Slot()

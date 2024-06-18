@@ -39,7 +39,7 @@ DropArea {
             for (let i = 0; i < drag.urls.length; ++i) {
                 let url = drag.urls[i];
                 if (url.toString().endsWith(".idl")) {
-                    console.log("Dropped file: " + url);
+                    console.log("Dropped file ok: " + url);
                 } else {
                     rejectedCount += 1
                     console.log("Dropped file is not a .idl file:" + url);
