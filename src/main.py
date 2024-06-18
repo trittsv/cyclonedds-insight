@@ -23,20 +23,12 @@ if getattr(sys, 'frozen', False):
         del os.environ["CYCLONEDDS_HOME"]
 else:
     APPLICATION_PATH = os.path.dirname(os.path.abspath(__file__))
-
-    # CycloneDDS
+    # In non-bundle mode we need the path to idlc executable
     cyclonedds_home = os.getenv('CYCLONEDDS_HOME')
     if not cyclonedds_home:
         raise Exception('CYCLONEDDS_HOME environment variable is not set.')
     else:
         print('cyclonedds_home: ' + cyclonedds_home)
-
-    # CycloneDDS-Python
-    cyclonedds_python_home = os.getenv('CYCLONEDDS_PYTHON_HOME')
-    if not cyclonedds_python_home:
-        raise Exception('CYCLONEDDS_PYTHON_HOME environment variable is not set - must be install via pip install -e .')
-    else:
-        print('cyclonedds_python_home: ' + cyclonedds_python_home)
 
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType

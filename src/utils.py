@@ -11,11 +11,12 @@
 """
 
 from PySide6 import QtCore
-from PySide6.QtCore import Qt, QModelIndex, QAbstractListModel, Qt, QByteArray, QStandardPaths, QDir
+from PySide6.QtCore import QStandardPaths, QDir
 import logging
 from logging.handlers import RotatingFileHandler
 import os
 from enum import Enum
+
 
 @QtCore.QEnum
 class EntityType(Enum):

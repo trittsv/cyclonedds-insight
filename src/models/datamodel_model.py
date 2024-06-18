@@ -11,10 +11,7 @@
 """
 
 from PySide6.QtCore import Qt, QModelIndex, QAbstractListModel, Qt, QByteArray, QStandardPaths, QFile, QDir, QProcess, QThread
-from PySide6.QtGui import QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QApplication, QTreeView
-from PySide6.QtQuick import QQuickView
-from PySide6.QtCore import QObject, Signal, Property, Slot
+from PySide6.QtCore import QObject, Signal, Slot
 import logging
 import os
 import sys
@@ -22,14 +19,9 @@ import importlib
 import inspect
 import subprocess
 import glob
-import dds_data
-from dds_qos import dds_qos_policy_id
 from dataclasses import dataclass
 import typing
-import time
-import datetime
 from dds_service import WorkerThread
-
 from cyclonedds.core import Qos, Policy
 from cyclonedds.util import duration
 
@@ -176,7 +168,6 @@ class DatamodelModel(QAbstractListModel):
 
     def is_enum(self, cls):
         return getattr(cls, '__doc__', None) == "An enumeration."
-
 
     def print_class_attributes(self, cls):
         logging.debug(f"Attributes of class {cls.__name__}:")
