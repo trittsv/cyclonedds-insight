@@ -136,9 +136,26 @@ class DatamodelModel(QAbstractListModel):
         if not dir.exists():
             return
 
+        def list_files_and_folders(directory):
+            result = []
+            for root, dirs, _ in os.walk(directory):
+                # Filter out directories and files that start with "__"
+                dirs[:] = [d for d in dirs if not d.startswith("__pycache__")]
+                #files = [f for f in files if not f.startswith("__")]
+
+
+                for name in dirs:
+                    result.append(os.path.join(root, name))
+            return result
+        
+        all_files_and_folders = list_files_and_folders(self.destination_folder_py)
+        for item in all_files_and_folders:
+            print(item)
+
         parent_dir = self.destination_folder_py
         sys.path.insert(0, parent_dir)
 
+        # Structs without any module, can only appear on root level
         py_files = [f for f in os.listdir(parent_dir) if f.endswith('.py')]
         for py_file in py_files:            
             module_name = Path(py_file).stem
@@ -168,6 +185,8 @@ class DatamodelModel(QAbstractListModel):
                                 self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
                                 self.dataModelItems[sId] = DataModelItem(sId, [module_name, cls.__name__])
                                 self.endInsertRows()
+                    elif inspect.ismodule(cls):
+                        pass # TODO: implement nested modules
 
             except Exception as e:
                 logging.error(f"Error importing {module_name}: {e}")
