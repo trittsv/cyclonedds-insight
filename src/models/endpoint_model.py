@@ -15,6 +15,7 @@ from cyclonedds.builtin import DcpsEndpoint, DcpsParticipant
 from cyclonedds import core
 import logging
 import os
+from pathlib import Path
 import time
 import uuid
 
@@ -124,7 +125,7 @@ class EndpointModel(QAbstractItemModel):
         elif role == self.ProcessIdRole:
             return pid
         elif role == self.ProcessNameRole:
-            return os.path.basename(appname)
+            return Path(appname.replace("\\", f"{os.path.sep}")).stem
         elif role == self.EndpointHasQosMismatch:
             if len(self.endpoints[endp_key].missmatches.keys()):
                 return True
