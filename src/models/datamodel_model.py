@@ -35,13 +35,12 @@ class DataModelItem:
 
 class DatamodelModel(QAbstractListModel):
 
-    NameRole = Qt.UserRole + 1
-
     newDataArrived = Signal(str)
     isLoadingSignal = Signal(bool)
 
     def __init__(self, parent=QObject | None) -> None:
         super().__init__()
+        self.NameRole = Qt.UserRole + 1
         self.idlcWorker = None
         self.dataModelItems = {}
         self.threads = {}
@@ -150,7 +149,7 @@ class DatamodelModel(QAbstractListModel):
         
         all_files_and_folders = list_files_and_folders(self.destination_folder_py)
         for item in all_files_and_folders:
-            print(item)
+            logging.debug(item)
 
         parent_dir = self.destination_folder_py
         sys.path.insert(0, parent_dir)
@@ -248,7 +247,7 @@ class DatamodelModel(QAbstractListModel):
                 self.threads[domain_id].receive_data(topic_name, class_type, qos)
             else:
                 self.threads[domain_id] = WorkerThread(domain_id, topic_name, class_type, qos)
-                self.threads[domain_id].data_emitted.connect(self.received_data)
+                self.threads[domain_id].data_emitted.connect(self.received_data, Qt.ConnectionType.QueuedConnection)
                 self.threads[domain_id].start()
 
         logging.debug("try add reader ... DONE")

@@ -25,6 +25,8 @@ Rectangle {
     property int domainId
     property string topicName
     property bool hasQosMismatch: false
+    property int writerCount: 0
+    property int readerCount: 0
 
     EndpointModel {
         id: endpointWriterModel
@@ -39,6 +41,21 @@ Rectangle {
         function onTopicHasQosMismatchSignal(mismatch) {
             topicEndpointView.hasQosMismatch = mismatch
         }
+
+        function onTotalEndpointsSignal(count) {
+            topicEndpointView.writerCount = count
+        }
+    }
+
+    Connections {
+        target: endpointReaderModel
+        function onTopicHasQosMismatchSignal(mismatch) {
+            topicEndpointView.hasQosMismatch = mismatch
+        }
+
+        function onTotalEndpointsSignal(count) {
+            topicEndpointView.readerCount = count
+        }
     }
 
     Component.onCompleted: {
@@ -47,19 +64,20 @@ Rectangle {
         endpointReaderModel.setDomainId(parseInt(domainId), topicName, 3)
     }
 
-    Column {
+    ColumnLayout  {
         anchors.fill: parent
-        padding: 10
 
-        ScrollView {
-            contentWidth: topicEndpointView.width
-            height: topicEndpointView.height
-
-            Column {
-                width: parent.width - 20
+            ColumnLayout {
+                Layout.fillWidth: true
                 spacing: 10
+                Layout.leftMargin: 1
 
-                Row {
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 10
+                    Layout.topMargin: 10
+                    Layout.rightMargin: 10
+
                     Column {
                         id: headlineLabel
                         Label {
@@ -71,38 +89,43 @@ Rectangle {
                     }
 
                     Item {
-                        height: 1
-                        width: topicEndpointView.width - headlineLabel.width - warning_triangle.width - 20
+                        Layout.preferredHeight: 1
+                        Layout.fillWidth: true
                     }
 
                     WarningTriangle {
                         id: warning_triangle
-                        width: 30
-                        height: 30
-                        Layout.alignment: Qt.AlignVCenter
+                        Layout.preferredHeight: 30
+                        Layout.preferredWidth: 30
                         enableTooltip: true
                         tooltipText: "Qos mismatch detected."
                         visible: topicEndpointView.hasQosMismatch
                     }
                 }
 
-                Row {
-                    width: parent.width - 10
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-                    Column {
-                        width: parent.width / 2
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Layout.leftMargin: 10
 
                         Label {
-                            text: "Writer"
+                            text: "Writer (Total: " + writerCount + ")"
                         }
 
                         ListView {
                             id: listViewWriter
                             model: endpointWriterModel
-                            width: parent.width
-                            height: contentHeight
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
                             clip: true
-                            interactive: false
+                            interactive: true
+                            ScrollBar.vertical: ScrollBar {
+                                policy: ScrollBar.AsNeeded
+                            }
 
                             delegate: Item {
                                 height: 50
@@ -161,23 +184,30 @@ Rectangle {
                     }
 
                     Item {
-                        width: 10
-                        height: 10
+                        Layout.preferredHeight : 1
+                        Layout.preferredWidth : 2
                     }
 
-                    Column {
-                        width: parent.width / 2
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Layout.leftMargin: 1
+                        Layout.rightMargin: 10
 
                         Label {
-                            text: "Reader"
+                            text: "Reader (Total: " + readerCount + ")"
                         }
                         ListView {
                             id: listViewReader
                             model: endpointReaderModel
-                            width: parent.width
-                            height: contentHeight
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
                             clip: true
-                            interactive: false
+                            interactive: true
+
+                            ScrollBar.vertical: ScrollBar {
+                                policy: ScrollBar.AsNeeded
+                            }
 
                             delegate: Item {
                                 height: 50
@@ -234,8 +264,8 @@ Rectangle {
                             }
                         }
                     }
-                }            
+                }
             }
-        }
+        
     }
 }

@@ -27,6 +27,8 @@ class EntityType(Enum):
 
 def qt_message_handler(mode, context, message):
     file = os.path.basename(context.file)
+    if message.startswith("qrc:/"):
+        message = message[len("qrc:/"):] 
     log_msg = f"[{file}:{context.line}] {message}"
     if mode == QtCore.QtMsgType.QtInfoMsg:
         logging.info(log_msg)
@@ -101,3 +103,5 @@ def setupLogger(log_level = logging.DEBUG):
 
     logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
+
+
