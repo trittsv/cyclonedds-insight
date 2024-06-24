@@ -107,5 +107,3 @@ def setupLogger(log_level = logging.DEBUG):
 
     logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
-
-
