@@ -20,13 +20,10 @@ from queue import Queue
 from typing import Dict, List
 import gc
 
-from dds_service import BuiltInObserverThread, builtin_observer
+from dds_service import builtin_observer
 from dds_qos import qos_match, dds_qos_policy_id
 from utils import singleton, EntityType
 
-# Mit queue is eindeutig besser! oder? wirklich?
-# mhm nicht so eindeutig!
-g_use_sigslot = False
 
 class DataEndpoint:
     def __init__(self, endpoint: DcpsEndpoint, entity_type) -> None:
@@ -131,16 +128,7 @@ class DataDomain:
         self.participants = {}
         self.obs_running = [True]
 
-        if g_use_sigslot:
-            self.obs_thread: BuiltInObserverThread = BuiltInObserverThread(domain_id)
-
-            dds_data = DdsData()
-            self.obs_thread.newParticipantSignal.connect(dds_data.add_domain_participant, Qt.ConnectionType.QueuedConnection)
-            self.obs_thread.newEndpointSignal.connect(dds_data.add_endpoint, Qt.ConnectionType.QueuedConnection)
-            self.obs_thread.removeParticipantSignal.connect(dds_data.remove_domain_participant, Qt.ConnectionType.QueuedConnection)
-            self.obs_thread.removeEndpointSignal.connect(dds_data.remove_endpoint, Qt.ConnectionType.QueuedConnection)
-        else:
-            self.obs_thread = threading.Thread(target=builtin_observer, args=(domain_id, queue, self.obs_running))
+        self.obs_thread = threading.Thread(target=builtin_observer, args=(domain_id, queue, self.obs_running))
 
         self.obs_thread.start()
 
@@ -191,78 +179,54 @@ class DataDomain:
 
     def __del__(self):
         self.obs_running[0] = False
-        
-        if g_use_sigslot:
-            self.obs_thread.stop()
-            self.obs_thread.wait()
-        else:
-            self.obs_thread.join()
+        self.obs_thread.join()
 
 class BuiltInReceiver(QThread):
 
-    def __init__(self, dds_data):
+    newParticipantSignal = Signal(int, DcpsParticipant)
+    newEndpointSignal = Signal(int, DcpsParticipant, EntityType)
+
+    removeParticipantSignal = Signal(int, DcpsParticipant)
+    removeEndpointSignal = Signal(int, DcpsParticipant)
+
+    def __init__(self, queue, running):
         super().__init__()
-        self.dds_data = dds_data
+        self.queue = queue
+        self.running = running
 
     def run(self):
         logging.info(f"Running ddsdata ... thread: {QThread.currentThread()}")
 
-        last_updated_qos_mismatches = 0
+        while self.running[0]:
+            time.sleep(2)
 
-        while self.dds_data.running[0]:
-            time.sleep(1)
-
-            #logging.info(f"Queue status: {self.queue.qsize()}, {time.monotonic()}")
-
-            processing_started_time = time.monotonic()
-
-            while True:
-                if self.dds_data.queue.empty():
+            while self.running[0]:
+                if self.queue.empty():
                     break
 
-                #logging.info(f"Queue status: {self.queue.qsize()} {str(self.currentThread())}")
-
-                push = False
-                if time.monotonic() - processing_started_time > 2.0:
-                    push = True
-
-                item = self.dds_data.queue.get()
-
+                item = self.queue.get()
                 if item is None:
                     break
 
-                with self.dds_data.mutex:
-                    for (domain_id, participant) in item.new_participants:
-                        self.dds_data.add_domain_participant(domain_id, participant)
+                for (domain_id, participant) in item.new_participants:
+                    self.newParticipantSignal.emit(domain_id, participant)
 
-                    for (domain_id, participant) in item.remove_participants:
-                        self.dds_data.remove_domain_participant(domain_id, participant)
+                for (domain_id, participant) in item.remove_participants:
+                    self.removeParticipantSignal.emit(domain_id, participant)
 
-                    for (domain_id, endpoint, entity_type) in item.new_endpoints:
-                        self.dds_data.add_endpoint(domain_id, endpoint, entity_type)
+                for (domain_id, endpoint, entity_type) in item.new_endpoints:
+                    self.newEndpointSignal.emit(domain_id, endpoint, entity_type)
 
-                    for (domain_id, endpoint) in item.remove_endpoints:
-                        self.dds_data.remove_endpoint(domain_id, endpoint)
-
-                if push:
-                    break
-
-            time.sleep(1)
-
-            #with self.mutex:
-            #    if len(self.endpoints) > 0 and self.last_updated_endpoint != last_updated_qos_mismatches:
-            #        last_updated_qos_mismatches = self.last_updated_endpoint
-            #        for domain_id in self.domains:
-            #            self.check_qos_mismatches(domain_id)
-
+                for (domain_id, endpoint) in item.remove_endpoints:
+                    self.removeEndpointSignal.emit(domain_id, endpoint)
 
         logging.info("Running ddsdata ... DONE")
+
 @singleton
 class DdsData(QObject):
 
     # domain observer threads
     observer_threads = {}
-    mutex = threading.RLock()
 
     # signals and slots
     new_topic_signal = Signal(int, str)
@@ -279,38 +243,36 @@ class DdsData(QObject):
 
     the_domains: Dict[int, DataDomain] = {}
 
-    last_updated_endpoint = int(time.monotonic())
-
     queue = Queue()
     running = [True]
 
     def __init__(self):
         super().__init__()
         logging.debug("Construct DdsData")
-
-        self.receiver = BuiltInReceiver(self)
+        self.receiver: BuiltInReceiver = BuiltInReceiver(self.queue, self.running)
+        self.receiver.newParticipantSignal.connect(self.add_domain_participant, Qt.ConnectionType.QueuedConnection)
+        self.receiver.newEndpointSignal.connect(self.add_endpoint, Qt.ConnectionType.QueuedConnection)
+        self.receiver.removeParticipantSignal.connect(self.remove_domain_participant, Qt.ConnectionType.QueuedConnection)
+        self.receiver.removeEndpointSignal.connect(self.remove_endpoint, Qt.ConnectionType.QueuedConnection)
         self.receiver.start()
-
 
     def join_observer(self):
         self.the_domains.clear()
         gc.collect()
 
     def add_domain(self, domain_id: int):
-        with self.mutex:
-            if domain_id in self.the_domains:
-                return
-            self.the_domains[domain_id] = DataDomain(domain_id, self.queue)
-            self.new_domain_signal.emit(domain_id)
+        if domain_id in self.the_domains:
+            return
+        self.the_domains[domain_id] = DataDomain(domain_id, self.queue)
+        self.new_domain_signal.emit(domain_id)
 
     @Slot(int)
     def remove_domain(self, domain_id: int):
-        with self.mutex:
-            if domain_id in self.the_domains:
-                del self.the_domains[domain_id]
-                gc.collect()
+        if domain_id in self.the_domains:
+            del self.the_domains[domain_id]
+            gc.collect()
 
-            self.removed_domain_signal.emit(domain_id)
+        self.removed_domain_signal.emit(domain_id)
 
 
     @Slot(int, DcpsParticipant)
@@ -362,7 +324,6 @@ class DdsData(QObject):
 
             #logging.debug(f"Remove endpoint {str(endpoint.key)} (topic: {topicName})")
 
-            self.updateEndpointsModified()
             self.removed_endpoint_signal.emit(domain_id, str(endpoint.key))
 
             if not self.the_domains[domain_id].hash_topic(topicName):
@@ -374,38 +335,9 @@ class DdsData(QObject):
                 if len(mismatches) > 0:
                     self.publish_mismatch_signal.emit(domain_id, topicName, mismatches)
 
-
     @Slot(str, int, str, EntityType)
     def requestEndpointsSlot(self, requestId: str, domain_id: int, topic_name: str, entity_type: EntityType):
-        if g_use_sigslot:
-            if domain_id in self.the_domains:
-                endDict = self.the_domains[domain_id].getEndpoints(topic_name, entity_type)
-                for key in endDict.keys():
-                    self.new_endpoint_signal.emit(requestId, domain_id, copy.deepcopy(endDict[key]))
-        else:
-            with self.mutex:
-
-                if domain_id in self.the_domains:
-                    endDict = self.the_domains[domain_id].getEndpoints(topic_name, entity_type)
-                    for key in endDict.keys():
-                        self.new_endpoint_signal.emit(requestId, domain_id, copy.deepcopy(endDict[key]))
-
-    @Slot(int, result=DcpsParticipant)
-    def getParticipants(self, domain_id: int):
-        with self.mutex:
-            if domain_id in self.participants.keys():
-                return self.participants[domain_id]
-
-    def getQosMismatches(self, domain_id: int, topic_name: str):
-        #with self.mutex:
-        #    if domain_id in self.mismatches.keys() and domain_id in self.endpoints.keys():
-        #        topic_mismatches = {}
-        #        for (_, endpoint_iter) in self.endpoints[domain_id]:
-        #            if topic_name == endpoint_iter.topic_name and str(endpoint_iter.key) in self.mismatches[domain_id].keys():
-        #                topic_mismatches[str(endpoint_iter.key)] = self.mismatches[domain_id][str(endpoint_iter.key)]
-        #        return topic_mismatches
-        return {}
-
-    def updateEndpointsModified(self):
-        self.last_updated_endpoint = int(time.monotonic())
-
+        if domain_id in self.the_domains:
+            endDict = self.the_domains[domain_id].getEndpoints(topic_name, entity_type)
+            for key in endDict.keys():
+                self.new_endpoint_signal.emit(requestId, domain_id, copy.deepcopy(endDict[key]))

@@ -37,130 +37,6 @@ class BuiltInDataItem():
         self.remove_participants = []
         self.remove_endpoints = []
 
-
-class BuiltInObserverThread(QThread):
-
-    newParticipantSignal = Signal(int, DcpsParticipant)
-    newEndpointSignal = Signal(int, DcpsParticipant, EntityType)
-
-    removeParticipantSignal = Signal(int, DcpsParticipant)
-    removeEndpointSignal = Signal(int, DcpsParticipant)
-
-    def __init__(self, domain_id, parent=None):
-        super().__init__(parent)
-        self.running = True
-        self.domain_id = domain_id
-
-    def run(self):
-        logging.info(f"builtin_observer({self.domain_id}) ...")
-
-        domain_participant = domain.DomainParticipant(self.domain_id)
-        waitset = core.WaitSet(domain_participant)
-
-        rdp = builtin.BuiltinDataReader(domain_participant, builtin.BuiltinTopicDcpsParticipant)
-        rcp = core.ReadCondition(
-            rdp, core.SampleState.Any | core.ViewState.Any | core.InstanceState.Any)
-        waitset.attach(rcp)
-
-        rdw = builtin.BuiltinDataReader(domain_participant, builtin.BuiltinTopicDcpsPublication)
-        rcw = core.ReadCondition(
-            rdw, core.SampleState.Any | core.ViewState.Any | core.InstanceState.Any)
-        waitset.attach(rcw)
-
-        rdr = builtin.BuiltinDataReader(domain_participant, builtin.BuiltinTopicDcpsSubscription)
-        rcr = core.ReadCondition(
-            rdr, core.SampleState.Any | core.ViewState.Any | core.InstanceState.Any)
-        waitset.attach(rcr)
-
-        while self.running:
-
-            amount_triggered = 0
-            try:
-                amount_triggered = waitset.wait(duration(milliseconds=100))
-            except Exception as e:
-                logging.error(str(e))
-            if amount_triggered == 0:
-                continue
-
-            for p in rdp.take(condition=rcp):
-                if p.sample_info.sample_state == core.SampleState.NotRead and p.sample_info.instance_state == core.InstanceState.Alive:
-                    self.newParticipantSignal.emit(self.domain_id, p)
-                elif p.sample_info.instance_state == core.InstanceState.NotAliveDisposed:
-                    self.removeParticipantSignal.emit(self.domain_id, p)
-
-            for pub in rdw.take(condition=rcw):
-                if pub.sample_info.sample_state == core.SampleState.NotRead and pub.sample_info.instance_state == core.InstanceState.Alive:
-                    if pub.topic_name not in IGNORE_TOPICS:
-                        self.newEndpointSignal.emit(self.domain_id, pub, EntityType.WRITER)
-                elif pub.sample_info.instance_state == core.InstanceState.NotAliveDisposed:
-                    self.removeEndpointSignal.emit(self.domain_id, pub)
-
-            for sub in rdr.take(condition=rcr):
-                if sub.sample_info.sample_state == core.SampleState.NotRead and sub.sample_info.instance_state == core.InstanceState.Alive:
-                    if sub.topic_name not in IGNORE_TOPICS:
-                        self.newEndpointSignal.emit(self.domain_id, sub, EntityType.READER)
-                elif sub.sample_info.instance_state == core.InstanceState.NotAliveDisposed:
-                    self.removeEndpointSignal.emit(self.domain_id, sub)
-
-        logging.info(f"builtin_observer({self.domain_id}) ... DONE")
-
-    def stop(self):
-        self.running = False
-
-class WorkerThread(QThread):
-
-    data_emitted = Signal(str)
-    
-    def __init__(self, domain_id, topic_name, topic_type, qos, parent=None):
-        super().__init__(parent)
-        self.domain_id = domain_id
-        self.topic_name = topic_name
-        self.topic_type = topic_type
-        self.qos = qos
-        self.running = True
-        self.readerData = []
-
-    @Slot()
-    def receive_data(self, topic_name, topic_type, qos):
-        logging.info("Add reader")
-        try:
-            topic = Topic(self.domain_participant, topic_name, topic_type, qos=qos)
-            subscriber = Subscriber(self.domain_participant)
-            reader = DataReader(subscriber, topic)
-            readCondition = core.ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
-            self.waitset.attach(readCondition)
-
-            self.readerData.append((topic,subscriber, reader, readCondition))
-        except Exception as e:
-            logging.error(f"Error creating reader {topic_name}: {e}")
-
-    def run(self):
-        logging.info(f"Worker thread for domain({str(self.domain_id)}) ...")    
-
-        self.domain_participant = domain.DomainParticipant(self.domain_id)
-        self.waitset = core.WaitSet(self.domain_participant)
-        self.receive_data(self.topic_name, self.topic_type, self.qos)
-
-        while self.running:
-            amount_triggered = 0
-            try:
-                amount_triggered = self.waitset.wait(duration(milliseconds=100))
-            except:
-                pass
-            if amount_triggered == 0:
-                continue
-
-            for (_, _, readItem, condItem) in self.readerData:
-                for sample in readItem.take(condition=condItem):
-                    self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
-
-        logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
-
-    def stop(self):
-        logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
-        self.running = False
-
-
 def builtin_observer(domain_id, queue: Queue, running):
     logging.info(f"builtin_observer({domain_id}) ...")
 
@@ -218,3 +94,56 @@ def builtin_observer(domain_id, queue: Queue, running):
 
     logging.info(f"builtin_observer({domain_id}) ... DONE")
 
+
+class WorkerThread(QThread):
+
+    data_emitted = Signal(str)
+    
+    def __init__(self, domain_id, topic_name, topic_type, qos, parent=None):
+        super().__init__(parent)
+        self.domain_id = domain_id
+        self.topic_name = topic_name
+        self.topic_type = topic_type
+        self.qos = qos
+        self.running = True
+        self.readerData = []
+
+    @Slot()
+    def receive_data(self, topic_name, topic_type, qos):
+        logging.info("Add reader")
+        try:
+            topic = Topic(self.domain_participant, topic_name, topic_type, qos=qos)
+            subscriber = Subscriber(self.domain_participant)
+            reader = DataReader(subscriber, topic)
+            readCondition = core.ReadCondition(reader, SampleState.Any | ViewState.Any | InstanceState.Any)
+            self.waitset.attach(readCondition)
+
+            self.readerData.append((topic,subscriber, reader, readCondition))
+        except Exception as e:
+            logging.error(f"Error creating reader {topic_name}: {e}")
+
+    def run(self):
+        logging.info(f"Worker thread for domain({str(self.domain_id)}) ...")    
+
+        self.domain_participant = domain.DomainParticipant(self.domain_id)
+        self.waitset = core.WaitSet(self.domain_participant)
+        self.receive_data(self.topic_name, self.topic_type, self.qos)
+
+        while self.running:
+            amount_triggered = 0
+            try:
+                amount_triggered = self.waitset.wait(duration(milliseconds=100))
+            except:
+                pass
+            if amount_triggered == 0:
+                continue
+
+            for (_, _, readItem, condItem) in self.readerData:
+                for sample in readItem.take(condition=condItem):
+                    self.data_emitted.emit(f"[{str(datetime.datetime.now().isoformat())}]  -  {str(sample)}")
+
+        logging.info(f"Worker thread for domain({str(self.domain_id)}) ... DONE")
+
+    def stop(self):
+        logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
+        self.running = False

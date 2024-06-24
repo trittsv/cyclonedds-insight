@@ -71,6 +71,7 @@ if __name__ == "__main__":
     worker_thread = QThread()
     data = dds_data.DdsData()
     data.moveToThread(worker_thread)
+    worker_thread.finished.connect(data.deleteLater)
     worker_thread.start()
 
     rootItem = TreeNode("Root")
@@ -96,9 +97,13 @@ if __name__ == "__main__":
 
     logging.info("qt ... DONE")
 
+    logging.info("Clean up ...")
     # Clean up threads
     datamodelRepoModel.deleteAllReaders()
     data.join_observer()
     worker_thread.quit()
+    worker_thread.wait()
+
+    logging.info("Clean up ... DONE")
 
     sys.exit(ret_code)
