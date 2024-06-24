@@ -181,7 +181,7 @@ class DataDomain:
         self.obs_running[0] = False
         self.obs_thread.join()
 
-class BuiltInReceiver(QThread):
+class BuiltInReceiver(QObject):
 
     newParticipantSignal = Signal(int, DcpsParticipant)
     newEndpointSignal = Signal(int, DcpsParticipant, EntityType)
@@ -189,18 +189,18 @@ class BuiltInReceiver(QThread):
     removeParticipantSignal = Signal(int, DcpsParticipant)
     removeEndpointSignal = Signal(int, DcpsParticipant)
 
-    def __init__(self, queue, running):
+    def __init__(self, queue):
         super().__init__()
         self.queue = queue
-        self.running = running
+        self.running = True
 
     def run(self):
-        logging.info(f"Running ddsdata ... thread: {QThread.currentThread()}")
+        logging.info(f"Running ddsdata ... (thread: {QThread.currentThread()})")
 
-        while self.running[0]:
+        while self.running:
             time.sleep(2)
 
-            while self.running[0]:
+            while self.running:
                 if self.queue.empty():
                     break
 
@@ -221,6 +221,9 @@ class BuiltInReceiver(QThread):
                     self.removeEndpointSignal.emit(domain_id, endpoint)
 
         logging.info("Running ddsdata ... DONE")
+
+    def stop(self):
+        self.running = False
 
 @singleton
 class DdsData(QObject):
@@ -244,19 +247,25 @@ class DdsData(QObject):
     the_domains: Dict[int, DataDomain] = {}
 
     queue = Queue()
-    running = [True]
 
     def __init__(self):
         super().__init__()
         logging.debug("Construct DdsData")
-        self.receiver: BuiltInReceiver = BuiltInReceiver(self.queue, self.running)
+        self.receiverThread: QThread = QThread()
+        self.receiver: BuiltInReceiver = BuiltInReceiver(self.queue)
+        self.receiver.moveToThread(self.receiverThread)
         self.receiver.newParticipantSignal.connect(self.add_domain_participant, Qt.ConnectionType.QueuedConnection)
         self.receiver.newEndpointSignal.connect(self.add_endpoint, Qt.ConnectionType.QueuedConnection)
         self.receiver.removeParticipantSignal.connect(self.remove_domain_participant, Qt.ConnectionType.QueuedConnection)
         self.receiver.removeEndpointSignal.connect(self.remove_endpoint, Qt.ConnectionType.QueuedConnection)
-        self.receiver.start()
+        self.receiverThread.started.connect(self.receiver.run)
+        self.receiverThread.finished.connect(self.receiver.deleteLater)
+        self.receiverThread.start()
 
     def join_observer(self):
+        self.receiver.stop()
+        self.receiverThread.quit()
+        self.receiverThread.wait()
         self.the_domains.clear()
         gc.collect()
 
