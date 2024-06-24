@@ -28,7 +28,6 @@ from utils import EntityType
 IGNORE_TOPICS = ["DCPSParticipant", "DCPSPublication", "DCPSSubscription"]
 
 
-
 class BuiltInDataItem():
 
     def __init__(self):
@@ -37,7 +36,8 @@ class BuiltInDataItem():
         self.remove_participants = []
         self.remove_endpoints = []
 
-def builtin_observer(domain_id, queue: Queue, running):
+
+def builtin_observer(domain_id: int, queue: Queue, running):
     logging.info(f"builtin_observer({domain_id}) ...")
 
     domain_participant = domain.DomainParticipant(domain_id)

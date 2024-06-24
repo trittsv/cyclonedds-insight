@@ -170,7 +170,7 @@ class DatamodelModel(QAbstractListModel):
                                 self.dataModelItems[sId] = DataModelItem(sId, [module_name, cls.__name__])
                                 self.endInsertRows()
                     elif inspect.ismodule(cls):
-                        pass # TODO: implement nested modules
+                        pass # TODO: implement nested modules import 
 
             except Exception as e:
                 logging.error(f"Error importing {module_name}: {e}")

@@ -94,16 +94,13 @@ if __name__ == "__main__":
 
     logging.info("qt ...")
     ret_code = app.exec()
-
     logging.info("qt ... DONE")
 
     logging.info("Clean up ...")
-    # Clean up threads
     datamodelRepoModel.deleteAllReaders()
     data.join_observer()
     worker_thread.quit()
     worker_thread.wait()
-
     logging.info("Clean up ... DONE")
 
     sys.exit(ret_code)

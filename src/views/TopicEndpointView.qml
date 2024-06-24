@@ -67,198 +67,197 @@ Rectangle {
     ColumnLayout  {
         anchors.fill: parent
 
-            ColumnLayout {
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 10
+            Layout.leftMargin: 1
+
+            RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
-                Layout.leftMargin: 1
+                Layout.leftMargin: 10
+                Layout.topMargin: 10
+                Layout.rightMargin: 10
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: 10
-                    Layout.topMargin: 10
-                    Layout.rightMargin: 10
-
-                    Column {
-                        id: headlineLabel
-                        Label {
-                            text: "Domain Id: " + domainId
-                        }
-                        Label {
-                            text: "Topic Name: " + topicName
-                        }
+                Column {
+                    id: headlineLabel
+                    Label {
+                        text: "Domain Id: " + domainId
                     }
-
-                    Item {
-                        Layout.preferredHeight: 1
-                        Layout.fillWidth: true
-                    }
-
-                    WarningTriangle {
-                        id: warning_triangle
-                        Layout.preferredHeight: 30
-                        Layout.preferredWidth: 30
-                        enableTooltip: true
-                        tooltipText: "Qos mismatch detected."
-                        visible: topicEndpointView.hasQosMismatch
+                    Label {
+                        text: "Topic Name: " + topicName
                     }
                 }
 
-                RowLayout {
+                Item {
+                    Layout.preferredHeight: 1
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                }
 
-                    ColumnLayout {
+                WarningTriangle {
+                    id: warning_triangle
+                    Layout.preferredHeight: 30
+                    Layout.preferredWidth: 30
+                    enableTooltip: true
+                    tooltipText: "Qos mismatch detected."
+                    visible: topicEndpointView.hasQosMismatch
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+                    Layout.leftMargin: 10
+
+                    Label {
+                        text: "Writer (Total: " + writerCount + ")"
+                    }
+
+                    ListView {
+                        id: listViewWriter
+                        model: endpointWriterModel
                         Layout.fillWidth: true
-                        spacing: 10
-                        Layout.leftMargin: 10
-
-                        Label {
-                            text: "Writer (Total: " + writerCount + ")"
+                        Layout.fillHeight: true
+                        clip: true
+                        interactive: true
+                        ScrollBar.vertical: ScrollBar {
+                            policy: ScrollBar.AsNeeded
                         }
 
-                        ListView {
-                            id: listViewWriter
-                            model: endpointWriterModel
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            clip: true
-                            interactive: true
-                            ScrollBar.vertical: ScrollBar {
-                                policy: ScrollBar.AsNeeded
-                            }
+                        delegate: Item {
+                            height: 50
+                            width: listViewWriter.width
 
-                            delegate: Item {
-                                height: 50
-                                width: listViewWriter.width
+                            Rectangle {
+                                id: writerRec
+                                property bool showTooltip: false
 
-                                Rectangle {
-                                    id: writerRec
-                                    property bool showTooltip: false
+                                anchors.fill: parent
+                                color: rootWindow.isDarkMode ? mouseAreaEndpointWriter.pressed ? Constants.darkPressedColor : Constants.darkCardBackgroundColor : mouseAreaEndpointWriter.pressed ? Constants.lightPressedColor : Constants.lightCardBackgroundColor
+                                border.color: endpoint_has_qos_mismatch ? Constants.warningColor : rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                                border.width: 0.5
+                                Column {
+                                    spacing: 0
+                                    padding: 10
 
+                                    Label {
+                                        text: endpoint_key
+                                        font.pixelSize: 14
+                                    }
+                                    Label {
+                                        text: endpoint_process_name + ":" + endpoint_process_id + "@" + endpoint_hostname
+                                        font.pixelSize: 12
+                                    }
+                                }
+                                MouseArea {
+                                    id: mouseAreaEndpointWriter
                                     anchors.fill: parent
-                                    color: rootWindow.isDarkMode ? mouseAreaEndpointWriter.pressed ? Constants.darkPressedColor : Constants.darkCardBackgroundColor : mouseAreaEndpointWriter.pressed ? Constants.lightPressedColor : Constants.lightCardBackgroundColor
-                                    border.color: endpoint_has_qos_mismatch ? Constants.warningColor : rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
-                                    border.width: 0.5
-                                    Column {
-                                        spacing: 0
-                                        padding: 10
-
-                                        Label {
-                                            text: endpoint_key
-                                            font.pixelSize: 14
-                                        }
-                                        Label {
-                                            text: endpoint_process_name + ":" + endpoint_process_id + "@" + endpoint_hostname
-                                            font.pixelSize: 12
-                                        }
+                                    hoverEnabled: true
+                                    onEntered: {
+                                        writerRec.showTooltip = true
                                     }
-                                    MouseArea {
-                                        id: mouseAreaEndpointWriter
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        onEntered: {
-                                            writerRec.showTooltip = true
-                                        }
-                                        onExited: {
-                                            writerRec.showTooltip = false
-                                        }
+                                    onExited: {
+                                        writerRec.showTooltip = false
                                     }
-                                    ToolTip {
-                                        id: writerTooltip
-                                        parent: writerRec
-                                        visible: writerRec.showTooltip
-                                        delay: 200
-                                        text: "Key: " +endpoint_key + "\nParticipant Key:" + endpoint_participant_key + "\nInstance Handle: " + endpoint_participant_instance_handle + "\nTopic Name:" + endpoint_topic_name + "\nTopic Type: " + endpoint_topic_type + endpoint_qos_mismatch_text + "\nQos:\n" + endpoint_qos + "\nType Id: " + endpoint_type_id
-                                        contentItem: Label {
-                                            text: writerTooltip.text
-                                        }
-                                        background: Rectangle {
-                                            border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
-                                            border.width: 1
-                                            color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
-                                        }
+                                }
+                                ToolTip {
+                                    id: writerTooltip
+                                    parent: writerRec
+                                    visible: writerRec.showTooltip
+                                    delay: 200
+                                    text: "Key: " +endpoint_key + "\nParticipant Key:" + endpoint_participant_key + "\nInstance Handle: " + endpoint_participant_instance_handle + "\nTopic Name:" + endpoint_topic_name + "\nTopic Type: " + endpoint_topic_type + endpoint_qos_mismatch_text + "\nQos:\n" + endpoint_qos + "\nType Id: " + endpoint_type_id
+                                    contentItem: Label {
+                                        text: writerTooltip.text
+                                    }
+                                    background: Rectangle {
+                                        border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                                        border.width: 1
+                                        color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
                                     }
                                 }
                             }
                         }
                     }
+                }
 
-                    Item {
-                        Layout.preferredHeight : 1
-                        Layout.preferredWidth : 2
+                Item {
+                    Layout.preferredHeight : 1
+                    Layout.preferredWidth : 2
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+                    Layout.leftMargin: 1
+                    Layout.rightMargin: 10
+
+                    Label {
+                        text: "Reader (Total: " + readerCount + ")"
                     }
-
-                    ColumnLayout {
+                    ListView {
+                        id: listViewReader
+                        model: endpointReaderModel
                         Layout.fillWidth: true
-                        spacing: 10
-                        Layout.leftMargin: 1
-                        Layout.rightMargin: 10
+                        Layout.fillHeight: true
+                        clip: true
+                        interactive: true
 
-                        Label {
-                            text: "Reader (Total: " + readerCount + ")"
+                        ScrollBar.vertical: ScrollBar {
+                            policy: ScrollBar.AsNeeded
                         }
-                        ListView {
-                            id: listViewReader
-                            model: endpointReaderModel
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            clip: true
-                            interactive: true
 
-                            ScrollBar.vertical: ScrollBar {
-                                policy: ScrollBar.AsNeeded
-                            }
+                        delegate: Item {
+                            height: 50
+                            width: listViewReader.width
 
-                            delegate: Item {
-                                height: 50
-                                width: listViewReader.width
+                            Rectangle {
+                                anchors.fill: parent
+                                color: rootWindow.isDarkMode ? mouseAreaEndpointReader.pressed ? Constants.darkPressedColor : Constants.darkCardBackgroundColor : mouseAreaEndpointReader.pressed ? Constants.lightPressedColor : Constants.lightCardBackgroundColor
+                                border.color: endpoint_has_qos_mismatch ? Constants.warningColor : rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                                border.width: 0.5
+                                id: readerRec
+                                property bool showTooltip: false
 
-                                Rectangle {
+                                Column {
+                                    spacing: 0
+                                    padding: 10
+
+                                    Label {
+                                        text: endpoint_key
+                                        font.pixelSize: 14
+                                    }
+                                    Label {
+                                        text: endpoint_process_name + ":" + endpoint_process_id + "@" + endpoint_hostname
+                                        font.pixelSize: 12
+                                    }
+                                }
+                                MouseArea {
+                                    id: mouseAreaEndpointReader
                                     anchors.fill: parent
-                                    color: rootWindow.isDarkMode ? mouseAreaEndpointReader.pressed ? Constants.darkPressedColor : Constants.darkCardBackgroundColor : mouseAreaEndpointReader.pressed ? Constants.lightPressedColor : Constants.lightCardBackgroundColor
-                                    border.color: endpoint_has_qos_mismatch ? Constants.warningColor : rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
-                                    border.width: 0.5
-                                    id: readerRec
-                                    property bool showTooltip: false
-
-                                    Column {
-                                        spacing: 0
-                                        padding: 10
-
-                                        Label {
-                                            text: endpoint_key
-                                            font.pixelSize: 14
-                                        }
-                                        Label {
-                                            text: endpoint_process_name + ":" + endpoint_process_id + "@" + endpoint_hostname
-                                            font.pixelSize: 12
-                                        }
+                                    hoverEnabled: true
+                                    onEntered: {
+                                        readerRec.showTooltip = true
                                     }
-                                    MouseArea {
-                                        id: mouseAreaEndpointReader
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        onEntered: {
-                                            readerRec.showTooltip = true
-                                        }
-                                        onExited: {
-                                            readerRec.showTooltip = false
-                                        }
+                                    onExited: {
+                                        readerRec.showTooltip = false
                                     }
-                                    ToolTip {
-                                        id: readerTooltip
-                                        parent: readerRec
-                                        visible: readerRec.showTooltip
-                                        delay: 200
-                                        text: "Key: " + endpoint_key + "\nParticipant Key:" + endpoint_participant_key + "\nInstance Handle: " + endpoint_participant_instance_handle + "\nTopic Name:" + endpoint_topic_name + "\nTopic Type: " + endpoint_topic_type + endpoint_qos_mismatch_text + "\nQos:\n" + endpoint_qos + "\nType Id: " + endpoint_type_id
-                                        contentItem: Label {
-                                            text: readerTooltip.text
-                                        }
-                                        background: Rectangle {
-                                            border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
-                                            border.width: 1
-                                            color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
-                                        }
+                                }
+                                ToolTip {
+                                    id: readerTooltip
+                                    parent: readerRec
+                                    visible: readerRec.showTooltip
+                                    delay: 200
+                                    text: "Key: " + endpoint_key + "\nParticipant Key:" + endpoint_participant_key + "\nInstance Handle: " + endpoint_participant_instance_handle + "\nTopic Name:" + endpoint_topic_name + "\nTopic Type: " + endpoint_topic_type + endpoint_qos_mismatch_text + "\nQos:\n" + endpoint_qos + "\nType Id: " + endpoint_type_id
+                                    contentItem: Label {
+                                        text: readerTooltip.text
+                                    }
+                                    background: Rectangle {
+                                        border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                                        border.width: 1
+                                        color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
                                     }
                                 }
                             }
@@ -266,6 +265,6 @@ Rectangle {
                     }
                 }
             }
-        
+        }
     }
 }

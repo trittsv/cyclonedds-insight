@@ -87,8 +87,6 @@ class DataTopic:
 
     def check_qos_mismatch(self, data_endpoint: DataEndpoint):
 
-        #mut_start = time.time()
-
         endpoints_to_check = self.reader_endpoints
         if data_endpoint.isReader():
             endpoints_to_check = self.writer_endpoints
@@ -105,9 +103,6 @@ class DataTopic:
             if len(mismatches) > 0:
                 data_endpoint.missmatches[str(endpoint_to_check.endpoint.key)] = mismatches
                 endpoint_to_check.missmatches[str(data_endpoint.endpoint.key)] = mismatches
-
-        #end_time = time.time()
-        #logging.info(f"NEW QOS TAKES: {end_time - mut_start}")
 
     def get_mismatches(self) -> List[str]:
         mism_endp_keys: List[str] = []
@@ -185,7 +180,6 @@ class BuiltInReceiver(QObject):
 
     newParticipantSignal = Signal(int, DcpsParticipant)
     newEndpointSignal = Signal(int, DcpsParticipant, EntityType)
-
     removeParticipantSignal = Signal(int, DcpsParticipant)
     removeEndpointSignal = Signal(int, DcpsParticipant)
 
@@ -195,7 +189,7 @@ class BuiltInReceiver(QObject):
         self.running = True
 
     def run(self):
-        logging.info(f"Running ddsdata ... (thread: {QThread.currentThread()})")
+        logging.info(f"Running BuiltInReceiver ... (thread: {QThread.currentThread()})")
 
         while self.running:
             time.sleep(2)
@@ -220,7 +214,7 @@ class BuiltInReceiver(QObject):
                 for (domain_id, endpoint) in item.remove_endpoints:
                     self.removeEndpointSignal.emit(domain_id, endpoint)
 
-        logging.info("Running ddsdata ... DONE")
+        logging.info("Running BuiltInReceiver ... DONE")
 
     def stop(self):
         self.running = False
@@ -304,8 +298,6 @@ class DdsData(QObject):
 
         # logging.debug(f"Add endpoint domain: {domain_id}, key: {str(endpoint.key)}, entity: {entity_type}")
 
-        
-
         if domain_id in self.the_domains:
             topic_already_known = self.the_domains[domain_id].hash_topic(str(endpoint.topic_name))
             dataEndp = DataEndpoint(endpoint, entity_type)
@@ -314,13 +306,11 @@ class DdsData(QObject):
             if not topic_already_known:
                 self.new_topic_signal.emit(domain_id, endpoint.topic_name)
 
-
             self.new_endpoint_signal.emit("", domain_id, copy.deepcopy(dataEndp))
        
             mismatches = self.the_domains[domain_id].topics[endpoint.topic_name].get_mismatches()
             if len(mismatches) > 0:
                 self.publish_mismatch_signal.emit(domain_id, endpoint.topic_name, mismatches)
-
 
     @Slot(int, DcpsEndpoint)
     def remove_endpoint(self, domain_id: int, endpoint: DcpsEndpoint):
