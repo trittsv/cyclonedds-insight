@@ -35,12 +35,13 @@ class DataModelItem:
 
 class DatamodelModel(QAbstractListModel):
 
+    NameRole = Qt.UserRole + 1
+
     newDataArrived = Signal(str)
     isLoadingSignal = Signal(bool)
 
     def __init__(self, parent=QObject | None) -> None:
         super().__init__()
-        self.NameRole = Qt.UserRole + 1
         self.idlcWorker = None
         self.dataModelItems = {}
         self.threads = {}
@@ -134,22 +135,6 @@ class DatamodelModel(QAbstractListModel):
         dir = QDir(self.destination_folder_py)
         if not dir.exists():
             return
-
-        def list_files_and_folders(directory):
-            result = []
-            for root, dirs, _ in os.walk(directory):
-                # Filter out directories and files that start with "__"
-                dirs[:] = [d for d in dirs if not d.startswith("__pycache__")]
-                #files = [f for f in files if not f.startswith("__")]
-
-
-                for name in dirs:
-                    result.append(os.path.join(root, name))
-            return result
-        
-        all_files_and_folders = list_files_and_folders(self.destination_folder_py)
-        for item in all_files_and_folders:
-            logging.debug(item)
 
         parent_dir = self.destination_folder_py
         sys.path.insert(0, parent_dir)
