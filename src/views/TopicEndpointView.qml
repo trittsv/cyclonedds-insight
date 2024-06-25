@@ -128,7 +128,7 @@ Rectangle {
                         }
 
                         delegate: Item {
-                            height: 60
+                            height: 65
                             width: listViewWriter.width
 
                             Rectangle {
@@ -214,7 +214,7 @@ Rectangle {
                         }
 
                         delegate: Item {
-                            height: 60
+                            height: 65
                             width: listViewReader.width
 
                             Rectangle {
