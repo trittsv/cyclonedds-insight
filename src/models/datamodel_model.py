@@ -265,6 +265,7 @@ class DatamodelModel(QAbstractListModel):
         if requestId in self.readerRequests:
             (domain_id, topic_type, topic_name, qos, entityType) = self.readerRequests[requestId]
             self.dataModelHandler.addTypeFromNetwork(topic_type, dataType)
+            self.dataModelHandler.dumpIt()
             self.createEndpoint(domain_id, topic_name, dataType, qos, entityType, topic_type)
             del self.readerRequests[requestId]
 

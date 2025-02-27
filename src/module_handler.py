@@ -26,6 +26,7 @@ from dataclasses import dataclass
 import typing
 from models.data_tree_model import DataTreeModel, DataTreeNode
 import cyclonedds
+from typing import Annotated, Sequence, get_origin, get_args
 import re
 
 @dataclass
@@ -121,9 +122,36 @@ class DataModelHandler(QObject):
         for submodule in submodules:
             self.import_module_and_nested(submodule)
 
+    def dumpIt(self):
+        logging.trace(f"allTypes {json.dumps(self.allTypes, indent=2, default=str)}")
+        logging.trace(f"customTypes {json.dumps(self.customTypes, indent=2, default=str)}")
+        logging.trace(f"structMembers {json.dumps(self.structMembers, indent=2, default=str)}")
+
+
     def addTypeFromNetwork(self, typeName, dataType):
+        logging.debug(f"addTypeFromNetwork {typeName} {dataType}, __dict__ {dataType.__dict__}")
+
         self.structMembers[typeName] = self.get_struct_members(dataType)
         self.allTypes[typeName] = dataType
+
+        if not hasattr(dataType, "__annotations__"):
+            return 
+        annotations = dataType.__annotations__
+        for field, field_type in annotations.items():
+            logging.debug(f"Field: {field}, Type: {field_type}")
+            # Extract the base type in case of Annotated
+            if get_origin(field_type) is Annotated:
+                base_type = get_args(field_type)[0]
+            else:
+                base_type = field_type
+
+            print(f"{field}: {base_type}, {type(base_type)}", base_type == str, base_type == int)
+            if base_type == str or base_type == int:
+                print("IM HERE")
+                self.allTypes[f"{typeName}::{field}"] = base_type
+            else:
+                self.addTypeFromNetwork(f"{typeName}::{str(base_type)}", base_type)
+
 
     def import_module_and_nested(self, module_name):
         try:
@@ -194,6 +222,8 @@ class DataModelHandler(QObject):
             self.allTypes[sId] = cls
 
     def get_struct_members(self, cls):
+        if not hasattr(cls, "__annotations__"):
+            return {}
         members = {}
         for name, type_ in cls.__annotations__.items():
             if inspect.isclass(type_) and type_ in self.loaded_structs:
