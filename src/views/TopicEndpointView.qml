@@ -116,7 +116,6 @@ Rectangle {
                     }
                 }
 
-                // TODO: implement writer creation from network
                 Button {
                     text: "Create Writer"
                     onClicked: {
