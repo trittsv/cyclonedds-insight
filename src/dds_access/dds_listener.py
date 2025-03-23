@@ -97,7 +97,10 @@ class DdsListener(core.Listener):
 
     def on_publication_matched(self, writer: DataWriter, status: dds_c_t.publication_matched_status):
         if writer and status:
-            logging.debug(f"on_publication_matched: {writer.instance_handle}, topic: {writer.topic.name}, {status_to_string(status)}")
+            try:
+                logging.debug(f"on_publication_matched: {writer.instance_handle}, topic: {writer.topic.name}, {status_to_string(status)}")
+            except Exception as e:
+                logging.error(f"on_publication_matched: {e}")
         else:
             logging.debug("on_publication_matched")
 

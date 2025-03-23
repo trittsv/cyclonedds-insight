@@ -94,7 +94,7 @@ Rectangle {
                 }
 
                 Button {
-                    text: "Create Reader (Listener)"
+                    text: "Create Reader"
                     onClicked: {
                         var writerTypes = endpointWriterModel.getAllTopicTypes()
                         var readerTypes = endpointReaderModel.getAllTopicTypes()

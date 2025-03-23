@@ -127,31 +127,47 @@ class DataModelHandler(QObject):
         logging.trace(f"customTypes {json.dumps(self.customTypes, indent=2, default=str)}")
         logging.trace(f"structMembers {json.dumps(self.structMembers, indent=2, default=str)}")
 
-
     def addTypeFromNetwork(self, typeName, dataType):
-        logging.debug(f"addTypeFromNetwork {typeName} {dataType}, __dict__ {dataType.__dict__}")
+        logging.debug(f"addTypeFromNetwork {typeName} {dataType}")
 
-        self.structMembers[typeName] = self.get_struct_members(dataType)
+        if isinstance(dataType, cyclonedds.idl.types.typedef):
+            self.customTypes[typeName] = dataType.subtype
+            if hasattr(dataType.subtype, "__metadata__"):
+                if isinstance(dataType.subtype.__metadata__[0], cyclonedds.idl.types.sequence):
+                    subT = dataType.subtype.__metadata__[0].subtype
+                    if isinstance(subT, cyclonedds.idl.IdlEnumMeta) or isinstance(subT, cyclonedds.idl.IdlMeta):
+                        self.addTypeFromNetwork((subT.__idl_typename__).replace(".", "::"), subT)
+                    elif hasattr(subT, "name"):
+                        self.addTypeFromNetwork(subT.name.replace(".", "::"), subT)
+            return
+
         self.allTypes[typeName] = dataType
 
+        if isinstance(dataType, cyclonedds.idl.IdlEnumMeta):
+            return
+
+        self.structMembers[typeName] = self.get_struct_members(dataType)
+
         if not hasattr(dataType, "__annotations__"):
-            return 
-        annotations = dataType.__annotations__
-        for field, field_type in annotations.items():
+            return
+        for field, field_type in dataType.__annotations__.items():
             logging.debug(f"Field: {field}, Type: {field_type}")
-            # Extract the base type in case of Annotated
-            if get_origin(field_type) is Annotated:
-                base_type = get_args(field_type)[0]
-            else:
-                base_type = field_type
+            if hasattr(field_type, "__idl_typename__"):
+                self.addTypeFromNetwork(str(field_type.__idl_typename__).replace(".", "::"), field_type)
 
-            print(f"{field}: {base_type}, {type(base_type)}", base_type == str, base_type == int)
-            if base_type == str or base_type == int:
-                print("IM HERE")
-                self.allTypes[f"{typeName}::{field}"] = base_type
-            else:
-                self.addTypeFromNetwork(f"{typeName}::{str(base_type)}", base_type)
+            if hasattr(field_type, "__metadata__"):
+                if isinstance(field_type.__metadata__[0], cyclonedds.idl.types.sequence):
+                    subT = field_type.__metadata__[0].subtype
+                    if isinstance(subT, cyclonedds.idl.IdlEnumMeta) or isinstance(subT, cyclonedds.idl.IdlMeta):
+                        self.addTypeFromNetwork(str(subT.__idl_typename__).replace(".", "::"), subT)
 
+            if hasattr(field_type, "__origin__"):
+                if field_type.__origin__ is typing.Union:
+                    if hasattr(field_type, "__args__"):
+                        if len(field_type.__args__) == 2:
+                            optType = field_type.__args__[0]
+                            if hasattr(optType, "__idl_typename__"):
+                                self.addTypeFromNetwork(str(optType.__idl_typename__).replace(".", "::"), optType)
 
     def import_module_and_nested(self, module_name):
         try:
@@ -230,7 +246,10 @@ class DataModelHandler(QObject):
                 members[name] = type_
                 self.structMembers[f"{type_.__module__}::{type_.__name__}".replace(".", "::")] = self.get_struct_members(type_)
             else:
-                members[name] = type_
+                if hasattr(type_, "__idl_typename__"):
+                    members[name] = str(type_.__idl_typename__)
+                else:
+                    members[name] = type_
         return members
 
     def getInitializedDataObj(self, topicType):
@@ -245,7 +264,7 @@ class DataModelHandler(QObject):
             topicType = self.resolveCustomType(topicType)
             topicType = str(topicType).replace(".", "::")
 
-        if topicType in self.allTypes:
+        if topicType in self.allTypes and topicType in self.structMembers:
             initList = []
             for k in self.structMembers[topicType].keys():
                 currentTypeName = self.structMembers[topicType][k]
@@ -277,7 +296,9 @@ class DataModelHandler(QObject):
                 elif self.isStruct(realType):
                     initList.append(self.getInitializedDataObj(realType))
                 elif self.isOptional(realType):
-                    initList.append(None)                    
+                    initList.append(None)
+                else:
+                    logging.warning(f"Unknown type: {realType}")
 
             module = self.allTypes[topicType]
             logging.trace(f"init with list: {initList}")
@@ -538,7 +559,10 @@ class DataModelHandler(QObject):
                     optionalNode = DataTreeNode(keyStructMem, tt, DataTreeModel.IsOptionalRole, parent=rootNode)
                     optionalNode.maxElements = 1
                     optType = self.getOptionalType(realType)
-                    inner = str(optType).replace(".", "::")
+                    if hasattr(optType, "__idl_typename__"):
+                        inner = str(optType.__idl_typename__).replace(".", "::")
+                    else:
+                        inner = str(optType).replace(".", "::")
                     optionalNode.dataType = self.getInitializedDataObj(inner)
                     optionalNode.itemArrayTypeName = inner
                     rootNode.appendChild(optionalNode)
@@ -632,4 +656,7 @@ class DataModelHandler(QObject):
                 metaType = inType.__metadata__[0]
                 if isinstance(metaType, cyclonedds.idl.types.typedef):
                     outType = self.getRealType(metaType)
+        elif isinstance(inType, cyclonedds.idl.types.typedef):
+            outType = self.getRealType(inType.subtype)
+
         return outType
