@@ -271,7 +271,10 @@ class DataModelHandler(QObject):
                 realType = self.getRealType(currentTypeName)
                 if self.isArray(realType):
                     arrayDefaultValues = []
-                    metaType = self.getMetaDataType(realType)
+                    if hasattr(realType, "subtype"):
+                        metaType = realType
+                    else:
+                        metaType = self.getMetaDataType(realType)
                     innerType = metaType.subtype
                     if hasattr(innerType, "__idl_typename__"):
                         inner = innerType.__idl_typename__
@@ -516,7 +519,10 @@ class DataModelHandler(QObject):
 
                 elif self.isArray(realType):
                     arrayRootNode = DataTreeNode(keyStructMem, tt,DataTreeModel.IsArrayRole, parent=rootNode)
-                    metaType = self.getMetaDataType(realType)
+                    if hasattr(realType, "subtype"):
+                        metaType = realType
+                    else:
+                        metaType = self.getMetaDataType(realType)
                     innerType = metaType.subtype
                     if hasattr(innerType, "__idl_typename__"):
                         inner = innerType.__idl_typename__
@@ -538,7 +544,10 @@ class DataModelHandler(QObject):
                 elif self.isSequence(realType):
                     seqRootNode = DataTreeNode(keyStructMem, tt,DataTreeModel.IsSequenceRole, parent=rootNode)
 
-                    metaType = self.getMetaDataType(realType)
+                    if hasattr(realType, "subtype"):
+                        metaType = realType
+                    else:
+                        metaType = self.getMetaDataType(realType)
 
                     innerType = metaType.subtype
                     if hasattr(innerType, "__idl_typename__"):
