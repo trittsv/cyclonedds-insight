@@ -94,6 +94,16 @@ def qos_match(endpoint_reader, endpoint_writer) -> list:
 
     return mismatches
 
+def durability_to_str(durability):
+    if durability == dds_durability_kind.DDS_DURABILITY_VOLATILE:
+        return "VOLATILE"
+    elif durability == dds_durability_kind.DDS_DURABILITY_TRANSIENT_LOCAL:
+        return "TRANSIENT_LOCAL"
+    elif durability == dds_durability_kind.DDS_DURABILITY_TRANSIENT:
+        return "TRANSIENT"
+    elif durability == dds_durability_kind.DDS_DURABILITY_PERSISTENT:
+        return "PERSISTENT"
+
 class dds_durability_kind(OrderedEnum):
     DDS_DURABILITY_VOLATILE = 0
     DDS_DURABILITY_TRANSIENT_LOCAL = 1
@@ -324,3 +334,32 @@ def partitions_match_p(a, b):
                 if (partition_patmatch_p(i, j) or partition_patmatch_p(j, i)):
                     return True
         return False
+
+
+def qosToJson(q: qos.Qos) -> dict:
+
+    j = {}
+
+    durability_qos = to_kind_durability(q)
+    if durability_qos:
+        j["durability"] = durability_to_str(durability_qos)
+
+    reliability_qos = to_kind_reliability(q)
+    if reliability_qos:
+        j["reliability"] = "RELIABLE" if reliability_qos == dds_reliability.DDS_RELIABILITY_RELIABLE else "BEST_EFFORT"
+
+    if qos.Policy.Partition in q:
+        partitions = []
+        if qos.Policy.Partition in q:
+            for i in range(len(q[qos.Policy.Partition].partitions)):
+                partitions.append(str(q[qos.Policy.Partition].partitions[i]))
+        j["partitions"] = partitions
+
+
+    return j
+
+def qosFromJson(j: dict) -> qos.Qos:
+
+    q = qos.Qos()
+
+    return q

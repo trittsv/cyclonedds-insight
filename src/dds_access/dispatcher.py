@@ -23,11 +23,13 @@ from dds_access.dds_listener import DdsListener
 from threading import Lock
 from dds_access.domain_participant_factory import DomainParticipantFactory
 from dds_access.datatypes.entity_type import EntityType
+from dds_access.dds_qos import qosToJson
 
 
 class DispatcherThread(QThread):
 
     onData = Signal(str)
+    responseQosJson = Signal(str, object)
 
     def __init__(self, id: str, domain_id: int, topic_name: str, topic_type, qos, entityType, parent=None):
         super().__init__(parent)
@@ -130,3 +132,14 @@ class DispatcherThread(QThread):
         logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
         self.running = False
         self.guardCondition.set(True)
+
+    @Slot(str, str)
+    def requestQosJson(self, requestId, endpointId):
+        if endpointId in self.writerData:
+            (pub, writer, _) = self.writerData[endpointId]
+            entJson = {
+                "topic_qos": qosToJson(writer.topic.get_qos()),
+                "publisher_qos": qosToJson(pub.get_qos()),
+                "endpoint_qos": qosToJson(writer.get_qos())
+            }
+            self.responseQosJson.emit(requestId, entJson)

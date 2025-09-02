@@ -10,6 +10,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 */
 
+import QtCore
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
@@ -81,16 +82,66 @@ Rectangle {
                     testerModel.deleteAllWriters()
                 }
             }
+
             /* Button {
                 text: "Print tree"
                 onClicked: {
                     dataTreeModel.printTree()
                 }
             } */
+
             Item {
                 implicitHeight: 1
                 implicitWidth: 1
             }
+        }
+
+        RowLayout {
+            spacing: 10
+            visible: dataTreeModel !== null
+
+            Item {
+                implicitHeight: 1
+                implicitWidth: 1
+            }
+
+            Label {
+                text: "Preset:"
+            }
+
+            TextField {
+                id: presetNameField
+                text: dataTreeModel !== null ? testerModel.getPresetName(librariesCombobox.currentIndex) : ""
+                placeholderText: "Enter Preset-Name"
+                Layout.fillWidth: true
+                onTextChanged: {
+                    if (testerModel) {
+                        testerModel.setPresetName(librariesCombobox.currentIndex, presetNameField.text)
+                    }
+                }
+            }
+
+            Button {
+                text: "Export"
+                onClicked: exportPresetDialog.open()
+            }
+
+            Button {
+                text: "Import"
+                onClicked: {
+                }
+            }
+
+            Item {
+                implicitHeight: 1
+                implicitWidth: 1
+            }
+        }
+
+        Item {
+            visible: dataTreeModel !== null
+            implicitHeight: 10
+            implicitWidth: 1
         }
 
        Rectangle {
@@ -299,6 +350,20 @@ Rectangle {
                 console.log("Write Button clicked")
                 testerModel.writeData(librariesCombobox.currentIndex)
             }
+        }
+    }
+
+    FileDialog {
+        id: exportPresetDialog
+        currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: "json"
+        title: "Export Tester Preset"
+        nameFilters: ["JSON files (*.json)"]
+        onAccepted: {
+            qmlUtils.createFileFromQUrl(selectedFile)
+            var localPath = qmlUtils.toLocalFile(selectedFile);
+            testerModel.exportJson(localPath, librariesCombobox.currentIndex);
         }
     }
 }
