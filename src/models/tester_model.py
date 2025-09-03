@@ -205,7 +205,7 @@ class TesterModel(QAbstractListModel):
                 "domain_id": domainId,
                 "topic_name": topic_name,
                 "topic_type": topic_type,
-                "values": {},
+                "message": dataTreeModel.toJson()["root"],
                 "qos": content
             }
 

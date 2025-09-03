@@ -104,6 +104,16 @@ def durability_to_str(durability):
     elif durability == dds_durability_kind.DDS_DURABILITY_PERSISTENT:
         return "PERSISTENT"
 
+def durability_from_str(s: str):
+    if s == "VOLATILE":
+        return dds_durability_kind.DDS_DURABILITY_VOLATILE
+    elif s == "TRANSIENT_LOCAL":
+        return dds_durability_kind.DDS_DURABILITY_TRANSIENT_LOCAL
+    elif s == "TRANSIENT":
+        return dds_durability_kind.DDS_DURABILITY_TRANSIENT
+    elif s == "PERSISTENT":
+        return dds_durability_kind.DDS_DURABILITY_PERSISTENT
+
 class dds_durability_kind(OrderedEnum):
     DDS_DURABILITY_VOLATILE = 0
     DDS_DURABILITY_TRANSIENT_LOCAL = 1
@@ -348,13 +358,16 @@ def qosToJson(q: qos.Qos) -> dict:
     if reliability_qos:
         j["reliability"] = "RELIABLE" if reliability_qos == dds_reliability.DDS_RELIABILITY_RELIABLE else "BEST_EFFORT"
 
+    ownership_qos = to_kind_ownership(q)
+    if ownership_qos:
+        j["ownership"] = "EXCLUSIVE" if ownership_qos == dds_ownership.DDS_OWNERSHIP_EXCLUSIVE else "SHARED"
+
     if qos.Policy.Partition in q:
         partitions = []
         if qos.Policy.Partition in q:
             for i in range(len(q[qos.Policy.Partition].partitions)):
                 partitions.append(str(q[qos.Policy.Partition].partitions[i]))
         j["partitions"] = partitions
-
 
     return j
 

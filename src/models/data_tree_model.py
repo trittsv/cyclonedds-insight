@@ -311,6 +311,25 @@ class DataTreeModel(QAbstractItemModel):
 
         printNode(self.rootItem)
 
+    def toJson(self):
+        def nodeToDict(node):
+            result = {}
+            name = node.itemName if node.itemName else "value"
+            # Check if node is an array/sequence
+            if node.role in [self.IsSequenceRole, self.IsArrayRole]:
+                result[name] = [nodeToDict(child)[child.itemName if child.itemName else "value"] for child in node.childItems]
+            elif node.childCount() == 0:
+                result[name] = node.itemValue
+            else:
+                child_dict = {}
+                for child in node.childItems:
+                    child_result = nodeToDict(child)
+                    child_dict.update(child_result)
+                result[name] = child_dict
+            return result
+
+        return nodeToDict(self.rootItem)
+
     @Slot(QModelIndex, result=bool)
     def getIsEnum(self, index):
         if index.isValid():
