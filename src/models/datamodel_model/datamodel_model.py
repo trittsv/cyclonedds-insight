@@ -15,11 +15,14 @@ from PySide6.QtCore import QObject, Signal, Slot
 from loguru import logger as logging
 import typing
 import uuid
+import os
+import json
 from dds_access.dispatcher import DispatcherThread
 from dds_access.dds_data import DdsData
 from dds_access import dds_utils
 from cyclonedds.core import Qos, Policy
 from cyclonedds.util import duration
+from dds_access.dds_qos import qosFromJson
 from dds_access.datatypes.entity_type import EntityType
 from module_handler import DataModelHandler
 
@@ -31,7 +34,7 @@ class DatamodelModel(QAbstractListModel):
     newDataArrived = Signal(str)
     isLoadingSignal = Signal(bool)
     requestDataType = Signal(str, int, str, str)
-    newWriterSignal = Signal(str, int, str, str, str, str)
+    newWriterSignal = Signal(str, int, str, str, str, str, str, object)
 
     def __init__(self, threads, dataModelHandler, parent=typing.Optional[QObject]) -> None:
         super().__init__()
@@ -127,26 +130,61 @@ class DatamodelModel(QAbstractListModel):
         qos = (dpQps, topicQos, pubSubQos, endpQos)
         entityType = EntityType(entityTypeInteger)
 
+        self.handleEndpointCreation(domain_id, topic_name, topic_type, qos, entityType, f"Untitled", {})
+
+    def handleEndpointCreation(self, domain_id, topic_name, topic_type, qos, entityType, presetName, msgDict):
         if self.dataModelHandler.hasType(topic_type):
             module_type, class_type = self.dataModelHandler.getType(topic_type)
 
             logging.debug(str(module_type))
             logging.debug(str(class_type))
-            self.createEndpoint(domain_id, topic_name, class_type, qos, entityType, topic_type)
+            self.createEndpoint(domain_id, topic_name, class_type, qos, entityType, topic_type, presetName, msgDict)
         else:
             typeRequestId = str(uuid.uuid4())
-            self.readerRequests[typeRequestId] = (domain_id, topic_type, topic_name, qos, entityType)
+            self.readerRequests[typeRequestId] = (domain_id, topic_type, topic_name, qos, entityType, presetName, msgDict)
             self.requestDataType.emit(typeRequestId, domain_id, topic_type, topic_name)
+
+    @Slot(str)
+    def setQosSelectionFromFile(self, filePath: str):
+        logging.info(f"Import preset from {filePath}")
+        if not os.path.isfile(filePath):
+            logging.error(f"File does not exist: {filePath}")
+            return
+
+        with open(filePath, "r", encoding="utf-8") as f:
+            content = f.read()
+            j = json.loads(content)
+            presetName = j.get("preset_name", "ImportedPreset")
+            domainId = j.get("domain_id", 0)
+            topic_name = j.get("topic_name", "")
+            topic_type = j.get("topic_type", "")
+            message = j.get("message", {"root": {}})
+
+            if "qos" in j:
+                allQosDict = j["qos"]
+
+                dpQos = Qos()
+
+                if "topic_qos" in allQosDict:
+                    topicQos = qosFromJson(allQosDict["topic_qos"])
+
+                if "endpoint_qos" in allQosDict:
+                    endpointQos = qosFromJson(allQosDict["endpoint_qos"])
+
+                if "publisher_qos" in allQosDict:
+                    publisherQos = qosFromJson(allQosDict["publisher_qos"])
+
+                self.handleEndpointCreation(domainId, topic_name, topic_type, (dpQos, topicQos, publisherQos, endpointQos), EntityType.WRITER, presetName, message["root"])
 
     @Slot(str, object)
     def receiveDataType(self, requestId, dataType):
         if requestId in self.readerRequests:
-            (domain_id, topic_type, topic_name, qos, entityType) = self.readerRequests[requestId]
+            (domain_id, topic_type, topic_name, qos, entityType, presetName, msgDict) = self.readerRequests[requestId]
             self.dataModelHandler.addTypeFromNetwork(topic_type, dataType)
-            self.createEndpoint(domain_id, topic_name, dataType, qos, entityType, topic_type)
+            self.createEndpoint(domain_id, topic_name, dataType, qos, entityType, topic_type, presetName, msgDict)
             del self.readerRequests[requestId]
 
-    def createEndpoint(self, domainId: int, topicName: str, dataType, qos, entityType: EntityType, topic_type):
+    def createEndpoint(self, domainId: int, topicName: str, dataType, qos, entityType: EntityType, topic_type, presetName: str, msgDict: dict):
         logging.debug(f"add endpoint with qos: {str(qos)}")
 
         id = "m" + str(uuid.uuid4()).replace("-", "_")
@@ -160,6 +198,6 @@ class DatamodelModel(QAbstractListModel):
 
         # Add to Tester tab
         if entityType == EntityType.WRITER:
-            self.newWriterSignal.emit(id, domainId, topicName, topic_type, "", "")
+            self.newWriterSignal.emit(id, domainId, topicName, topic_type, "", "", presetName, msgDict)
 
         logging.debug("try add endpoint ... DONE")

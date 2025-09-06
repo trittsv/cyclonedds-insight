@@ -14,6 +14,7 @@ from enum import Enum
 from cyclonedds import qos
 # from cyclonedds.internal import feature_typelib # not available in v0.10.5
 from utils.ordered_enum import OrderedEnum
+from cyclonedds.util import duration
 
 
 def qos_match(endpoint_reader, endpoint_writer) -> list:
@@ -186,10 +187,10 @@ class dds_qos_policy_id(Enum):
 
 def to_kind_reliability(q: qos.Qos):
     if qos.Policy.Reliability in q:
-        if qos.Policy.Reliability.Reliable in q:
-            return dds_reliability.DDS_RELIABILITY_RELIABLE
-        elif qos.Policy.Reliability.BestEffort in q:
+        if q[qos.Policy.Reliability] == qos.Policy.Reliability.BestEffort:
             return dds_reliability.DDS_RELIABILITY_BEST_EFFORT
+        else:
+            return dds_reliability.DDS_RELIABILITY_RELIABLE
     return None
 
 def to_kind_durability(q: qos.Qos):
@@ -356,7 +357,13 @@ def qosToJson(q: qos.Qos) -> dict:
 
     reliability_qos = to_kind_reliability(q)
     if reliability_qos:
-        j["reliability"] = "RELIABLE" if reliability_qos == dds_reliability.DDS_RELIABILITY_RELIABLE else "BEST_EFFORT"
+        max_blocking_time = None
+        if q[qos.Policy.Reliability] != qos.Policy.Reliability.BestEffort:
+            max_blocking_time = q[qos.Policy.Reliability.Reliable].max_blocking_time
+        j["reliability"] = {
+            "kind": "RELIABLE" if reliability_qos == dds_reliability.DDS_RELIABILITY_RELIABLE else "BEST_EFFORT",
+            "max_blocking_time": max_blocking_time
+        }
 
     ownership_qos = to_kind_ownership(q)
     if ownership_qos:
@@ -364,15 +371,74 @@ def qosToJson(q: qos.Qos) -> dict:
 
     if qos.Policy.Partition in q:
         partitions = []
-        if qos.Policy.Partition in q:
-            for i in range(len(q[qos.Policy.Partition].partitions)):
-                partitions.append(str(q[qos.Policy.Partition].partitions[i]))
+        for i in range(len(q[qos.Policy.Partition].partitions)):
+            partitions.append(str(q[qos.Policy.Partition].partitions[i]))
         j["partitions"] = partitions
+
+    if qos.Policy.DataRepresentation in q:
+        representations = []
+        if q[qos.Policy.DataRepresentation].use_cdrv0_representation:
+            representations.append("XCDR1")
+        if q[qos.Policy.DataRepresentation].use_xcdrv2_representation:
+            representations.append("XCDR2")
+        j["data_representation"] = representations
+
+    history_qos = None
+    if qos.Policy.History in q:
+        if qos.Policy.History.KeepAll in q:
+            history_qos = "KEEP_ALL"
+        elif qos.Policy.History.KeepLast in q:
+            history_qos = "KEEP_LAST"
+
+        if history_qos:
+            j["history"] = {
+                "kind": history_qos,
+                "depth": getattr(q[qos.Policy.History], "depth", None)
+            }
 
     return j
 
 def qosFromJson(j: dict) -> qos.Qos:
 
     q = qos.Qos()
+
+    if "durability" in j:
+        q_dur = j["durability"]
+        if q_dur == "DDS_DURABILITY_VOLATILE":
+            q += qos.Qos(Policy.Durability.Volatile)
+        elif q_dur == "DDS_DURABILITY_TRANSIENT_LOCAL":
+            q += qos.Qos(Policy.Durability.TransientLocal)
+        elif q_dur == "DDS_DURABILITY_TRANSIENT":
+            q += qos.Qos(Policy.Durability.Transient)
+        elif q_dur == "DDS_DURABILITY_PERSISTENT":
+            q += qos.Qos(Policy.Durability.Persistent)
+
+    if "reliability" in j:
+        if j["reliability"]["kind"] == "RELIABLE":
+            max_blocking_time = j["reliability"].get("max_blocking_time", None)
+            q += qos.Qos(qos.Policy.Reliability(qos.Policy.Reliability.Reliable(max_blocking_time=duration(nanoseconds=max_blocking_time))))
+        else:
+            q += qos.Qos(qos.Policy.Reliability.BestEffort)
+
+    if "ownership" in j:
+        if j["ownership"] == "EXCLUSIVE":
+            q += qos.Qos(qos.Policy.Ownership.Exclusive)
+        else:
+            q += qos.Qos(qos.Policy.Ownership.Shared)
+
+    if "partitions" in j:
+        q += qos.Qos(qos.Policy.Partition(partitions=j["partitions"]))
+    
+    if "data_representation" in j:
+        use_cdrv0 = "XCDR1" in j["data_representation"]
+        use_xcdrv2 = "XCDR2" in j["data_representation"]
+        q += qos.Qos(qos.Policy.DataRepresentation(use_cdrv0_representation=use_cdrv0, use_xcdrv2_representation=use_xcdrv2))
+
+    if "history" in j:
+        if j["history"]["kind"] == "KEEP_ALL":
+            q += qos.Qos(qos.Policy.History.KeepAll)
+        elif j["history"]["kind"] == "KEEP_LAST":
+            if "depth" in j["history"] and j["history"]["depth"] is not None:
+                q += qos.Qos(qos.Policy.History.KeepLast(j["history"]["depth"]))
 
     return q

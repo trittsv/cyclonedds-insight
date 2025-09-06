@@ -30,6 +30,7 @@ import types
 from PySide6.QtQml import qmlRegisterType
 from models.data_tree_model import DataTreeModel, DataTreeNode
 from utils.qml_utils import QmlUtils
+
 import json
 
 
@@ -110,8 +111,8 @@ class TesterModel(QAbstractListModel):
         idx = self.index(currentIndex)
         self.dataChanged.emit(idx, idx, [self.PresetNameRole])
 
-    @Slot(int, str, str, str, str, str)
-    def addWriter(self, id: str, domainId, topic_name, topic_type, qmlCode, pyCode):
+    @Slot(int, str, str, str, str, str, str, object)
+    def addWriter(self, id: str, domainId, topic_name, topic_type, qmlCode, pyCode, presetName, msgDict):
         logging.info("AddWriter to TesterModel")
 
         self.beginResetModel()
@@ -124,7 +125,10 @@ class TesterModel(QAbstractListModel):
 
         rootNode = self.dataModelHandler.getRootNode(topic_type)
         dataTreeModel = DataTreeModel(rootNode, parent=self)
-        self.dataWriters[id] = (domainId, topic_name, topic_type, qmlCode, None, dataTreeModel, f"Untitled-{uuid.uuid4().hex[:3]}")
+        self.dataWriters[id] = (domainId, topic_name, topic_type, qmlCode, None, dataTreeModel, presetName)
+
+        if len(msgDict.keys()) > 0:
+            dataTreeModel.fromJson(msgDict, self.dataModelHandler)
 
         self.endResetModel()
 
@@ -205,7 +209,7 @@ class TesterModel(QAbstractListModel):
                 "domain_id": domainId,
                 "topic_name": topic_name,
                 "topic_type": topic_type,
-                "message": dataTreeModel.toJson()["root"],
+                "message": dataTreeModel.toJson(),
                 "qos": content
             }
 

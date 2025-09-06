@@ -74,6 +74,16 @@ Rectangle {
             }
 
             Button {
+                text: "Export"
+                onClicked: exportPresetDialog.open()
+            }
+
+            Button {
+                text: "Import"
+                onClicked: importPresetDialog.open()
+            }
+
+            Button {
                 text: "Delete All Writers"
                 onClicked: {
                     if (component) {
@@ -83,12 +93,12 @@ Rectangle {
                 }
             }
 
-            /* Button {
+            Button {
                 text: "Print tree"
                 onClicked: {
                     dataTreeModel.printTree()
                 }
-            } */
+            }
 
             Item {
                 implicitHeight: 1
@@ -118,17 +128,6 @@ Rectangle {
                     if (testerModel) {
                         testerModel.setPresetName(librariesCombobox.currentIndex, presetNameField.text)
                     }
-                }
-            }
-
-            Button {
-                text: "Export"
-                onClicked: exportPresetDialog.open()
-            }
-
-            Button {
-                text: "Import"
-                onClicked: {
                 }
             }
 
@@ -360,10 +359,27 @@ Rectangle {
         defaultSuffix: "json"
         title: "Export Tester Preset"
         nameFilters: ["JSON files (*.json)"]
+        selectedFile: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0] + "/" + (presetNameField.text !== "" ? presetNameField.text : "preset") + ".json"
         onAccepted: {
             qmlUtils.createFileFromQUrl(selectedFile)
             var localPath = qmlUtils.toLocalFile(selectedFile);
             testerModel.exportJson(localPath, librariesCombobox.currentIndex);
+        }
+    }
+
+    FileDialog {
+        id: importPresetDialog
+        currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
+        fileMode: FileDialog.OpenFiles
+        title: "Import Tester Presets"
+        nameFilters: ["JSON files (*.json)"]
+        onAccepted: {
+            for (var i = 0; i < selectedFiles.length; i++) {
+                var selectedFile = selectedFiles[i];
+                console.debug("Selected file: " + selectedFile)
+                var localPath = qmlUtils.toLocalFile(selectedFile);
+                datamodelRepoModel.setQosSelectionFromFile(localPath);
+            }
         }
     }
 }

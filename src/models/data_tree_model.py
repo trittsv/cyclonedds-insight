@@ -68,24 +68,24 @@ class DataTreeNode:
 
 class DataTreeModel(QAbstractItemModel):
 
-    DisplayRole = Qt.UserRole + 1
-    IsFloatRole = Qt.UserRole + 2
-    IsIntRole = Qt.UserRole + 3
-    IsStrRole = Qt.UserRole + 4
-    IsSequenceRole = Qt.UserRole + 5
-    IsStructRole = Qt.UserRole + 6
-    IsEnumRole = Qt.UserRole + 7
-    IsUnionRole = Qt.UserRole + 8
-    IsSequenceElementRole = Qt.UserRole + 9
-    TypeNameRole = Qt.UserRole + 10
-    ValueRole = Qt.UserRole + 11
-    DisplayHintRole = Qt.UserRole + 12
-    IsBoolRole = Qt.UserRole + 13
-    IsOptionalRole = Qt.UserRole + 14
-    IsArrayRole = Qt.UserRole + 15
-    IsArrayElementRole = Qt.UserRole + 16
-    IsExpandable = Qt.UserRole + 17
-    IsOptionalElementRole = Qt.UserRole + 18
+    DisplayRole = Qt.UserRole + 1     # 257
+    IsFloatRole = Qt.UserRole + 2     # 258
+    IsIntRole = Qt.UserRole + 3       # 259
+    IsStrRole = Qt.UserRole + 4       # 260
+    IsSequenceRole = Qt.UserRole + 5  # 261
+    IsStructRole = Qt.UserRole + 6    # 262
+    IsEnumRole = Qt.UserRole + 7      # 263
+    IsUnionRole = Qt.UserRole + 8     # 264
+    IsSequenceElementRole = Qt.UserRole + 9 # 265
+    TypeNameRole = Qt.UserRole + 10       # 266
+    ValueRole = Qt.UserRole + 11          # 267
+    DisplayHintRole = Qt.UserRole + 12    # 268
+    IsBoolRole = Qt.UserRole + 13         # 269
+    IsOptionalRole = Qt.UserRole + 14     # 270
+    IsArrayRole = Qt.UserRole + 15        # 271
+    IsArrayElementRole = Qt.UserRole + 16 # 272
+    IsExpandable = Qt.UserRole + 17       # 273
+    IsOptionalElementRole = Qt.UserRole + 18 # 274
 
     def __init__(self, rootItem: DataTreeNode, parent=None):
         super(DataTreeModel, self).__init__(parent)
@@ -175,7 +175,7 @@ class DataTreeModel(QAbstractItemModel):
             elif item.role == self.IsSequenceElementRole or item.role == self.IsArrayElementRole or item.role == self.IsOptionalElementRole:
                 return ""
             else:
-                return "value"
+                return "__value__"
         elif role == self.TypeNameRole:
             return item.itemTypeName
         elif role == self.IsFloatRole:
@@ -305,30 +305,103 @@ class DataTreeModel(QAbstractItemModel):
     @Slot()
     def printTree(self):
         def printNode(node, indent=0):
-            print(' ' * indent + str(node.itemName) + " " + str(node.itemValue), node.dataType, node.itemArrayType, self.get_role_name_by_number(node.role))
+            print(' ' * indent + str(node.itemName) + " " + str(node.itemValue), node.dataType, node.itemArrayType, self.get_role_name_by_number(node.role), node.itemTypeName)
             for child in node.childItems:
                 printNode(child, indent + 2)
 
         printNode(self.rootItem)
 
     def toJson(self):
+        def default_value_for_node(node):
+            if node.itemValue is not None:
+                return node.itemValue
+            if node.role == self.IsIntRole or node.role == self.IsEnumRole:
+                return 0
+            elif node.role == self.IsFloatRole:
+                return 0.0
+            elif node.role == self.IsStrRole:
+                return ""
+            elif node.role == self.IsBoolRole:
+                return False
+            elif node.role in [self.IsSequenceRole, self.IsArrayRole, self.IsOptionalRole]:
+                return []
+            elif node.role == self.IsStructRole or node.childCount() > 0:
+                return {}
+            else:
+                logging.error(f"Unknown role in default_value_for_node: {node.role}")
+                return "__default__"
+
         def nodeToDict(node):
-            result = {}
-            name = node.itemName if node.itemName else "value"
-            # Check if node is an array/sequence
+            name = node.itemName if node.itemName else "__value__"
+
+            # Sequence / array
             if node.role in [self.IsSequenceRole, self.IsArrayRole]:
-                result[name] = [nodeToDict(child)[child.itemName if child.itemName else "value"] for child in node.childItems]
+                result = []
+                for child in node.childItems:
+                    child_dict = nodeToDict(child)
+                    key = child.itemName if child.itemName else "__value__"
+                    value = child_dict[key]
+                    result.append({key: value})
+                print(result)
+                return {name: result if result else []}
+
+            # Leaf node
             elif node.childCount() == 0:
-                result[name] = node.itemValue
+                return {name: default_value_for_node(node)}
+
+            # Struct / object node
             else:
                 child_dict = {}
                 for child in node.childItems:
-                    child_result = nodeToDict(child)
-                    child_dict.update(child_result)
-                result[name] = child_dict
-            return result
+                    child_dict.update(nodeToDict(child))
+                return {name: child_dict if child_dict else default_value_for_node(node)}
 
         return nodeToDict(self.rootItem)
+
+    def fromJson(self, jsonDict, dataModelHandler):
+
+        def updateNode(node, value, dataModelHandler):
+
+            if isinstance(value, dict):
+                if "__value__" in value:
+                    value = value["__value__"]
+
+                # Update children by matching names
+                for child in node.childItems:
+                    print("+++++++", child.itemName, value, child)
+                    key = child.itemName
+                    if key in value:
+                        updateNode(child, value[key], dataModelHandler)
+            elif isinstance(value, list):
+                # Update sequence/array elements using addArrayItem if more children are needed
+                for idx, item_val in enumerate(value):
+                    if node.itemArrayTypeName:
+                        targetRole = DataTreeModel.IsSequenceElementRole
+                        if node.role == DataTreeModel.IsOptionalRole:
+                            targetRole = DataTreeModel.IsOptionalElementRole
+                        itemNode = dataModelHandler.toNode(node.itemArrayTypeName, DataTreeNode("", "", targetRole, parent=node))
+
+                        currentTreeIndex = self.createIndex(node.row(), 0, node)
+                        self.addArrayItem(currentTreeIndex, itemNode)
+                    elif node.parentItem.itemArrayTypeName:
+                        itemNode = dataModelHandler.toNode(node.parentItem.itemArrayTypeName, DataTreeNode("", "", DataTreeModel.IsSequenceElementRole, parent=node))
+                        itemNode.itemArrayTypeName = node.parentItem.itemArrayTypeName
+                        currentTreeIndex = self.createIndex(node.row(), 0, node)
+                        self.addArrayItem(currentTreeIndex, itemNode)
+                    
+                    if idx < node.childCount():
+                        print("!!!!!!!", idx, node.childItems[idx].itemName, item_val)
+                        updateNode(node.childItems[idx], item_val, dataModelHandler)
+
+            else:
+                # Leaf node: update value
+                node.itemValue = value
+
+        self.beginResetModel()
+        updateNode(self.rootItem, jsonDict, dataModelHandler)
+        self.endResetModel()
+
+
 
     @Slot(QModelIndex, result=bool)
     def getIsEnum(self, index):
