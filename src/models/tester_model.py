@@ -185,6 +185,18 @@ class TesterModel(QAbstractListModel):
             self.threads[key].deleteAllWriters()
         self.endResetModel()
 
+    @Slot(int)
+    def deleteWriter(self, currentIndex: int):
+        if currentIndex < 0:
+            return
+        logging.trace(f"Delete Writer pressed on index: {str(currentIndex)}")
+        mId = list(self.dataWriters.keys())[int(currentIndex)]
+        self.beginResetModel()
+        del self.dataWriters[mId]
+        for key in self.threads.keys():
+            self.threads[key].deleteWriter(mId)
+        self.endResetModel()
+
     @Slot(str, int)
     def exportJson(self, filePath, currentIndex: int):
         if currentIndex < 0:

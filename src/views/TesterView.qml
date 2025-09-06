@@ -43,6 +43,35 @@ Rectangle {
         spacing: 0
 
         RowLayout {
+
+            Label {
+                text: "Tester"
+                leftPadding: 10
+                font.bold: true
+            }
+
+            Item {
+                implicitHeight: 1
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: "Import"
+                onClicked: importPresetDialog.open()
+            }
+
+            Button {
+                text: "Delete All"
+                onClicked: {
+                    if (component) {
+                        component.destroy()
+                    }
+                    testerModel.deleteAllWriters()
+                }
+            }
+        }
+
+        RowLayout {
             Layout.minimumHeight: 40
             Layout.maximumHeight: 40
             spacing: 10
@@ -70,33 +99,6 @@ Rectangle {
                     if (librariesCombobox.count > 0 && librariesCombobox.currentIndex === -1) {
                         librariesCombobox.currentIndex = 0;
                     }
-                }
-            }
-
-            Button {
-                text: "Export"
-                onClicked: exportPresetDialog.open()
-            }
-
-            Button {
-                text: "Import"
-                onClicked: importPresetDialog.open()
-            }
-
-            Button {
-                text: "Delete All Writers"
-                onClicked: {
-                    if (component) {
-                        component.destroy()
-                    }
-                    testerModel.deleteAllWriters()
-                }
-            }
-
-            Button {
-                text: "Print tree"
-                onClicked: {
-                    dataTreeModel.printTree()
                 }
             }
 
@@ -130,6 +132,28 @@ Rectangle {
                     }
                 }
             }
+
+            Button {
+                text: "Delete"
+                onClicked: {
+                    if (component) {
+                        component.destroy()
+                    }
+                    testerModel.deleteWriter(librariesCombobox.currentIndex)
+                }
+            }
+
+            Button {
+                text: "Export"
+                onClicked: exportPresetDialog.open()
+            }
+
+            /*Button {
+                text: "Print tree"
+                onClicked: {
+                    dataTreeModel.printTree()
+                }
+            }*/
 
             Item {
                 implicitHeight: 1

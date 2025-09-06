@@ -61,6 +61,11 @@ class DispatcherThread(QThread):
         logging.info(f"Delete all writers")  
         self.writerData.clear()
 
+    def deleteWriter(self, id: str):
+        if id in self.writerData:
+            logging.info(f"Delete writer {id}")
+            del self.writerData[id]
+
     @Slot()
     def deleteAllReaders(self):
         logging.info(f"Delete all readers")
