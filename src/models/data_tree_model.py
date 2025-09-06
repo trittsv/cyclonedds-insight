@@ -335,7 +335,7 @@ class DataTreeModel(QAbstractItemModel):
             name = node.itemName if node.itemName else "__value__"
 
             # Sequence / array
-            if node.role in [self.IsSequenceRole, self.IsArrayRole]:
+            if node.role in [self.IsSequenceRole, self.IsArrayRole, self.IsOptionalRole]:
                 result = []
                 for child in node.childItems:
                     child_dict = nodeToDict(child)
@@ -361,19 +361,16 @@ class DataTreeModel(QAbstractItemModel):
     def fromJson(self, jsonDict, dataModelHandler):
 
         def updateNode(node, value, dataModelHandler):
-
             if isinstance(value, dict):
                 if "__value__" in value:
                     value = value["__value__"]
 
-                # Update children by matching names
                 for child in node.childItems:
-                    print("+++++++", child.itemName, value, child)
                     key = child.itemName
                     if key in value:
                         updateNode(child, value[key], dataModelHandler)
+
             elif isinstance(value, list):
-                # Update sequence/array elements using addArrayItem if more children are needed
                 for idx, item_val in enumerate(value):
                     if node.itemArrayTypeName:
                         targetRole = DataTreeModel.IsSequenceElementRole
@@ -390,18 +387,13 @@ class DataTreeModel(QAbstractItemModel):
                         self.addArrayItem(currentTreeIndex, itemNode)
                     
                     if idx < node.childCount():
-                        print("!!!!!!!", idx, node.childItems[idx].itemName, item_val)
                         updateNode(node.childItems[idx], item_val, dataModelHandler)
-
             else:
-                # Leaf node: update value
                 node.itemValue = value
 
         self.beginResetModel()
         updateNode(self.rootItem, jsonDict, dataModelHandler)
         self.endResetModel()
-
-
 
     @Slot(QModelIndex, result=bool)
     def getIsEnum(self, index):
