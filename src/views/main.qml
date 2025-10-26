@@ -22,6 +22,7 @@ import "qrc:/src/views/selection_details"
 import "qrc:/src/views/shapes_demo"
 import "qrc:/src/views/config_editor"
 import "qrc:/src/views/updater"
+import "qrc:/src/views/atc"
 
 
 ApplicationWindow {
@@ -54,6 +55,10 @@ ApplicationWindow {
             MenuItem {
                 text: "Show Shapes Demo"
                 onTriggered: shapeDemoViewId.visible = true
+            }
+            MenuItem {
+                text: "Show ATC Demo"
+                onTriggered: atcWindowId.visible = true
             }
             MenuItem {
                 text: "Show Log Window"
@@ -202,6 +207,7 @@ ApplicationWindow {
 
     onClosing: (close) => {
         console.log("Received close request.")
+        atcModel.stop()
         shutdown()
         close.accepted = true
     }
@@ -209,6 +215,11 @@ ApplicationWindow {
     ShapesDemoView {
         id: shapeDemoViewId
         visible: false
+    }
+
+    AtcWindow {
+        id: atcWindowId
+        visible: true
     }
 
     FileDialog {

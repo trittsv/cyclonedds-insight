@@ -54,6 +54,7 @@ from models.datamodel_model.datamodel_proxy_model import DatamodelProxyModel
 from models.tester_model import TesterModel
 from models.shapes_demo_model import ShapesDemoModel
 from models.graph_model import GraphModel
+from models.atc_model import AtcModel
 from utils.logger_config import LoggerConfig
 from models.participant_model import ParticipantTreeModel, ParticipantTreeNode
 from models.selection_details.participant_details_model import ParticipantDetailsModel
@@ -123,6 +124,7 @@ if __name__ == "__main__":
     participantRootItem = ParticipantTreeNode("Root")
     participantModel = ParticipantTreeModel(participantRootItem)
     shapesDemoModel = ShapesDemoModel()
+    atcModel = AtcModel()
 
     updaterModel = UpdaterModel()
 
@@ -138,6 +140,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("testerModel", testerModel)
     engine.rootContext().setContextProperty("updaterModel", updaterModel)
     engine.rootContext().setContextProperty("shapesDemoModel", shapesDemoModel)
+    engine.rootContext().setContextProperty("atcModel", atcModel)
     engine.rootContext().setContextProperty("qmlUtils", qmlUtils)
     engine.rootContext().setContextProperty("loggerConfig", loggerConfig)
     engine.rootContext().setContextProperty("CYCLONEDDS_URI", os.getenv("CYCLONEDDS_URI", "<not set>"))

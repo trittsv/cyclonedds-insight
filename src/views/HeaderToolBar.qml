@@ -88,6 +88,10 @@ ToolBar {
                     onClicked: shapeDemoViewId.visible = true
                 }
                 MenuItem {
+                    text: "ATC Demo"
+                    onClicked: atcWindowId.visible = true
+                }
+                MenuItem {
                     text: "Settings"
                     onClicked: layout.currentIndex = 0
                 }

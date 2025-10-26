@@ -20,6 +20,10 @@
         <file>res/images/spinning.gif</file>
 
         <!-- source files -->
+        <file>src/views/atc/AtcWindow.qml</file>
+        <file>src/views/atc/AtcMap.qml</file>
+        <file>src/views/atc/MapData.qml</file>
+        <file>src/views/atc/Airplane.qml</file>
         <file>src/views/selection_details/ProcessView.qml</file>
         <file>src/views/selection_details/ParticipantView.qml</file>
         <file>src/views/selection_details/HostView.qml</file>
