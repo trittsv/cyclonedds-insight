@@ -757,7 +757,7 @@ Item {
                 {lat: 46.13185364903651, lon: 8.173804687926296},
             ]
         },
-{
+        {
             name: "North Sea",
             color: "#d0e6ff",
             regionPartition: "/Ocean/North Sea",

@@ -80,6 +80,7 @@ Window {
                     wrapMode: TextInput.NoWrap
                     Layout.fillWidth: true
                     leftPadding: 10
+                    color: titleLabel.color
                 }
 
                 TextInput {
@@ -89,6 +90,7 @@ Window {
                     wrapMode: TextInput.NoWrap
                     Layout.fillWidth: true
                     leftPadding: 10
+                    color: titleLabel.color
                 }
 
                 TextInput {
@@ -98,6 +100,7 @@ Window {
                     wrapMode: TextInput.NoWrap
                     Layout.fillWidth: true
                     leftPadding: 10
+                    color: titleLabel.color
                 }
 
                 TextInput {
@@ -107,6 +110,7 @@ Window {
                     wrapMode: TextInput.NoWrap
                     Layout.fillWidth: true
                     leftPadding: 10
+                    color: titleLabel.color
                 }
 
                 Item {
