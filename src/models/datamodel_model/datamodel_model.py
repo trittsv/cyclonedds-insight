@@ -157,27 +157,30 @@ class DatamodelModel(QAbstractListModel):
         with open(filePath, "r", encoding="utf-8") as f:
             content = f.read()
             j = json.loads(content)
-            presetName = j.get("preset_name", "ImportedPreset")
-            domainId = j.get("domain_id", 0)
-            topic_name = j.get("topic_name", "")
-            topic_type = j.get("topic_type", "")
-            message = j.get("message", {"root": {}})
 
-            if "qos" in j:
-                allQosDict = j["qos"]
+            presets = j.get("presets", [])
+            for preset in presets:
+                presetName = preset.get("preset_name", "ImportedPreset")
+                domainId = preset.get("domain_id", 0)
+                topic_name = preset.get("topic_name", "")
+                topic_type = preset.get("topic_type", "")
+                message = preset.get("message", {"root": {}})
 
-                dpQos = Qos()
+                if "qos" in preset:
+                    allQosDict = preset["qos"]
 
-                if "topic_qos" in allQosDict:
-                    topicQos = qosFromJson(allQosDict["topic_qos"])
+                    dpQos = Qos()
 
-                if "endpoint_qos" in allQosDict:
-                    endpointQos = qosFromJson(allQosDict["endpoint_qos"])
+                    if "topic_qos" in allQosDict:
+                        topicQos = qosFromJson(allQosDict["topic_qos"])
 
-                if "publisher_qos" in allQosDict:
-                    publisherQos = qosFromJson(allQosDict["publisher_qos"])
+                    if "endpoint_qos" in allQosDict:
+                        endpointQos = qosFromJson(allQosDict["endpoint_qos"])
 
-                self.handleEndpointCreation(domainId, topic_name, topic_type, (dpQos, topicQos, publisherQos, endpointQos), EntityType.WRITER, presetName, message["root"])
+                    if "publisher_qos" in allQosDict:
+                        publisherQos = qosFromJson(allQosDict["publisher_qos"])
+
+                    self.handleEndpointCreation(domainId, topic_name, topic_type, (dpQos, topicQos, publisherQos, endpointQos), EntityType.WRITER, presetName, message["root"])
 
     @Slot(str, object)
     def receiveDataType(self, requestId, dataType):

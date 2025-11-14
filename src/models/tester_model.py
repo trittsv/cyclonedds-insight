@@ -217,12 +217,14 @@ class TesterModel(QAbstractListModel):
             (domainId, topic_name, topic_type, qmlCode, mt, dataTreeModel, presetName) = self.dataWriters[mId]
 
             exportData = {
-                "preset_name": presetName,
-                "domain_id": domainId,
-                "topic_name": topic_name,
-                "topic_type": topic_type,
-                "message": dataTreeModel.toJson(),
-                "qos": content
+                "presets": [{
+                    "preset_name": presetName,
+                    "domain_id": domainId,
+                    "topic_name": topic_name,
+                    "topic_type": topic_type,
+                    "message": dataTreeModel.toJson(),
+                    "qos": content
+                }]
             }
 
             qmlUtils = QmlUtils()

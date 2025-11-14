@@ -408,7 +408,6 @@ class DataTreeModel(QAbstractItemModel):
     def getEnumValue(self, index):
         if index.isValid():
             item: DataTreeNode= index.internalPointer()
-            print("enum val", item, item.itemValue, item.enumItemNames)
             return item.itemValue
         return 0
 

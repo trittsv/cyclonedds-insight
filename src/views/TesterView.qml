@@ -64,6 +64,7 @@ Rectangle {
                 id: exportButton
                 text: "Export"
                 onClicked: exportMenu.open()
+                enabled: librariesCombobox.count > 0
 
                 Menu {
                     id: exportMenu
@@ -84,6 +85,7 @@ Rectangle {
             Button {
                 text: "Delete"
                 onClicked: deleteMenu.open()
+                enabled: librariesCombobox.count > 0
 
                 Menu {
                     id: deleteMenu
