@@ -294,7 +294,7 @@ class DataTreeModel(QAbstractItemModel):
                     obj = getattr(obj, attr)
 
             if obj is None or item.itemValue is None:
-                logging.warning("Warning cannot set value")
+                logging.warning(f"Warning cannot set index: {str(index)}, value: {str(value)}")
                 return
 
             if isinstance(obj, list):
@@ -367,6 +367,8 @@ class DataTreeModel(QAbstractItemModel):
 
                 for child in node.childItems:
                     key = child.itemName
+                    if not key:
+                        key = "__value__"
                     if key in value:
                         updateNode(child, value[key], dataModelHandler)
 
@@ -401,6 +403,14 @@ class DataTreeModel(QAbstractItemModel):
             item: DataTreeNode= index.internalPointer()
             return item.role == self.IsEnumRole
         return False
+
+    @Slot(QModelIndex, result=int)
+    def getEnumValue(self, index):
+        if index.isValid():
+            item: DataTreeNode= index.internalPointer()
+            print("enum val", item, item.itemValue, item.enumItemNames)
+            return item.itemValue
+        return 0
 
     @Slot(QModelIndex, result=list)
     def getEnumModel(self, index):

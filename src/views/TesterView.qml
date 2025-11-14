@@ -61,13 +61,53 @@ Rectangle {
             }
 
             Button {
-                text: "Delete All"
-                onClicked: {
-                    if (component) {
-                        component.destroy()
+                id: exportButton
+                text: "Export"
+                onClicked: exportMenu.open()
+
+                Menu {
+                    id: exportMenu
+
+                    MenuItem {
+                        text: "Export Current"
+                        onClicked: exportPresetDialog.open()
                     }
-                    testerModel.deleteAllWriters()
+                    MenuItem {
+                        text: "Export All"
+                        onClicked: {
+
+                        }
+                    }
                 }
+            }
+
+            Button {
+                text: "Delete"
+                onClicked: deleteMenu.open()
+
+                Menu {
+                    id: deleteMenu
+
+                    MenuItem {
+                        text: "Delete Current"
+                        onClicked: {
+                            if (component) {
+                                component.destroy()
+                            }
+                            testerModel.deleteWriter(librariesCombobox.currentIndex)
+                        }
+                    }
+                    MenuItem {
+                        text: "Delete All"
+                        onClicked: {
+                            if (component) {
+                                component.destroy()
+                            }
+                            testerModel.deleteAllWriters()
+                        }
+                    }
+                }
+
             }
         }
 
@@ -118,7 +158,7 @@ Rectangle {
             }
 
             Label {
-                text: "Preset:"
+                text: "Name:"
             }
 
             TextField {
@@ -133,20 +173,7 @@ Rectangle {
                 }
             }
 
-            Button {
-                text: "Delete"
-                onClicked: {
-                    if (component) {
-                        component.destroy()
-                    }
-                    testerModel.deleteWriter(librariesCombobox.currentIndex)
-                }
-            }
 
-            Button {
-                text: "Export"
-                onClicked: exportPresetDialog.open()
-            }
 
             /*Button {
                 text: "Print tree"
@@ -329,12 +356,15 @@ Rectangle {
                         visible: dataTreeModel !== null ? dataTreeModel.getIsEnum(treeView.index(row, column)) : false
                         enabled: dataTreeModel !== null ? dataTreeModel.getIsEnum(treeView.index(row, column)) : false
                         model: dataTreeModel !== null ? dataTreeModel.getEnumModel(treeView.index(row, column)) : []
+                        currentIndex: dataTreeModel !== null ? dataTreeModel.getEnumValue(treeView.index(row, column)) : 0
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: label.right
                         anchors.leftMargin: 5
                         onCurrentIndexChanged: {
                             if (dataTreeModel) {
-                                dataTreeModel.setData(treeView.index(row, column), enumCombo.currentIndex)
+                                if (model.is_enum) {
+                                    dataTreeModel.setData(treeView.index(row, column), enumCombo.currentIndex)
+                                }
                             }
                         }
                     }

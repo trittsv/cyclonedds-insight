@@ -36,6 +36,8 @@ class DatamodelModel(QAbstractListModel):
     requestDataType = Signal(str, int, str, str)
     newWriterSignal = Signal(str, int, str, str, str, str, str, object)
 
+    untitiledCount = 1
+
     def __init__(self, threads, dataModelHandler, parent=typing.Optional[QObject]) -> None:
         super().__init__()
         self.dataModelHandler: DataModelHandler = dataModelHandler
@@ -130,7 +132,8 @@ class DatamodelModel(QAbstractListModel):
         qos = (dpQps, topicQos, pubSubQos, endpQos)
         entityType = EntityType(entityTypeInteger)
 
-        self.handleEndpointCreation(domain_id, topic_name, topic_type, qos, entityType, f"Untitled", {})
+        self.handleEndpointCreation(domain_id, topic_name, topic_type, qos, entityType, f"Untitled-{DatamodelModel.untitiledCount}", {})
+        DatamodelModel.untitiledCount += 1
 
     def handleEndpointCreation(self, domain_id, topic_name, topic_type, qos, entityType, presetName, msgDict):
         if self.dataModelHandler.hasType(topic_type):
