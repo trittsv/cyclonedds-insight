@@ -57,5 +57,8 @@ Name: "{autoprograms}\{#TheAppName}"; Filename: "{app}\{#TheAppExeName}"
 Name: "{autodesktop}\{#TheAppName}"; Filename: "{app}\{#TheAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#TheAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(TheAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+; For normal installs (checkbox on finished page)
+Filename: "{app}\{#TheAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(TheAppName, '&', '&&')}}"; Flags: nowait runasoriginaluser postinstall skipifsilent
 
+; For silent installs (run automatically)
+Filename: "{app}\{#TheAppExeName}"; Flags: nowait runasoriginaluser shellexec skipifnotsilent

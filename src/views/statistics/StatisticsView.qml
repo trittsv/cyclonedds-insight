@@ -10,9 +10,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 */
 
+import QtCore
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtCharts
 import Qt.labs.qmlmodels
@@ -26,6 +28,10 @@ Rectangle {
     color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
     property var statisticModel: Object.create(null)
     property int keepHistoryMinutes: 10
+    property int itemCellHeight: 400
+    property int itemChartWidth: 450
+
+    property var markers: []
 
     function startStatistics() {
         if (statisticModel) {
@@ -53,6 +59,23 @@ Rectangle {
         keepHistoryMinutes = minutes
     }
 
+    function addMarkerToAllCharts(time, text) {
+        for (let i = 0; i < chartRepeater.count; i++) {
+            let chartObj = chartRepeater.itemAt(i);
+            if (chartObj && chartObj.addMarker) {
+                chartObj.addMarker(time, text);
+            }
+        }
+    }
+
+    function clearMarkers() {
+        console.debug("Clear markers, count:", markers.length);
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].destroy();
+        }
+        markers = [];
+    }
+
     ScrollView {
         anchors.fill: parent
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -63,10 +86,11 @@ Rectangle {
             spacing: 0
 
             Repeater {
+                id: chartRepeater
                 model: statisticModel
                 delegate: Item {
                     id: currentStatUnitId
-                    Layout.preferredHeight: 400
+                    Layout.preferredHeight: itemCellHeight
                     Layout.preferredWidth: rootStatViewId.width
 
                     property var lineSeriesDict: Object.create(null)
@@ -74,6 +98,23 @@ Rectangle {
                     Component.onCompleted: {
                         axisX.min = new Date(Date.now() - 2 * 60 * 1000)
                         axisX.max = new Date(Date.now())
+                    }
+
+                    function addMarker(labelText, timeMs) {
+                        var comp = Qt.createComponent("qrc:/src/views/statistics/Marker.qml");
+                        if (comp.status === Component.Ready) {
+                            var m = comp.createObject(markersLayer, {
+                                chart: myChart,
+                                axisX: axisX,
+                                time: timeMs,
+                                text: labelText
+                            });
+                            if (m) {
+                                markers.push(m);
+                            }
+                        } else {
+                            console.log("Marker error:", comp.errorString());
+                        }
                     }
 
                     Connections {
@@ -96,6 +137,7 @@ Rectangle {
                                     currentStatUnitId.lineSeriesDict[guid].remove(0);
                                 }
                                 currentStatUnitId.lineSeriesDict[guid].append(timestamp, value);
+                                currentStatUnitId.lineSeriesDict[guid].color = Qt.rgba(r/255, g/255, b/255, 1);
                             } else {
                                 var line = myChart.createSeries(ChartView.SeriesTypeLine, guid, axisX, axisY);
                                 line.color = Qt.rgba(r/255, g/255, b/255, 1);
@@ -145,14 +187,15 @@ Rectangle {
                             ChartView {
                                 id: myChart
 
-                                Layout.preferredHeight: 350
-                                Layout.preferredWidth: 450
+                                Layout.preferredHeight: itemCellHeight * 0.9
+                                Layout.preferredWidth: itemChartWidth
                                 Layout.alignment: Qt.AlignTop
                                 
                                 title: name_role
                                 antialiasing: true
                                 legend.visible: false
                                 legend.alignment: Qt.AlignRight
+                                localizeNumbers: true
 
                                 ValueAxis {
                                     id: axisY
@@ -169,11 +212,40 @@ Rectangle {
                                     min: (Date.now() / 1000) - (60 * keepHistoryMinutes);
                                     max: (Date.now() / 1000) + (60 * keepHistoryMinutes);
                                 }
+
+                                Rectangle {
+                                    anchors.top: parent.top
+                                    anchors.right: parent.right
+                                    anchors.margins: 10
+                                    width: 80
+                                    height: 20
+                                    color: chartControlMiniMouseArea.pressed ? "lightgrey" : "transparent"
+                                    
+                                    Label {
+                                        text: "Export CSV"
+                                        anchors.centerIn: parent
+                                        color: "black"
+                                    }
+                                    MouseArea {
+                                        id: chartControlMiniMouseArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        onClicked: {
+                                            exportCsvDialog.open()
+                                        }
+                                    }
+                                }
+                                Item {
+                                    id: markersLayer
+                                    anchors.fill: parent
+                                    z: 1000
+                                }
                             }
 
                             ColumnLayout {
-                                Layout.preferredHeight: 350
-                                Layout.preferredWidth: rootStatViewId.width - 450
+                                id: tableLayout
+                                Layout.preferredHeight: itemCellHeight * 0.9
+                                Layout.preferredWidth: rootStatViewId.width - itemChartWidth
                                 Layout.alignment: Qt.AlignTop
                                 spacing: 0
 
@@ -197,10 +269,12 @@ Rectangle {
                                     model: table_model_role
 
                                     delegate: Item {
-                                        implicitWidth: model.column === 0 ? (rootStatViewId.width - 450) * 0.7 : (rootStatViewId.width - 450) * 0.3
+                                        implicitWidth: model.column === 0 ? 60 : model.column === 1 ? (tableLayout.implicitWidth) * 0.6 : (tableLayout.implicitWidth) * 0.3
                                         implicitHeight: 25
    
                                         Label {
+                                            visible: model.column !== 0
+                                            id: displayLabel
                                             text: display
                                             anchors.fill: parent
                                             color: Qt.rgba(model.color_r / 255, model.color_g / 255, model.color_b / 255, 1)
@@ -208,13 +282,129 @@ Rectangle {
                                             verticalAlignment: Text.AlignVCenter
                                             clip: true
                                         }
+
+                                        RowLayout {
+                                            visible: model.column === 0
+                                            CheckBox {
+                                                checked: is_visible
+                                                text: ""
+                                                onCheckedChanged: {
+                                                    statisticModel.setItemVisible(name, checked)
+                                                    if (name in currentStatUnitId.lineSeriesDict) {
+                                                        currentStatUnitId.lineSeriesDict[name].visible = checked
+                                                    }
+                                                }
+                                            }
+                                            Rectangle {
+                                                
+                                                width: 20
+                                                height: 20
+                                                color: Qt.rgba(model.color_r / 255, model.color_g / 255, model.color_b / 255, 1)
+                                                border.width: 1
+                                                border.color: "black"
+
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        colorDialog.selectedColor = Qt.rgba(model.color_r / 255, model.color_g / 255, model.color_b / 255, 1)
+                                                        colorDialog.name = name
+                                                        colorDialog.open()
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+
+                    FileDialog {
+                        id: exportCsvDialog
+                        currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
+                        fileMode: FileDialog.SaveFile
+                        defaultSuffix: "json"
+                        title: "Export Tester Preset"
+                        nameFilters: ["CSV files (*.csv)"]
+                        selectedFile: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0] + "/" + name_role + ".csv"
+                        onAccepted: {
+                            console.info("Export CSV to " + selectedFile)
+                            qmlUtils.createFileFromQUrl(selectedFile)
+                            var localPath = qmlUtils.toLocalFile(selectedFile);
+                            var csv = "Timestamp";
+
+                            // CSV Header
+                            for (var guid in currentStatUnitId.lineSeriesDict) {
+                                csv += "," + guid;
+                            }
+                            csv += "\n";
+
+                            // Collect all unique timestamps
+                            var timestampSet = new Set();
+                            var guidList = [];
+                            for (var guid in currentStatUnitId.lineSeriesDict) {
+                                guidList.push(guid);
+                                var line = currentStatUnitId.lineSeriesDict[guid];
+                                for (var i = 0; i < line.count; ++i) {
+                                    var point = line.at(i);
+                                    timestampSet.add(point.x);
+                                }
+                            }
+                            var timestamps = Array.from(timestampSet);
+                            timestamps.sort(function(a, b) { return a - b; });
+
+                            // Build a lookup: guid -> {timestamp -> value}
+                            var valueMap = {};
+                            for (var g = 0; g < guidList.length; ++g) {
+                                var guid = guidList[g];
+                                var line = currentStatUnitId.lineSeriesDict[guid];
+                                valueMap[guid] = {};
+                                for (var i = 0; i < line.count; ++i) {
+                                    var point = line.at(i);
+                                    valueMap[guid][point.x] = point.y;
+                                }
+                            }
+
+                            // Write CSV rows
+                            var lastValues = {};
+                            for (var t = 0; t < timestamps.length; ++t) {
+                                var row = "" + timestamps[t];
+                                for (var g = 0; g < guidList.length; ++g) {
+                                    var guid = guidList[g];
+                                    var val = valueMap[guid][timestamps[t]];
+                                    if (val !== undefined) {
+                                        lastValues[guid] = val; // update last known value
+                                    }
+                                    row += "," + (lastValues[guid] !== undefined ? lastValues[guid] : "");
+                                }
+                                csv += row + "\n";
+                            }
+
+                            qmlUtils.saveFileContent(localPath, csv);
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    ColorDialog {
+        id: colorDialog
+        property string name: ""
+        onAccepted: {
+            console.info("Change color to", selectedColor)
+            statisticModel.changeColors(name, selectedColor)
+            for (let i = 0; i < chartRepeater.count; i++) {
+                let chartObj = chartRepeater.itemAt(i);
+                if (chartObj && chartObj.lineSeriesDict && name in chartObj.lineSeriesDict) {
+                    chartObj.lineSeriesDict[name].color = selectedColor;
+                }
+            }
+        }
+        onRejected: {
+            console.info("Color change cancelled")
         }
     }
 

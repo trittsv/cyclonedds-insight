@@ -21,6 +21,7 @@ import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/selection_details"
 import "qrc:/src/views/shapes_demo"
 import "qrc:/src/views/config_editor"
+import "qrc:/src/views/updater"
 
 
 ApplicationWindow {
@@ -72,8 +73,26 @@ ApplicationWindow {
             }
             MenuItem {
                 text: "Check for Updates"
-                onTriggered: checkForUpdatesWindow.visible = true
+                onTriggered: checkForUpdatesWindow.showAndCheckForUpdates()
             }
+        }
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.New ]
+        sequence: "Ctrl+,"
+        onActivated: {
+            console.debug("Ctrl+, pressed!")
+            layout.currentIndex = 0
+        }
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.New ]
+        sequence: "Ctrl+0"
+        onActivated: {
+            console.debug("Ctrl+0 pressed!")
+            layout.currentIndex = 1
         }
     }
 
@@ -83,6 +102,11 @@ ApplicationWindow {
 
     CheckForUpdates {
         id: checkForUpdatesWindow
+    }
+
+    UpdaterView {
+        id: updaterView
+        visible: false
     }
 
     SystemPalette {
@@ -198,5 +222,17 @@ ApplicationWindow {
             var localPath = qmlUtils.toLocalFile(selectedFile);
             qmlUtils.exportDdsDataAsJson(localPath);
         }
+    }
+
+    ProxyAuthWindow {
+        id: proxyAuthWindow
+        resultHandler: checkForUpdatesWindow
+        visible: false
+    }
+
+    ProxyAuthWindow {
+        id: proxyAuthWindowUpdater
+        resultHandler: updaterView
+        visible: false
     }
 }
