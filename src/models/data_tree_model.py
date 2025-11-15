@@ -301,7 +301,7 @@ class DataTreeModel(QAbstractItemModel):
                     obj = getattr(obj, attr)
 
             if obj is None or item.itemValue is None:
-                logging.warning(f"Warning cannot set value")
+                logging.warning("Warning cannot set value")
                 return
 
             if isinstance(obj, list):
@@ -349,7 +349,6 @@ class DataTreeModel(QAbstractItemModel):
                     key = child.itemName if child.itemName else "__value__"
                     value = child_dict[key]
                     result.append({key: value})
-                print(result)
                 return {name: result if result else []}
 
             # Leaf node

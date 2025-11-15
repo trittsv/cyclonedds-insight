@@ -178,16 +178,12 @@ Rectangle {
                     }
                 }
             }
-
-
-
-            /*Button {
+            /* Button {
                 text: "Print tree"
                 onClicked: {
                     dataTreeModel.printTree()
                 }
-            }*/
-
+            } */
             Item {
                 implicitHeight: 1
                 implicitWidth: 1
