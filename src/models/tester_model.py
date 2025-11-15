@@ -115,7 +115,7 @@ class TesterModel(QAbstractListModel):
         (domainId, topic_name, topic_type, qmlCode, mt, dataTreeModel, _) = self.dataWriters[mId]
         self.dataWriters[mId] = (domainId, topic_name, topic_type, qmlCode, mt, dataTreeModel, presetName)
         idx = self.index(currentIndex)
-        self.dataChanged.emit(idx, idx, [self.PresetNameRole])
+        self.dataChanged.emit(idx, idx, [self.PresetNameRole, self.NameRole])
 
     @Slot(int, str, str, str, str, str, str, object)
     def addWriter(self, id: str, domainId, topic_name, topic_type, qmlCode, pyCode, presetName, msgDict):
