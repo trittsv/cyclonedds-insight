@@ -14,8 +14,6 @@ from enum import Enum
 from cyclonedds import qos
 # from cyclonedds.internal import feature_typelib # not available in v0.10.5
 from utils.ordered_enum import OrderedEnum
-from cyclonedds.util import duration
-import base64
 
 
 def qos_match(endpoint_reader, endpoint_writer) -> list:
