@@ -33,6 +33,9 @@ class DataTreeNode:
         self.enumItemNames = []
         self.maxElements = 0
 
+    def __repr__(self):
+        return f"Node(itemName={self.itemName}, itemTypeName={self.itemTypeName}, itemArrayTypeName={self.itemArrayTypeName}, itemArrayType={self.itemArrayType}, itemValue={self.itemValue}, role={self.role}, dataType={self.dataType}, enumItemNames={self.enumItemNames})"
+
     def appendChild(self, child):
         self.childItems.append(child)
 
@@ -284,6 +287,10 @@ class DataTreeModel(QAbstractItemModel):
                 return
             elif item.role == self.IsStructRole:
                 return
+            
+        self.syncDataType(item)
+
+    def syncDataType(self, item):
 
             attrs, parent = self.getDotPath(item)
             obj = parent.dataType
@@ -294,7 +301,7 @@ class DataTreeModel(QAbstractItemModel):
                     obj = getattr(obj, attr)
 
             if obj is None or item.itemValue is None:
-                logging.warning(f"Warning cannot set index: {str(index)}, value: {str(value)}")
+                logging.warning(f"Warning cannot set value")
                 return
 
             if isinstance(obj, list):
@@ -305,7 +312,7 @@ class DataTreeModel(QAbstractItemModel):
     @Slot()
     def printTree(self):
         def printNode(node, indent=0):
-            print(' ' * indent + str(node.itemName) + " " + str(node.itemValue), node.dataType, node.itemArrayType, self.get_role_name_by_number(node.role), node.itemTypeName)
+            print(' ' * indent + str(node) + " " + self.get_role_name_by_number(node.role))
             for child in node.childItems:
                 printNode(child, indent + 2)
 
@@ -360,7 +367,7 @@ class DataTreeModel(QAbstractItemModel):
 
     def fromJson(self, jsonDict, dataModelHandler):
 
-        def updateNode(node, value, dataModelHandler):
+        def updateNode(node: DataTreeNode, value, dataModelHandler):
             if isinstance(value, dict):
                 if "__value__" in value:
                     value = value["__value__"]
@@ -392,6 +399,7 @@ class DataTreeModel(QAbstractItemModel):
                         updateNode(node.childItems[idx], item_val, dataModelHandler)
             else:
                 node.itemValue = value
+                self.syncDataType(node)
 
         self.beginResetModel()
         updateNode(self.rootItem, jsonDict, dataModelHandler)
