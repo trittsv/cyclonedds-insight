@@ -59,6 +59,12 @@ class TesterModel(QAbstractListModel):
         self.threads = threads
         self.alreadyConnectedDomains = []
         self.pendingQosRequests = {}
+        self.exportCount = None
+        self.currentExportCount = 0
+        self.resetExportData()
+
+    def resetExportData(self):
+        self.exportData = { "presets": [] }
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole):
         if not index.isValid():
@@ -201,6 +207,20 @@ class TesterModel(QAbstractListModel):
     def exportJson(self, filePath, currentIndex: int):
         if currentIndex < 0:
             return
+        self.exportCount = 1
+        self.currentExportCount = 0
+        self._exportJsonItem(filePath, currentIndex)
+
+    @Slot(str)
+    def exportJsonAll(self, filePath):
+        self.exportCount = len(list(self.dataWriters.keys()))
+        self.currentExportCount = 0
+        for index, _ in enumerate(list(self.dataWriters.keys())):
+            self._exportJsonItem(filePath, index)
+
+    def _exportJsonItem(self, filePath, currentIndex: int):
+        if currentIndex < 0:
+            return
         mId = list(self.dataWriters.keys())[int(currentIndex)]
 
         reqId = str(uuid.uuid4())
@@ -209,23 +229,30 @@ class TesterModel(QAbstractListModel):
 
     @Slot(str, object)
     def receiveQosJson(self, requestId: str, content: dict):
-
         logging.info(f"Received qos json for requestId {requestId}")
         if requestId in self.pendingQosRequests.keys():
+            self.currentExportCount += 1
             (mId, filePath) = self.pendingQosRequests[requestId]
 
             (domainId, topic_name, topic_type, qmlCode, mt, dataTreeModel, presetName) = self.dataWriters[mId]
 
-            exportData = {
-                "presets": [{
+            self.exportData["presets"].append({
                     "preset_name": presetName,
                     "domain_id": domainId,
                     "topic_name": topic_name,
                     "topic_type": topic_type,
                     "message": dataTreeModel.toJson(),
                     "qos": content
-                }]
-            }
+                })
 
-            qmlUtils = QmlUtils()
-            qmlUtils.saveFileContent(filePath, json.dumps(exportData, indent=4))
+            doFileWrite = False
+            if self.exportCount:
+                if self.exportCount == self.currentExportCount:
+                    doFileWrite = True
+
+            if doFileWrite:
+                self.currentExportCount = 0
+                self.exportCount = None
+                qmlUtils = QmlUtils()
+                qmlUtils.saveFileContent(filePath, json.dumps(self.exportData, indent=4))
+                self.resetExportData()

@@ -71,12 +71,16 @@ Rectangle {
 
                     MenuItem {
                         text: "Export Current"
-                        onClicked: exportPresetDialog.open()
+                        onClicked: {
+                            exportPresetDialog.exportAll = false;
+                            exportPresetDialog.open()
+                        }
                     }
                     MenuItem {
                         text: "Export All"
                         onClicked: {
-
+                            exportPresetDialog.exportAll = true;
+                            exportPresetDialog.open()
                         }
                     }
                 }
@@ -124,7 +128,7 @@ Rectangle {
             }
 
             Label {
-                text: "Select:"
+                text: "Selected:"
             }
 
             ComboBox {
@@ -416,10 +420,15 @@ Rectangle {
         title: "Export Tester Preset"
         nameFilters: ["JSON files (*.json)"]
         selectedFile: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0] + "/" + (presetNameField.text !== "" ? presetNameField.text : "preset") + ".json"
+        property bool exportAll: false
         onAccepted: {
             qmlUtils.createFileFromQUrl(selectedFile)
             var localPath = qmlUtils.toLocalFile(selectedFile);
-            testerModel.exportJson(localPath, librariesCombobox.currentIndex);
+            if (exportPresetDialog.exportAll) {
+                testerModel.exportJsonAll(localPath);
+            } else {
+                testerModel.exportJson(localPath, librariesCombobox.currentIndex);
+            }
         }
     }
 
