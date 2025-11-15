@@ -408,8 +408,17 @@ class DataTreeModel(QAbstractItemModel):
     def getEnumValue(self, index):
         if index.isValid():
             item: DataTreeNode= index.internalPointer()
-            return item.itemValue
+            if item.itemValue:
+                return item.itemValue
         return 0
+
+    @Slot(QModelIndex, result=str)
+    def getStrValue(self, index):
+        if index.isValid():
+            item: DataTreeNode= index.internalPointer()
+            if item.itemValue:
+                return item.itemValue
+        return ""
 
     @Slot(QModelIndex, result=list)
     def getEnumModel(self, index):

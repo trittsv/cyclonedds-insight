@@ -285,7 +285,7 @@ Rectangle {
                         id: inputFieldStr
                         visible: model.is_str
                         enabled: model.is_str
-                        text: model.value !== undefined ? model.value : ""
+                        text: dataTreeModel !== null ? dataTreeModel.getStrValue(treeView.index(row, column)) : ""
                         placeholderText: "Enter text"
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: label.right
@@ -368,7 +368,7 @@ Rectangle {
                         anchors.leftMargin: 5
                         onCurrentIndexChanged: {
                             if (dataTreeModel) {
-                                if (model.is_enum) {
+                                if (dataTreeModel.getIsEnum(treeView.index(row, column))) {
                                     dataTreeModel.setData(treeView.index(row, column), enumCombo.currentIndex)
                                 }
                             }
@@ -398,8 +398,6 @@ Rectangle {
                     }
                 }
             }
-
-            // Content will be inserted in this element
         }
 
         Button {
