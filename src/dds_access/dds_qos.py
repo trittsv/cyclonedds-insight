@@ -15,6 +15,7 @@ from cyclonedds import qos
 # from cyclonedds.internal import feature_typelib # not available in v0.10.5
 from utils.ordered_enum import OrderedEnum
 from cyclonedds.util import duration
+import base64
 
 
 def qos_match(endpoint_reader, endpoint_writer) -> list:
@@ -383,6 +384,9 @@ def qosToJson(q: qos.Qos) -> dict:
                 "depth": getattr(q[qos.Policy.History], "depth", None)
             }
 
+    if qos.Policy.Userdata in q:
+        j["user_data"] = base64.b64encode(q[qos.Policy.Userdata].data).decode("ascii")
+
     return j
 
 def qosFromJson(j: dict) -> qos.Qos:
@@ -427,5 +431,8 @@ def qosFromJson(j: dict) -> qos.Qos:
         elif j["history"]["kind"] == "KEEP_LAST":
             if "depth" in j["history"] and j["history"]["depth"] is not None:
                 q += qos.Qos(qos.Policy.History.KeepLast(j["history"]["depth"]))
+
+    if "user_data" in j:
+        q += qos.Qos(qos.Policy.Userdata(base64.b64decode(j["user_data"])))
 
     return q
