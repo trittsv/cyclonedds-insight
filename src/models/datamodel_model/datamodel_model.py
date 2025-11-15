@@ -22,7 +22,6 @@ from dds_access.dds_data import DdsData
 from dds_access import dds_utils
 from cyclonedds.core import Qos, Policy
 from cyclonedds.util import duration
-from dds_access.dds_qos import qosFromJson
 from dds_access.datatypes.entity_type import EntityType
 from module_handler import DataModelHandler
 
@@ -172,13 +171,13 @@ class DatamodelModel(QAbstractListModel):
                     dpQos = Qos()
 
                     if "topic_qos" in allQosDict:
-                        topicQos = qosFromJson(allQosDict["topic_qos"])
+                        topicQos = Qos.fromdict(allQosDict["topic_qos"])
 
                     if "endpoint_qos" in allQosDict:
-                        endpointQos = qosFromJson(allQosDict["endpoint_qos"])
+                        endpointQos = Qos.fromdict(allQosDict["endpoint_qos"])
 
                     if "publisher_qos" in allQosDict:
-                        publisherQos = qosFromJson(allQosDict["publisher_qos"])
+                        publisherQos = Qos.fromdict(allQosDict["publisher_qos"])
 
                     self.handleEndpointCreation(domainId, topic_name, topic_type, (dpQos, topicQos, publisherQos, endpointQos), EntityType.WRITER, presetName, message["root"])
 

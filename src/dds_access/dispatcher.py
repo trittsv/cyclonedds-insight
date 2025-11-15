@@ -23,7 +23,6 @@ from dds_access.dds_listener import DdsListener
 from threading import Lock
 from dds_access.domain_participant_factory import DomainParticipantFactory
 from dds_access.datatypes.entity_type import EntityType
-from dds_access.dds_qos import qosToJson
 
 
 class DispatcherThread(QThread):
@@ -143,8 +142,8 @@ class DispatcherThread(QThread):
         if endpointId in self.writerData:
             (pub, writer, _) = self.writerData[endpointId]
             entJson = {
-                "topic_qos": qosToJson(writer.topic.get_qos()),
-                "publisher_qos": qosToJson(pub.get_qos()),
-                "endpoint_qos": qosToJson(writer.get_qos())
+                "topic_qos": writer.topic.get_qos().asdict(),
+                "publisher_qos": pub.get_qos().asdict(),
+                "endpoint_qos": writer.get_qos().asdict()
             }
             self.responseQosJson.emit(requestId, entJson)
