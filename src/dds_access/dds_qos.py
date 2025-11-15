@@ -95,26 +95,6 @@ def qos_match(endpoint_reader, endpoint_writer) -> list:
 
     return mismatches
 
-def durability_to_str(durability):
-    if durability == dds_durability_kind.DDS_DURABILITY_VOLATILE:
-        return "VOLATILE"
-    elif durability == dds_durability_kind.DDS_DURABILITY_TRANSIENT_LOCAL:
-        return "TRANSIENT_LOCAL"
-    elif durability == dds_durability_kind.DDS_DURABILITY_TRANSIENT:
-        return "TRANSIENT"
-    elif durability == dds_durability_kind.DDS_DURABILITY_PERSISTENT:
-        return "PERSISTENT"
-
-def durability_from_str(s: str):
-    if s == "VOLATILE":
-        return dds_durability_kind.DDS_DURABILITY_VOLATILE
-    elif s == "TRANSIENT_LOCAL":
-        return dds_durability_kind.DDS_DURABILITY_TRANSIENT_LOCAL
-    elif s == "TRANSIENT":
-        return dds_durability_kind.DDS_DURABILITY_TRANSIENT
-    elif s == "PERSISTENT":
-        return dds_durability_kind.DDS_DURABILITY_PERSISTENT
-
 class dds_durability_kind(OrderedEnum):
     DDS_DURABILITY_VOLATILE = 0
     DDS_DURABILITY_TRANSIENT_LOCAL = 1
@@ -353,7 +333,14 @@ def qosToJson(q: qos.Qos) -> dict:
 
     durability_qos = to_kind_durability(q)
     if durability_qos:
-        j["durability"] = durability_to_str(durability_qos)
+        if durability_qos == dds_durability_kind.DDS_DURABILITY_VOLATILE:
+            j["durability"] = "VOLATILE"
+        elif durability_qos == dds_durability_kind.DDS_DURABILITY_TRANSIENT_LOCAL:
+            j["durability"] = "TRANSIENT_LOCAL"
+        elif durability_qos == dds_durability_kind.DDS_DURABILITY_TRANSIENT:
+            j["durability"] = "TRANSIENT"
+        elif durability_qos == dds_durability_kind.DDS_DURABILITY_PERSISTENT:
+            j["durability"] = "PERSISTENT"
 
     reliability_qos = to_kind_reliability(q)
     if reliability_qos:
@@ -404,19 +391,19 @@ def qosFromJson(j: dict) -> qos.Qos:
 
     if "durability" in j:
         q_dur = j["durability"]
-        if q_dur == "DDS_DURABILITY_VOLATILE":
-            q += qos.Qos(Policy.Durability.Volatile)
-        elif q_dur == "DDS_DURABILITY_TRANSIENT_LOCAL":
-            q += qos.Qos(Policy.Durability.TransientLocal)
-        elif q_dur == "DDS_DURABILITY_TRANSIENT":
-            q += qos.Qos(Policy.Durability.Transient)
-        elif q_dur == "DDS_DURABILITY_PERSISTENT":
-            q += qos.Qos(Policy.Durability.Persistent)
+        if q_dur == "VOLATILE":
+            q += qos.Qos(qos.Policy.Durability.Volatile)
+        elif q_dur == "TRANSIENT_LOCAL":
+            q += qos.Qos(qos.Policy.Durability.TransientLocal)
+        elif q_dur == "TRANSIENT":
+            q += qos.Qos(qos.Policy.Durability.Transient)
+        elif q_dur == "PERSISTENT":
+            q += qos.Qos(qos.Policy.Durability.Persistent)
 
     if "reliability" in j:
         if j["reliability"]["kind"] == "RELIABLE":
-            max_blocking_time = j["reliability"].get("max_blocking_time", None)
-            q += qos.Qos(qos.Policy.Reliability(qos.Policy.Reliability.Reliable(max_blocking_time=duration(nanoseconds=max_blocking_time))))
+            max_blocking_time = j["reliability"].get("max_blocking_time", 100000000)
+            q += qos.Qos(qos.Policy.Reliability.Reliable(max_blocking_time=duration(nanoseconds=max_blocking_time)))
         else:
             q += qos.Qos(qos.Policy.Reliability.BestEffort)
 
