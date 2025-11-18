@@ -10,6 +10,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 */
 
+import QtCore
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
@@ -42,6 +43,81 @@ Rectangle {
         spacing: 0
 
         RowLayout {
+
+            Label {
+                text: "Tester"
+                leftPadding: 10
+                font.bold: true
+            }
+
+            Item {
+                implicitHeight: 1
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: "Import"
+                onClicked: importPresetDialog.open()
+            }
+
+            Button {
+                id: exportButton
+                text: "Export"
+                onClicked: exportMenu.open()
+                enabled: librariesCombobox.count > 0
+
+                Menu {
+                    id: exportMenu
+
+                    MenuItem {
+                        text: "Export Current"
+                        onClicked: {
+                            exportPresetDialog.exportAll = false;
+                            exportPresetDialog.open()
+                        }
+                    }
+                    MenuItem {
+                        text: "Export All"
+                        onClicked: {
+                            exportPresetDialog.exportAll = true;
+                            exportPresetDialog.open()
+                        }
+                    }
+                }
+            }
+
+            Button {
+                text: "Delete"
+                onClicked: deleteMenu.open()
+                enabled: librariesCombobox.count > 0
+
+                Menu {
+                    id: deleteMenu
+
+                    MenuItem {
+                        text: "Delete Current"
+                        onClicked: {
+                            if (component) {
+                                component.destroy()
+                            }
+                            testerModel.deleteWriter(librariesCombobox.currentIndex)
+                        }
+                    }
+                    MenuItem {
+                        text: "Delete All"
+                        onClicked: {
+                            if (component) {
+                                component.destroy()
+                            }
+                            testerModel.deleteAllWriters()
+                        }
+                    }
+                }
+
+            }
+        }
+
+        RowLayout {
             Layout.minimumHeight: 40
             Layout.maximumHeight: 40
             spacing: 10
@@ -52,7 +128,7 @@ Rectangle {
             }
 
             Label {
-                text: "Select:"
+                text: "Selected:"
             }
 
             ComboBox {
@@ -72,13 +148,34 @@ Rectangle {
                 }
             }
 
-            Button {
-                text: "Delete All Writers"
-                onClicked: {
-                    if (component) {
-                        component.destroy()
+            Item {
+                implicitHeight: 1
+                implicitWidth: 1
+            }
+        }
+
+        RowLayout {
+            spacing: 10
+            visible: dataTreeModel !== null
+
+            Item {
+                implicitHeight: 1
+                implicitWidth: 1
+            }
+
+            Label {
+                text: "Name:"
+            }
+
+            TextField {
+                id: presetNameField
+                text: dataTreeModel !== null ? testerModel.getPresetName(librariesCombobox.currentIndex) : ""
+                placeholderText: "Enter Preset-Name"
+                Layout.fillWidth: true
+                onTextChanged: {
+                    if (testerModel) {
+                        testerModel.setPresetName(librariesCombobox.currentIndex, presetNameField.text)
                     }
-                    testerModel.deleteAllWriters()
                 }
             }
             /* Button {
@@ -91,6 +188,12 @@ Rectangle {
                 implicitHeight: 1
                 implicitWidth: 1
             }
+        }
+
+        Item {
+            visible: dataTreeModel !== null
+            implicitHeight: 10
+            implicitWidth: 1
         }
 
        Rectangle {
@@ -178,7 +281,7 @@ Rectangle {
                         id: inputFieldStr
                         visible: model.is_str
                         enabled: model.is_str
-                        text: model.value !== undefined ? model.value : ""
+                        text: dataTreeModel !== null ? dataTreeModel.getStrValue(treeView.index(row, column)) : ""
                         placeholderText: "Enter text"
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: label.right
@@ -255,12 +358,15 @@ Rectangle {
                         visible: dataTreeModel !== null ? dataTreeModel.getIsEnum(treeView.index(row, column)) : false
                         enabled: dataTreeModel !== null ? dataTreeModel.getIsEnum(treeView.index(row, column)) : false
                         model: dataTreeModel !== null ? dataTreeModel.getEnumModel(treeView.index(row, column)) : []
+                        currentIndex: dataTreeModel !== null ? dataTreeModel.getEnumValue(treeView.index(row, column)) : 0
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: label.right
                         anchors.leftMargin: 5
                         onCurrentIndexChanged: {
                             if (dataTreeModel) {
-                                dataTreeModel.setData(treeView.index(row, column), enumCombo.currentIndex)
+                                if (dataTreeModel.getIsEnum(treeView.index(row, column))) {
+                                    dataTreeModel.setData(treeView.index(row, column), enumCombo.currentIndex)
+                                }
                             }
                         }
                     }
@@ -288,8 +394,6 @@ Rectangle {
                     }
                 }
             }
-
-            // Content will be inserted in this element
         }
 
         Button {
@@ -298,6 +402,42 @@ Rectangle {
             onClicked: {
                 console.log("Write Button clicked")
                 testerModel.writeData(librariesCombobox.currentIndex)
+            }
+        }
+    }
+
+    FileDialog {
+        id: exportPresetDialog
+        currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: "json"
+        title: "Export Tester Preset"
+        nameFilters: ["JSON files (*.json)"]
+        selectedFile: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0] + "/" + (presetNameField.text !== "" ? presetNameField.text : "preset") + ".json"
+        property bool exportAll: false
+        onAccepted: {
+            qmlUtils.createFileFromQUrl(selectedFile)
+            var localPath = qmlUtils.toLocalFile(selectedFile);
+            if (exportPresetDialog.exportAll) {
+                testerModel.exportJsonAll(localPath);
+            } else {
+                testerModel.exportJson(localPath, librariesCombobox.currentIndex);
+            }
+        }
+    }
+
+    FileDialog {
+        id: importPresetDialog
+        currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
+        fileMode: FileDialog.OpenFiles
+        title: "Import Tester Presets"
+        nameFilters: ["JSON files (*.json)"]
+        onAccepted: {
+            for (var i = 0; i < selectedFiles.length; i++) {
+                var selectedFile = selectedFiles[i];
+                console.debug("Selected file: " + selectedFile)
+                var localPath = qmlUtils.toLocalFile(selectedFile);
+                datamodelRepoModel.setQosSelectionFromFile(localPath);
             }
         }
     }
