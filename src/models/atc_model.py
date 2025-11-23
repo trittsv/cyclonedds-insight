@@ -10,29 +10,21 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 """
 
-from PySide6.QtCore import Qt, QModelIndex, QAbstractListModel, Qt, QByteArray
+from PySide6.QtCore import QAbstractListModel, Qt
 from PySide6.QtCore import QObject, Signal, Slot, QThread
 from loguru import logger as logging
-import typing
 import time
-import uuid
-from dds_access.dispatcher import DispatcherThread
-from dds_access.dds_data import DdsData
 from dds_access import dds_utils
 from cyclonedds.core import Qos, Policy
-from cyclonedds.util import duration
-from dds_access.datatypes.entity_type import EntityType
-from module_handler import DataModelHandler
-from dds_access.datatypes import atc_data
 from cyclonedds import core
-
 from cyclonedds.topic import Topic
 from cyclonedds.pub import Publisher, DataWriter
 from cyclonedds.sub import Subscriber, DataReader
 from cyclonedds.domain import DomainParticipant
-from cyclonedds.core import SampleState, ViewState, InstanceState
-import math
-import random
+
+import sys
+from dds_access.datatypes import atc_data
+sys.modules["AtcData"] = atc_data
 
 
 class AtcModel(QAbstractListModel):
