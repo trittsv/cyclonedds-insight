@@ -166,10 +166,10 @@ class dds_qos_policy_id(Enum):
 
 def to_kind_reliability(q: qos.Qos):
     if qos.Policy.Reliability in q:
-        if qos.Policy.Reliability.Reliable in q:
-            return dds_reliability.DDS_RELIABILITY_RELIABLE
-        elif qos.Policy.Reliability.BestEffort in q:
+        if q[qos.Policy.Reliability] == qos.Policy.Reliability.BestEffort:
             return dds_reliability.DDS_RELIABILITY_BEST_EFFORT
+        else:
+            return dds_reliability.DDS_RELIABILITY_RELIABLE
     return None
 
 def to_kind_durability(q: qos.Qos):

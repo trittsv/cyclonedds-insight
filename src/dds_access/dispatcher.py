@@ -28,6 +28,7 @@ from dds_access.datatypes.entity_type import EntityType
 class DispatcherThread(QThread):
 
     onData = Signal(str)
+    responseQosJson = Signal(str, object)
 
     def __init__(self, id: str, domain_id: int, topic_name: str, topic_type, qos, entityType, parent=None):
         super().__init__(parent)
@@ -58,6 +59,11 @@ class DispatcherThread(QThread):
     def deleteAllWriters(self):
         logging.info(f"Delete all writers")  
         self.writerData.clear()
+
+    def deleteWriter(self, id: str):
+        if id in self.writerData:
+            logging.info(f"Delete writer {id}")
+            del self.writerData[id]
 
     @Slot()
     def deleteAllReaders(self):
@@ -130,3 +136,14 @@ class DispatcherThread(QThread):
         logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
         self.running = False
         self.guardCondition.set(True)
+
+    @Slot(str, str)
+    def requestQosJson(self, requestId, endpointId):
+        if endpointId in self.writerData:
+            (pub, writer, _) = self.writerData[endpointId]
+            entJson = {
+                "topic_qos": writer.topic.get_qos().asdict(),
+                "publisher_qos": pub.get_qos().asdict(),
+                "endpoint_qos": writer.get_qos().asdict()
+            }
+            self.responseQosJson.emit(requestId, entJson)
