@@ -63,5 +63,6 @@
         <file>src/views/updater/UpdaterView.qml</file>
         <file>src/views/updater/UpdaterMain.qml</file>
         <file>src/views/updater/ProxyAuthWindow.qml</file>
+        <file>src/views/elements/InsightTabButton.qml</file>
     </qresource>
 </RCC>
