@@ -23,7 +23,7 @@ import org.eclipse.cyclonedds.insight
 Rectangle {
     id: listenerTabId
     anchors.fill: parent
-    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+    color: rootWindow.isDarkMode ? Constants.darkMainContentBackground : "#ffffff"
     property var component
     property var dataTreeModel: null
 

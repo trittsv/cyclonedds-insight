@@ -18,6 +18,7 @@ import QtQuick.Dialogs
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/statistics"
+import "qrc:/src/views/elements"
 
 
 SplitView {
@@ -56,7 +57,7 @@ SplitView {
         id: centerItem
         SplitView.minimumWidth: 50
         SplitView.fillWidth: true
-        color: rootWindow.isDarkMode ? Constants.darkMainContentBackground : Constants.lightMainContentBackground
+        color: rootWindow.isDarkMode ? Constants.darkMainContentBackground : "#ffffff"
 
         Column {
             anchors.fill: parent
@@ -64,22 +65,31 @@ SplitView {
             TabBar {
                 id: bar
                 width: parent.width
+                height: 30
+                spacing: 0
+                padding: 0 
 
-                TabButton {
-                    text: qsTr("Details")
-                    width: implicitWidth + 20
+                background: Rectangle {
+                    color: rootWindow.isDarkMode ? "#323233" : "#e5e5e5"
                 }
-                TabButton {
-                    text: qsTr("Statistics")
-                    width: implicitWidth + 20
+
+                InsightTabButton {
+                    tabText: qsTr("Details")
+                    height: parent.height
+                    //width: implicitWidth + 20
+
                 }
-                TabButton {
-                    text: qsTr("Tester")
-                    width: implicitWidth + 20
+                InsightTabButton {
+                    tabText: qsTr("Statistics")
+                    //width: implicitWidth + 20
                 }
-                TabButton {
-                    text: qsTr("Listener")
-                    width: implicitWidth + 20
+                InsightTabButton {
+                    tabText: qsTr("Tester")
+                    //width: implicitWidth + 20
+                }
+                InsightTabButton {
+                    tabText: qsTr("Listener")
+                    //width: implicitWidth + 20
                 }
             }
             StackLayout {

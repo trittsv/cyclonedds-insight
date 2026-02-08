@@ -96,10 +96,10 @@ if __name__ == "__main__":
     logging.info(f"Python version: {str(sys.version)}")
     logging.info(f"Qt version: {qVersion()}")
 
-    if sys.platform == "darwin":
-        QQuickStyle.setStyle("macOS")
-    else:
-        QQuickStyle.setStyle("Fusion")
+    #if sys.platform == "darwin":
+    #    QQuickStyle.setStyle("macOS")
+    #else:
+    QQuickStyle.setStyle("Fusion")
 
     worker_thread = QThread()
     data = dds_data.DdsData()
