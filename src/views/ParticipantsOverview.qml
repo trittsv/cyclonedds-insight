@@ -85,10 +85,12 @@ TreeView {
 
         Rectangle {
             id: background
-            anchors.fill: parent
+            height: parent.height
+            width: parent.width - 10
             visible: row === treeView.currentRow
             color: rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground
             opacity: 0.3
+            radius: 5
         }
 
         Label {
