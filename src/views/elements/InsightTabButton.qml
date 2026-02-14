@@ -16,9 +16,6 @@ TabButton {
     background: Rectangle {
         color: control.checked ? (rootWindow.isDarkMode ? "black" : "#ffffff") : (control.hovered ? (rootWindow.isDarkMode ? "#454545" : "#c9c7c7") : (rootWindow.isDarkMode ? "#383838" : "#dcdcdc"))
         
-        //border.color: rootWindow.isDarkMode ? "#1e1e1e" : "#b9b9b9"
-        //border.width: 1
-
         Rectangle {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -27,18 +24,16 @@ TabButton {
             color: rootWindow.isDarkMode ? "#1e1e1e" : "#b9b9b9"
         }
 
-
-        // Blue top line indicator
         Rectangle {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 3                      // ⬅ thickness of the line
-            color: "#144fff"               // ⬅ your blue color
-            visible: control.checked        // only show when active
+            height: 3
+            color: "#144fff"
+            visible: control.checked
         }
     }
-    // Use RowLayout to control padding
+
     contentItem: RowLayout {
         anchors.fill: parent
         anchors.margins: 0
