@@ -109,9 +109,11 @@ Rectangle {
                 implicitHeight: nameLabel.implicitHeight * 1.5
 
                 Rectangle {
-                    anchors.fill: parent
+                    height: parent.height
+                    width: parent.width - 10
                     color: (dataModelItemMouseArea.hovered || contextMenu.visible)? rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground : "transparent"
                     opacity: 0.3
+                    radius: 5
                 }
 
                 Label {

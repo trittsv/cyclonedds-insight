@@ -265,6 +265,7 @@ Rectangle {
                         visible: row === treeView.currentRow
                         color: rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground
                         opacity: 0.3
+                        radius: 5
                     }
 
                     Label {
