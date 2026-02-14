@@ -14,7 +14,7 @@ TabButton {
     anchors.bottom: parent.bottom
 
     background: Rectangle {
-        color: control.checked ? (rootWindow.isDarkMode ? "#1e1e1e" : "#ffffff") : (control.hovered ? (rootWindow.isDarkMode ? "#454545" : "#c9c7c7") : (rootWindow.isDarkMode ? "#383838" : "#dcdcdc"))
+        color: control.checked ? (rootWindow.isDarkMode ? "black" : "#ffffff") : (control.hovered ? (rootWindow.isDarkMode ? "#454545" : "#c9c7c7") : (rootWindow.isDarkMode ? "#383838" : "#dcdcdc"))
         
         //border.color: rootWindow.isDarkMode ? "#1e1e1e" : "#b9b9b9"
         //border.width: 1
