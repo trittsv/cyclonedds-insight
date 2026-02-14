@@ -25,7 +25,7 @@ import "qrc:/src/views"
 
 Rectangle {
     id: rootStatViewId
-    color: rootWindow.isDarkMode ? "black" : Constants.lightMainContent
+    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
     property var statisticModel: Object.create(null)
     property int keepHistoryMinutes: 10
     property int itemCellHeight: 400
