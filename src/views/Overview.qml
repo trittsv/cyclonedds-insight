@@ -57,7 +57,7 @@ SplitView {
         id: centerItem
         SplitView.minimumWidth: 50
         SplitView.fillWidth: true
-        color: rootWindow.isDarkMode ? Constants.darkMainContentBackground : "#ffffff"
+        color: rootWindow.isDarkMode ? "black" : "#ffffff"
 
         Column {
             anchors.fill: parent

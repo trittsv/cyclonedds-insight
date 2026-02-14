@@ -34,7 +34,7 @@ Item {
     property color darkOverviewBackground: "#252526"
     property color darkMainContentBackground: "#1e1e1e"
     property color darkSelectionBackground: "white"
-    property color darkMainContent: "#1e1e1e"
+    property color darkMainContent: "black"//"#1e1e1e"
 
     // Independent
     property color warningColor: "#f4b83f"

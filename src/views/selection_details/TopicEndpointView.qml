@@ -195,7 +195,7 @@ Rectangle {
                                 color: rootWindow.isDarkMode ? mouseAreaEndpointWriter.pressed ? Constants.darkPressedColor : Constants.darkCardBackgroundColor : mouseAreaEndpointWriter.pressed ? Constants.lightPressedColor : Constants.lightCardBackgroundColor
                                 border.color: endpoint_has_qos_mismatch ? Constants.warningColor : rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
                                 border.width: 0.5
-
+                                radius: 10
 
                                 MouseArea {
                                     id: mouseAreaEndpointWriter
@@ -359,6 +359,7 @@ Rectangle {
                                 border.color: endpoint_has_qos_mismatch ? Constants.warningColor : rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
                                 border.width: 0.5
                                 id: readerRec
+                                radius: 10
                                 
                                 property bool showTooltip: false
 
