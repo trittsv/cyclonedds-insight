@@ -376,6 +376,7 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.left: label.right
                         anchors.leftMargin: 5
+                        implicitContentWidthPolicy: ComboBox.WidestText
                         onCurrentIndexChanged: {
                             if (dataTreeModel) {
                                 if (dataTreeModel.getIsEnum(treeView.index(row, column))) {

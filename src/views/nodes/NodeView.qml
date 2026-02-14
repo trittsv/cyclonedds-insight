@@ -149,8 +149,6 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             color: "transparent"
-            border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
-            border.width: architectureView !== null ? 1 : 0
         }
     }
 

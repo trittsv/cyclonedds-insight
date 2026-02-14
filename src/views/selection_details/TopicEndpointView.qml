@@ -310,6 +310,7 @@ Rectangle {
                                         border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
                                         border.width: 1
                                         color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+                                        radius: 10
                                     }
                                 }
                                 EndpointDetailWindow {
@@ -477,6 +478,7 @@ Rectangle {
                                         border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
                                         border.width: 1
                                         color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+                                        radius: 10
                                     }
                                 }
                                 EndpointDetailWindow {
