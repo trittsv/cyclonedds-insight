@@ -23,7 +23,7 @@ import org.eclipse.cyclonedds.insight
 Rectangle {
     id: listenerTabId
     anchors.fill: parent
-    color: rootWindow.isDarkMode ? Constants.darkMainContent  : "#ffffff"
+    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
     property var component
     property var dataTreeModel: null
 
@@ -205,13 +205,13 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: 1
-                color: rootWindow.isDarkMode ? "#555555" : "#cccccc"
+                color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
             }
         }
 
        Rectangle {
             id: contentRec
-            color: rootWindow.isDarkMode ? "black" : "#ffffff"
+            color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.margins: 3
@@ -414,7 +414,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: rootWindow.isDarkMode ? "#555555" : "#cccccc"
+            color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
         }
 
         RowLayout {

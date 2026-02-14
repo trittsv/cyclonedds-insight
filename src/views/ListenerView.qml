@@ -23,7 +23,7 @@ import org.eclipse.cyclonedds.insight
 Rectangle {
     id: listenerTabId
     anchors.fill: parent
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : "#ffffff"
+    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
     property bool started: true
     property bool autoScrollEnabled: true
     border.color : !started ? "red" : autoScrollEnabled ? "transparent" : "orange"
@@ -126,7 +126,7 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: 1
-                color: rootWindow.isDarkMode ? "#555555" : "#cccccc"
+                color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
             }
 
             ListView {
@@ -147,7 +147,7 @@ Rectangle {
                         visible: index > 0
                         width: parent.width
                         height: 1
-                        color: rootWindow.isDarkMode ? "#555555" : "#cccccc"
+                        color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
                     }
                     Item {
                         height: index > 0 ? 4 : 0

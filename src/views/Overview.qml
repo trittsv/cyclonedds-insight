@@ -57,7 +57,7 @@ SplitView {
         id: centerItem
         SplitView.minimumWidth: 50
         SplitView.fillWidth: true
-        color: rootWindow.isDarkMode ? "black" : "#ffffff"
+        color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
 
         Column {
             anchors.fill: parent
@@ -76,20 +76,15 @@ SplitView {
                 InsightTabButton {
                     tabText: qsTr("Details")
                     height: parent.height
-                    //width: implicitWidth + 20
-
                 }
                 InsightTabButton {
                     tabText: qsTr("Statistics")
-                    //width: implicitWidth + 20
                 }
                 InsightTabButton {
                     tabText: qsTr("Tester")
-                    //width: implicitWidth + 20
                 }
                 InsightTabButton {
                     tabText: qsTr("Listener")
-                    //width: implicitWidth + 20
                 }
             }
             StackLayout {

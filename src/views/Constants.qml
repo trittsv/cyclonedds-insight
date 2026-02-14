@@ -25,6 +25,7 @@ Item {
     property color lightMainContentBackground: "lightgray"
     property color lightSelectionBackground: "black"
     property color lightMainContent: "white"
+    property color lightSeparator: "#cccccc"
 
     // Dark mode
     property color darkPressedColor: "#262626"
@@ -34,7 +35,8 @@ Item {
     property color darkOverviewBackground: "#252526"
     property color darkMainContentBackground: "#1e1e1e"
     property color darkSelectionBackground: "white"
-    property color darkMainContent: "black"//"#1e1e1e"
+    property color darkMainContent: "black"
+    property color darkSeparator: "#555555"
 
     // Independent
     property color warningColor: "#f4b83f"
