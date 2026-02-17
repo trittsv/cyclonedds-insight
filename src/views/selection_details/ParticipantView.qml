@@ -25,6 +25,7 @@ Rectangle {
 
     property int domainId
     property string participantKey
+    property string vendorName
 
     ParticipantDetailsModel {
         id: participantModel
@@ -59,6 +60,10 @@ Rectangle {
         Label {
             id: pkeyLabelId
             text: qsTr("Participant-Key: ") + participantViewId.participantKey
+        }
+
+        Label {
+            text: qsTr("Vendor: ") + participantViewId.vendorName
         }
 
         TextEdit {

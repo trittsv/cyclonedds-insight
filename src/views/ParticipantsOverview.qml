@@ -36,7 +36,8 @@ TreeView {
                 showProcessView(domainId)
             } else if (participantModel.getIsParticipant(currentIndex)) {
                 name.slice(13)
-                showParticipantView(domainId, name)
+                var vendorName = participantModel.getVendorName(currentIndex);
+                showParticipantView(domainId, name, vendorName)
             } else if (participantModel.getIsTopic(currentIndex)) {
                 showTopicEndpointView(domainId, name)
             } else if (participantModel.getIsEndpoint(currentIndex)) {

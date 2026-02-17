@@ -34,6 +34,33 @@ CYCLONEDDS_URI_NAME = "CYCLONEDDS_URI"
 
 MAX_SAMPLE_SIZE = 67108863
 
+VENDOR_ID_MAP = {
+    (0x01, 0x01): "RTI Connext DDS",
+    (0x01, 0x02): "OpenSplice DDS",
+    (0x01, 0x03): "OpenDDS",
+    (0x01, 0x04): "Mil-DDS",
+    (0x01, 0x05): "InterCOM DDS",
+    (0x01, 0x06): "CoreDX DDS",
+    (0x01, 0x07): "Lakota Technical Solutions (Not Active)",
+    (0x01, 0x08): "ICOUP Consulting (Not Active)",
+    (0x01, 0x09): "Diamond DDS",
+    (0x01, 0x0A): "RTI Connext DDS Micro",
+    (0x01, 0x0B): "Vortex Cafe",
+    (0x01, 0x0C): "PrismTech (Not Active)",
+    (0x01, 0x0D): "Vortex Lite",
+    (0x01, 0x0E): "Qeo (Not Active)",
+    (0x01, 0x0F): "FastRTPS / FastDDS",
+    (0x01, 0x10): "Eclipse Cyclone DDS",
+    (0x01, 0x11): "GurumDDS",
+    (0x01, 0x12): "RustDDS",
+    (0x01, 0x13): "ZRDDS",
+    (0x01, 0x14): "Dust DDS",
+    (0x01, 0x15): "Safe DDS (eProsima)",
+    (0x01, 0x16): "Federated Designs DDS Tools",
+    (0x01, 0x17): "Rocket Edge Connect for DDS",
+    (0x01, 0x18): "Bell Digital Backbone RTPS",
+    (0x01, 0x19): "int2DDS",
+}
 
 def getProperty(p: Optional[DcpsParticipant], names: List[str]):
     propName: str = "Unknown"
@@ -52,12 +79,50 @@ def getAppName(p: Optional[DcpsParticipant]):
     appNameStem = Path(appNameWithPath.replace("\\", f"{os.path.sep}")).stem
     return  appNameStem + ":" + pid
 
+def looksLikeHostname(s: str) -> bool:
+    if not s or len(s) > 255:
+        return False
+    if " " in s:
+        return False
+    return True
+
+def isLikelyOpensplice(participant: DcpsParticipant) -> bool:
+    guid_bytes = bytes(participant.key.bytes)
+    vendor_tuple = (guid_bytes[0], guid_bytes[1])
+    if vendor_tuple == (0x01, 0x02) or vendor_tuple not in VENDOR_ID_MAP:
+        return True
+    return False
+
+def getVendorName(p: Optional[DcpsParticipant]) -> str:
+    if p is None:
+        return "Unknown"
+    guid_bytes = bytes(p.key.bytes)
+    vendor_tuple = (guid_bytes[0], guid_bytes[1])
+    vendorName = VENDOR_ID_MAP.get(vendor_tuple, "Unknown")
+    if vendorName == "Unknown":
+        if isLikelyOpensplice(p):
+            return VENDOR_ID_MAP[(0x01, 0x02)]
+    return vendorName
+
 def getHostname(p: Optional[DcpsParticipant]):
     hostnameRaw = getProperty(p, HOSTNAMES)
-    if ":" in hostnameRaw:
+
+    if hostnameRaw and ":" in hostnameRaw:
         hostnameSplit = hostnameRaw.split(":")
         if len(hostnameSplit) > 0:
             return hostnameSplit[0]
+
+    if hostnameRaw == "Unknown":
+        if isLikelyOpensplice(p):
+            userdata_policy = p.qos[Policy.Userdata(data=b"")]
+            if userdata_policy and userdata_policy.data:
+                try:
+                    userdata_str = userdata_policy.data.decode("utf-8").strip()
+                    if looksLikeHostname(userdata_str):
+                        return userdata_str
+                except Exception as e:
+                    logging.error(f"Failed to decode Userdata for hostname: {str(e)}")
+
     return hostnameRaw
 
 
@@ -354,3 +419,4 @@ def toQos(
             pass
 
         return dpQps, topicQos, pubSubQos, qos
+
