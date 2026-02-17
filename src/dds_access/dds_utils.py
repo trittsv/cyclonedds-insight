@@ -87,7 +87,7 @@ def looksLikeHostname(s: str) -> bool:
     return True
 
 def isLikelyOpensplice(participant: DcpsParticipant) -> bool:
-    guid_bytes = bytes(participant.key.bytes)
+    guid_bytes = participant.key.bytes
     vendor_tuple = (guid_bytes[0], guid_bytes[1])
     if vendor_tuple == (0x01, 0x02) or vendor_tuple not in VENDOR_ID_MAP:
         return True
@@ -96,7 +96,7 @@ def isLikelyOpensplice(participant: DcpsParticipant) -> bool:
 def getVendorName(p: Optional[DcpsParticipant]) -> str:
     if p is None:
         return "Unknown"
-    guid_bytes = bytes(p.key.bytes)
+    guid_bytes = p.key.bytes
     vendor_tuple = (guid_bytes[0], guid_bytes[1])
     vendorName = VENDOR_ID_MAP.get(vendor_tuple, "Unknown")
     if vendorName == "Unknown":
@@ -106,8 +106,7 @@ def getVendorName(p: Optional[DcpsParticipant]) -> str:
 
 def getHostname(p: Optional[DcpsParticipant]):
     hostnameRaw = getProperty(p, HOSTNAMES)
-
-    if hostnameRaw and ":" in hostnameRaw:
+    if ":" in hostnameRaw:
         hostnameSplit = hostnameRaw.split(":")
         if len(hostnameSplit) > 0:
             return hostnameSplit[0]
