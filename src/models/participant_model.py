@@ -19,7 +19,7 @@ from typing import List
 from cyclonedds.builtin import DcpsParticipant
 from loguru import logger as logging
 from dds_access import dds_data
-from dds_access.dds_utils import getProperty, getHostname, getAppName, PROCESS_NAMES, PIDS, ADDRESSES
+from dds_access.dds_utils import getHostname, getAppName, getVendorName
 from enum import Enum
 
 
@@ -114,6 +114,7 @@ class ParticipantTreeModel(QAbstractItemModel):
         super(ParticipantTreeModel, self).__init__(parent)
         self.rootItem = rootItem
         self.currentRequests: List[str] = []
+        self.vendorNames = {}
 
         self.dds_data = dds_data.DdsData()
 
@@ -224,6 +225,7 @@ class ParticipantTreeModel(QAbstractItemModel):
         # Look for the domain_id node under rootItem
         hostname = getHostname(participant)
         appName = getAppName(participant)
+        self.vendorNames[str(participant.key)] = getVendorName(participant)
 
         if domain_id in self.rootItem.childMap:
             domain_child = self.rootItem.childMap[domain_id]
@@ -276,6 +278,9 @@ class ParticipantTreeModel(QAbstractItemModel):
     @Slot(int, str)
     def removed_participant_slot(self, domainId: int, participantKey: str):
         logging.trace("Remove Participant " + participantKey)
+
+        if participantKey in self.vendorNames:
+            del self.vendorNames[participantKey]
 
         for idx in range(self.rootItem.childCount()):
             domain_child: ParticipantTreeNode = self.rootItem.child(idx)
@@ -431,6 +436,15 @@ class ParticipantTreeModel(QAbstractItemModel):
         if index.isValid():
             display = self.data(index, role=self.DisplayRole)
             return str(display)
+        return ""
+
+    @Slot(QModelIndex, result=str)
+    def getVendorName(self, index: QModelIndex):
+        if index.isValid():
+            display = self.data(index, role=self.DisplayRole)
+            pkey = str(display)
+            if pkey in self.vendorNames:
+                return self.vendorNames[pkey]
         return ""
 
     @Slot(str, int, dds_data.DataEndpoint)

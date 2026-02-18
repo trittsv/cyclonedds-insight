@@ -165,10 +165,11 @@ SplitView {
                         })
     }
 
-    function showParticipantView(domainId, pkey) {
+    function showParticipantView(domainId, pkey, vendorName) {
         showView("selection_details/ParticipantView.qml", {
                             domainId: domainId,
-                            participantKey: pkey
+                            participantKey: pkey,
+                            vendorName: vendorName
                         })
     }
 
