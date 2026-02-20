@@ -123,9 +123,8 @@ Rectangle {
                     }
                 }
 
-                // TODO: implement writer creation from network
-                /*Button {
-                    text: "Create Writer"
+                Button {
+                    text: "Create Writer (Tester)"
                     onClicked: {
                         var writerTypes = endpointWriterModel.getAllTopicTypes()
                         var readerTypes = endpointReaderModel.getAllTopicTypes()
@@ -145,7 +144,7 @@ Rectangle {
                         readerTesterDialogId.setTypes(domainId, topicName, combinedArray, 4);
                         readerTesterDialogId.open();
                     }
-                }*/
+                }
 
                 WarningTriangle {
                     id: warning_triangle
