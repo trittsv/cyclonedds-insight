@@ -297,6 +297,9 @@ class DataModelHandler(QObject):
         return str(theType).replace("::", ".").startswith("typing.Annotated[float") or str(theType) in floatLikeNames
 
     def isEnum(self, theType):
+        if isinstance(theType, cyclonedds.idl.IdlEnumMeta) or isinstance(theType, cyclonedds.idl.IdlEnum):
+            return True
+
         smiCol = str(theType).replace(".", "::")
         if smiCol in self.allTypes:
             ret = self.is_enum(self.allTypes[smiCol])
@@ -343,6 +346,11 @@ class DataModelHandler(QObject):
         smiCol = str(theType).replace(".", "::")
         if smiCol in self.allTypes:
             return getattr(self.allTypes[smiCol], "_member_names_")
+        
+        if isinstance(theType, cyclonedds.idl.IdlEnumMeta) or isinstance(theType, cyclonedds.idl.IdlEnum):
+            if hasattr(theType, "_member_names_"):
+                return getattr(theType, "_member_names_")
+
         return []
 
     def isChar(self, theType):
