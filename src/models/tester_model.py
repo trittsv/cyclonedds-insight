@@ -472,8 +472,14 @@ class TesterModel(QAbstractListModel):
                         "qos": content
                     })
                 self.addExport(filePath)
+            else:
+                logging.warning(f"Item with id {mId} not found or is not a WriterItem")
+        else:
+            logging.warning(f"RequestId {requestId} not found in pendingQosRequests")
 
     def addExport(self, filePath):
+
+        logging.info(f"addExport: Current export count: {self.currentExportCount}, total to export: {self.exportCount}")
 
         doFileWrite = False
         if self.exportCount:
@@ -486,6 +492,8 @@ class TesterModel(QAbstractListModel):
             qmlUtils = QmlUtils()
             qmlUtils.saveFileContent(filePath, json.dumps(self.exportData, indent=4))
             self.resetExportData()
+        else:
+            logging.info("Waiting for more items to export before writing to file" + f" ({self.currentExportCount}/{self.exportCount})")
 
     @Slot()
     def addSequence(self):
