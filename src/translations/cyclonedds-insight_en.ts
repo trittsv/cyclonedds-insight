@@ -305,6 +305,27 @@
     <message id="endpoint.preview">
         <translation>Preview</translation>
     </message>
+    <message id="participant.title">
+        <translation>Participant</translation>
+    </message>
+    <message id="participant.domain">
+        <translation>Domain</translation>
+    </message>
+    <message id="participant.vendor">
+        <translation>Vendor</translation>
+    </message>
+    <message id="participant.key">
+        <translation>Participant key</translation>
+    </message>
+    <message id="participant.qos">
+        <translation>Quality of Service policies</translation>
+    </message>
+    <message id="participant.loading">
+        <translation>Loading...</translation>
+    </message>
+    <message id="participant.unknown">
+        <translation>Unknown</translation>
+    </message>
 
 </context>
 </TS>

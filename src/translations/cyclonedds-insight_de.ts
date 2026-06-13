@@ -311,6 +311,27 @@
     <message id="endpoint.preview">
         <translation>Vorschau</translation>
     </message>
+    <message id="participant.title">
+        <translation>Participant</translation>
+    </message>
+    <message id="participant.domain">
+        <translation>Domain</translation>
+    </message>
+    <message id="participant.vendor">
+        <translation>Hersteller</translation>
+    </message>
+    <message id="participant.key">
+        <translation>Participant-Schlüssel</translation>
+    </message>
+    <message id="participant.qos">
+        <translation>Quality-of-Service-Richtlinien</translation>
+    </message>
+    <message id="participant.loading">
+        <translation>Wird geladen...</translation>
+    </message>
+    <message id="participant.unknown">
+        <translation>Unbekannt</translation>
+    </message>
 
 </context>
 </TS>
