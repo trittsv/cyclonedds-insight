@@ -50,6 +50,8 @@ Rectangle {
                 return settingsIcon
             if (badge.kind === "configuration")
                 return configurationIcon
+            if (badge.kind === "shapes")
+                return shapesIcon
             return participantIcon
         }
     }
@@ -526,6 +528,49 @@ Rectangle {
                         radius: 2
                         color: badge.iconColor
                     }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: shapesIcon
+
+        Item {
+            width: 14
+            height: 14
+
+            Rectangle {
+                x: 1
+                y: 1
+                width: 6
+                height: 6
+                radius: 3
+                color: badge.iconColor
+            }
+
+            Rectangle {
+                x: 7
+                y: 7
+                width: 6
+                height: 6
+                radius: 1
+                color: badge.iconColor
+            }
+
+            Canvas {
+                anchors.fill: parent
+
+                onPaint: {
+                    const context = getContext("2d")
+                    context.clearRect(0, 0, width, height)
+                    context.fillStyle = badge.iconColor
+                    context.beginPath()
+                    context.moveTo(9.5, 1)
+                    context.lineTo(13, 6.5)
+                    context.lineTo(6, 6.5)
+                    context.closePath()
+                    context.fill()
                 }
             }
         }
