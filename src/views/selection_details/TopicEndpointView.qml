@@ -245,20 +245,9 @@ Rectangle {
                     }
                 }
 
-                Rectangle {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: 1
-                    Layout.topMargin: 4
-                    Layout.bottomMargin: 8
-                    color: rootWindow.isDarkMode
-                           ? Constants.darkSeparator
-                           : Constants.lightSeparator
-                }
-
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 8
-                    Layout.leftMargin: 9
 
                     RowLayout {
                         Layout.fillWidth: true

@@ -57,6 +57,16 @@ Item {
         + "\nQos:\n" + endpoint_qos
         + "\nType Id: " + endpoint_type_id
 
+    function openDetails(globalPosition) {
+        if (detailWindow.visible) {
+            detailWindow.raise()
+            return
+        }
+        detailWindow.x = globalPosition.x - detailWindow.width / 2
+        detailWindow.y = globalPosition.y
+        detailWindow.visible = true
+    }
+
     Rectangle {
         id: surface
         anchors.fill: parent
@@ -64,25 +74,28 @@ Item {
         anchors.rightMargin: 6
         anchors.bottomMargin: 8
         radius: 8
-        color: {
-            return rootWindow.isDarkMode
-                    ? Constants.darkCardBackgroundColor
-                    : Constants.lightCardBackgroundColor
-        }
+        color: cardMouseArea.pressed
+               ? rootWindow.isDarkMode ? "#3d3d3d" : "#e3e3e3"
+               : cardMouseArea.containsMouse
+                 ? rootWindow.isDarkMode ? "#383838" : "#ededed"
+                 : rootWindow.isDarkMode
+                   ? Constants.darkCardBackgroundColor
+                   : Constants.lightCardBackgroundColor
         border.width: 1
         border.color: card.endpoint_has_qos_mismatch
                       ? Constants.warningColor
-                      : rootWindow.isDarkMode ? "#464646" : "#dddddd"
+                      : cardMouseArea.containsMouse
+                        ? rootWindow.isDarkMode ? "#666666" : "#c2c2c2"
+                        : rootWindow.isDarkMode ? "#464646" : "#dddddd"
 
-        Rectangle {
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.topMargin: 7
-            anchors.bottomMargin: 7
-            width: 3
-            radius: 2
-            color: card.accentColor
+        MouseArea {
+            id: cardMouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: (mouse) => {
+                card.openDetails(mapToGlobal(mouse.x, mouse.y))
+            }
         }
 
         ColumnLayout {
@@ -267,6 +280,7 @@ Item {
                     id: previewMouseArea
                     anchors.fill: parent
                     hoverEnabled: true
+                    acceptedButtons: Qt.NoButton
                 }
 
                 ToolTip {
@@ -291,43 +305,6 @@ Item {
                 }
             }
 
-            Rectangle {
-                id: detailsButton
-                width: detailsLabel.implicitWidth + 12
-                height: parent.height
-                radius: 4
-                color: detailsMouseArea.pressed
-                       ? rootWindow.isDarkMode ? "#444444" : "#d9d9d9"
-                       : rootWindow.isDarkMode ? "#292929" : "#eeeeee"
-                border.width: 1
-                border.color: card.accentColor
-
-                Label {
-                    id: detailsLabel
-                    anchors.centerIn: parent
-                    text: qsTrId("endpoint.details")
-                    font.pixelSize: 9
-                    font.bold: true
-                    color: card.accentColor
-                }
-
-                MouseArea {
-                    id: detailsMouseArea
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: (mouse) => {
-                        if (detailWindow.visible) {
-                            detailWindow.raise()
-                            return
-                        }
-                        const globalPosition = mapToGlobal(mouse.x, mouse.y)
-                        detailWindow.x =
-                                globalPosition.x - detailWindow.width / 2
-                        detailWindow.y = globalPosition.y
-                        detailWindow.visible = true
-                    }
-                }
-            }
         }
     }
 
@@ -335,5 +312,20 @@ Item {
         id: detailWindow
         title: (card.isWriter ? "Writer " : "Reader ") + card.endpoint_key
         endpointText: card.endpointDetails
+        structured: true
+        isWriter: card.isWriter
+        endpointKey: card.endpoint_key
+        participantKey: card.endpoint_participant_key
+        instanceHandle: card.endpoint_participant_instance_handle
+        topicName: card.endpoint_topic_name
+        topicType: card.endpoint_topic_type
+        typeId: card.endpoint_type_id
+        hostname: card.endpoint_hostname
+        processId: card.endpoint_process_id
+        processName: card.endpoint_process_name
+        addresses: card.addresses
+        qos: card.endpoint_qos
+        hasQosMismatch: card.endpoint_has_qos_mismatch
+        qosMismatchText: card.endpoint_qos_mismatch_text
     }
 }

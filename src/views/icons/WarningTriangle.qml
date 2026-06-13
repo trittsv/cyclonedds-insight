@@ -11,87 +11,119 @@
 */
 
 import QtQuick
-import QtQuick.Window
 import QtQuick.Controls
-import QtQuick.Layouts
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views"
 
 Item {
-    id: warning_triangle
+    id: warningTriangle
+
     width: 15
     height: 15
     property bool showTooltip: false
     property bool enableTooltip: false
     property string tooltipText: ""
+    property color warningColor: Constants.warningColor
+    readonly property color symbolColor: rootWindow.isDarkMode
+                                                 ? "#352709" : "#4a3506"
+
+    Rectangle {
+        anchors.centerIn: parent
+        width: parent.width + 6
+        height: parent.height + 6
+        radius: Math.min(width, height) / 2
+        visible: warningHover.containsMouse
+        color: rootWindow.isDarkMode ? "#4a3b1d" : "#fff0c8"
+        opacity: 0.75
+    }
 
     Canvas {
-        id: triangle
-        width: parent.width
-        height: parent.height
+        id: warningCanvas
+        anchors.fill: parent
+        antialiasing: true
+
         onPaint: {
-            var ctx = getContext("2d");
-            ctx.clearRect(0, 0, width, height);
+            const context = getContext("2d")
+            const inset = Math.max(1, Math.min(width, height) * 0.07)
+            const bottom = height - inset
 
-            // Draw the border
-            ctx.beginPath();
-            ctx.moveTo(width / 2, 0);
-            ctx.lineTo(0, height);
-            ctx.lineTo(width, height);
-            ctx.closePath();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "black";
-            ctx.stroke();
+            context.clearRect(0, 0, width, height)
+            context.beginPath()
+            context.moveTo(width / 2, inset)
+            context.lineTo(width - inset, bottom)
+            context.lineTo(inset, bottom)
+            context.closePath()
+            context.lineJoin = "round"
+            context.lineWidth = Math.max(1, Math.min(width, height) * 0.08)
+            context.fillStyle = warningTriangle.warningColor
+            context.fill()
+            context.strokeStyle = rootWindow.isDarkMode
+                                  ? "#f8cc72" : "#c88a12"
+            context.stroke()
+        }
 
-            // Draw the filled triangle
-            ctx.beginPath();
-            ctx.moveTo(width / 2, 1);
-            ctx.lineTo(1, height - 1);
-            ctx.lineTo(width - 1, height - 1);
-            ctx.closePath();
-            ctx.fillStyle = "#f4b83f";
-            ctx.fill();
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+    }
+
+    Column {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: height * 0.06
+        spacing: Math.max(1, warningTriangle.height * 0.05)
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Math.max(1.5, warningTriangle.width * 0.11)
+            height: Math.max(4, warningTriangle.height * 0.34)
+            radius: width / 2
+            color: warningTriangle.symbolColor
+        }
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Math.max(1.5, warningTriangle.width * 0.11)
+            height: width
+            radius: width / 2
+            color: warningTriangle.symbolColor
         }
     }
-
-    Text {
-        text: "!"
-        anchors.centerIn: parent
-        font.bold: true
-        font.pixelSize: warning_triangle.height * 0.8
-        color: "black"
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        anchors.horizontalCenterOffset: -0.5
-        anchors.verticalCenterOffset: 1
-    }
-
 
     MouseArea {
-        id: mouseAreaWarningTriangle
+        id: warningHover
         anchors.fill: parent
         hoverEnabled: true
-        onEntered: {
-            warning_triangle.showTooltip = true
-        }
-        onExited: {
-            warning_triangle.showTooltip = false
-        }
-    }
-    ToolTip {
-        id: warningTriangleTooltip
-        parent: warning_triangle
-        visible: warning_triangle.showTooltip && warning_triangle.enableTooltip
-        delay: 200
-        contentItem: Label {
-            text: warning_triangle.tooltipText
-        }
-        background: Rectangle {
-            border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
-            border.width: 1
-            color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
-        }
+        acceptedButtons: Qt.NoButton
+        cursorShape: warningTriangle.enableTooltip
+                     ? Qt.WhatsThisCursor : Qt.ArrowCursor
+        onEntered: warningTriangle.showTooltip = true
+        onExited: warningTriangle.showTooltip = false
     }
 
+    ToolTip {
+        id: warningTriangleTooltip
+        parent: warningTriangle
+        visible: warningTriangle.showTooltip
+                 && warningTriangle.enableTooltip
+        delay: 300
+        text: warningTriangle.tooltipText
+
+        contentItem: Label {
+            text: warningTriangleTooltip.text
+            padding: 5
+            color: rootWindow.isDarkMode ? "#eeeeee" : "#262626"
+        }
+
+        background: Rectangle {
+            radius: 5
+            border.width: 1
+            border.color: rootWindow.isDarkMode
+                          ? Constants.darkBorderColor
+                          : Constants.lightBorderColor
+            color: rootWindow.isDarkMode
+                   ? Constants.darkCardBackgroundColor
+                   : Constants.lightCardBackgroundColor
+        }
+    }
 }
