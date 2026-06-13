@@ -33,6 +33,15 @@ Rectangle {
     property bool isDescriptionExpanded: false
     property int currentDataIndex: 0
     property int testerRev: 0
+    readonly property color surfaceColor: rootWindow.isDarkMode
+                                          ? Constants.darkCardBackgroundColor
+                                          : Constants.lightCardBackgroundColor
+    readonly property color borderColor: rootWindow.isDarkMode
+                                         ? "#464646"
+                                         : "#dddddd"
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2"
+                                                : "#4f4f4f"
 
     function refreshCurrentModels() {
         if (!testerModel || librariesCombobox.currentIndex < 0) {
@@ -85,337 +94,361 @@ Rectangle {
             }
 
             Button {
-                text:  qsTrId("tester.duplicate")
-                enabled: librariesCombobox.count > 0
-                onClicked: {
-                    testerModel.duplicatePreset(librariesCombobox.currentIndex)
-                    librariesCombobox.currentIndex = librariesCombobox.count - 1
-                }
-            }
-
-            Button {
-                text: qsTrId("tester.create-sequence")
-                onClicked: {
-                    testerModel.addSequence()
-                    librariesCombobox.currentIndex = librariesCombobox.count - 1
-                }
-            }
-
-            Button {
                 text: "Import"
                 onClicked: importPresetDialog.open()
             }
 
             Button {
-                id: exportButton
-                text: "Export"
-                onClicked: exportMenu.open()
-                enabled: librariesCombobox.count > 0
+                id: presetActionsButton
+                text: "Preset Actions"
+                rightPadding: 28
+                onClicked: presetActionsMenu.open()
+
+                ChevronIcon {
+                    width: 14
+                    height: 14
+                    anchors.right: parent.right
+                    anchors.rightMargin: 9
+                    anchors.verticalCenter: parent.verticalCenter
+                    iconColor: presetActionsButton.palette.buttonText
+                }
 
                 Menu {
-                    id: exportMenu
+                    id: presetActionsMenu
+
+                    MenuItem {
+                        text: qsTrId("tester.duplicate")
+                        enabled: librariesCombobox.count > 0
+                        onClicked: {
+                            testerModel.duplicatePreset(librariesCombobox.currentIndex)
+                            librariesCombobox.currentIndex = librariesCombobox.count - 1
+                        }
+                    }
+
+                    MenuItem {
+                        text: qsTrId("tester.create-sequence")
+                        onClicked: {
+                            testerModel.addSequence()
+                            librariesCombobox.currentIndex = librariesCombobox.count - 1
+                        }
+                    }
+
+                    MenuSeparator {}
 
                     MenuItem {
                         text: "Export Current"
+                        enabled: librariesCombobox.count > 0
                         onClicked: {
-                            exportPresetDialog.exportAll = false;
+                            exportPresetDialog.exportAll = false
                             exportPresetDialog.open()
                         }
                     }
+
                     MenuItem {
                         text: "Export All"
+                        enabled: librariesCombobox.count > 0
                         onClicked: {
-                            exportPresetDialog.exportAll = true;
+                            exportPresetDialog.exportAll = true
                             exportPresetDialog.open()
                         }
                     }
-                }
-            }
 
-            Button {
-                text: "Delete"
-                onClicked: deleteMenu.open()
-                enabled: librariesCombobox.count > 0
-
-                Menu {
-                    id: deleteMenu
+                    MenuSeparator {}
 
                     MenuItem {
                         text: "Delete Current"
+                        enabled: librariesCombobox.count > 0
                         onClicked: {
                             const idx = librariesCombobox.currentIndex
                             testerModel.deleteWriter(idx)
-                            if (librariesCombobox.count > 0) {
+                            if (librariesCombobox.count > 0)
                                 librariesCombobox.currentIndex = Math.max(0, idx - 1)
-                            } else {
+                            else
                                 librariesCombobox.currentIndex = -1
-                            }
                         }
                     }
+
                     MenuItem {
                         text: "Delete All"
-                        onClicked: {
-                            testerModel.deleteAllWriters()
-                        }
+                        enabled: librariesCombobox.count > 0
+                        onClicked: testerModel.deleteAllWriters()
                     }
                 }
             }
         }
 
-        RowLayout {
+        Rectangle {
             Layout.fillWidth: true
-            Layout.leftMargin: 14
-            Layout.preferredHeight: 34
-            spacing: 8
+            implicitHeight: presetConfigLayout.implicitHeight + 20
+            radius: 8
+            color: listenerTabId.surfaceColor
+            border.width: 1
+            border.color: listenerTabId.borderColor
 
-            Label {
-                text: "Selected:"
-                font.pixelSize: 10
-                color: rootWindow.isDarkMode ? "#c2c2c2" : "#4f4f4f"
-            }
+            ColumnLayout {
+                id: presetConfigLayout
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 10
+                spacing: 8
 
-            ComboBox {
-                id: librariesCombobox
-                readonly property bool isMac: Qt.platform.os === "osx"
-                readonly property int popupOverlap: isMac ? 8 : 0
-                readonly property int popupInset: isMac ? 8 : 0
-                model: testerModel
-                Layout.fillWidth: true
-                textRole: "name"
-                enabled: librariesCombobox.count > 0
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
 
-                property string searchText: ""
+                    Label {
+                        text: "Preset"
+                        font.pixelSize: 10
+                        font.bold: true
+                        color: listenerTabId.secondaryTextColor
+                    }
 
-                popup: Popup {
-                    y: librariesCombobox.height  - librariesCombobox.popupOverlap
-                    x: librariesCombobox.popupInset
-                    width: librariesCombobox.width - (2 * librariesCombobox.popupInset)
-                    height: listenerTabId.height * 0.6
-                    padding: 4
-                    clip: true
+                    ComboBox {
+                        id: librariesCombobox
+                        readonly property bool isMac: Qt.platform.os === "osx"
+                        readonly property int popupOverlap: isMac ? 8 : 0
+                        readonly property int popupInset: isMac ? 8 : 0
+                        model: testerModel
+                        Layout.fillWidth: true
+                        textRole: "name"
+                        enabled: librariesCombobox.count > 0
 
-                    contentItem: ColumnLayout {
-                        TextField {
-                            id: searchField
-                            Layout.fillWidth: true
-                            placeholderText: qsTrId("general.search.placeholder")
-                            text: librariesCombobox.searchText
+                        property string searchText: ""
 
-                            onAccepted: librariesCombobox.searchText = text
-
-                            Keys.onEscapePressed: librariesCombobox.popup.close()
-                        }
-                        ListView {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
+                        popup: Popup {
+                            y: librariesCombobox.height  - librariesCombobox.popupOverlap
+                            x: librariesCombobox.popupInset
+                            width: librariesCombobox.width - (2 * librariesCombobox.popupInset)
+                            height: listenerTabId.height * 0.6
+                            padding: 4
                             clip: true
-                            model: testerModel
-                            ScrollBar.vertical: ScrollBar {
-                                policy: ScrollBar.AsNeeded
+
+                            contentItem: ColumnLayout {
+                                TextField {
+                                    id: searchField
+                                    Layout.fillWidth: true
+                                    placeholderText: qsTrId("general.search.placeholder")
+                                    text: librariesCombobox.searchText
+
+                                    onAccepted: librariesCombobox.searchText = text
+
+                                    Keys.onEscapePressed: librariesCombobox.popup.close()
+                                }
+                                ListView {
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    clip: true
+                                    model: testerModel
+                                    ScrollBar.vertical: ScrollBar {
+                                        policy: ScrollBar.AsNeeded
+                                    }
+
+                                    delegate: ItemDelegate {
+                                        width: ListView.view.width
+                                        text: model.name
+                                        visible: text.toLowerCase().includes(
+                                            librariesCombobox.searchText.toLowerCase()
+                                        )
+                                        height: visible ? implicitHeight : 0
+
+                                        onClicked: {
+                                            librariesCombobox.currentIndex = index
+                                            librariesCombobox.popup.close()
+                                        }
+                                    }
+                                }
                             }
 
-                            delegate: ItemDelegate {
-                                width: ListView.view.width
-                                text: model.name
-                                visible: text.toLowerCase().includes(
-                                    librariesCombobox.searchText.toLowerCase()
-                                )
-                                height: visible ? implicitHeight : 0
+                            onOpened: {
+                                searchField.forceActiveFocus()
+                                searchField.selectAll()
+                            }
 
-                                onClicked: {
-                                    librariesCombobox.currentIndex = index
-                                    librariesCombobox.popup.close()
+                            onClosed: {
+                                librariesCombobox.searchText = ""
+                            }
+                        }
+
+                        onCurrentIndexChanged: {
+                            if (testerModel && currentIndex >= 0) {
+                                currentDataIndex = 0
+                                refreshCurrentModels()
+                                descriptionField.text = testerModel.getDescription(currentIndex)
+                            }
+                        }
+
+                        onCountChanged: {
+                            if (count > 0 && currentIndex === -1)
+                                currentIndex = 0
+                        }
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    visible: testerModel.count > 0
+
+                    Label {
+                        text: "Name"
+                        font.pixelSize: 10
+                        color: listenerTabId.secondaryTextColor
+                    }
+
+                    TextField {
+                        id: presetNameField
+                        text: testerModel.count > 0 ? testerModel.getPresetName(librariesCombobox.currentIndex) : ""
+                        placeholderText: "Enter Preset-Name"
+                        Layout.fillWidth: true
+                        onTextChanged: {
+                            if (testerModel) {
+                                testerModel.setPresetName(librariesCombobox.currentIndex, presetNameField.text)
+                            }
+                        }
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    visible: testerModel.count > 0
+                    spacing: 4
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Rectangle {
+                            Layout.preferredWidth: 8
+                            Layout.preferredHeight: 8
+                            radius: 4
+                            color: (testerRev, testerModel.getIsStarted(
+                                        librariesCombobox.currentIndex))
+                                   ? "#36a269"
+                                   : "#d04a4a"
+                        }
+
+                        Label {
+                            Layout.fillWidth: true
+                            text: testerModel.getDescriptionName(librariesCombobox.currentIndex)
+                            wrapMode: Text.Wrap
+                            font.pixelSize: 11
+                            font.bold: true
+                        }
+
+                        Button {
+                            text: (testerRev, testerModel.getIsStarted(
+                                       librariesCombobox.currentIndex))
+                                  ? "Stop"
+                                  : "Start"
+                            highlighted: !(testerRev, testerModel.getIsStarted(
+                                               librariesCombobox.currentIndex))
+                            onClicked: {
+                                if (testerModel.getIsStarted(librariesCombobox.currentIndex)) {
+                                    testerModel.stopItem(librariesCombobox.currentIndex)
+                                } else {
+                                    testerModel.startItem(librariesCombobox.currentIndex)
                                 }
                             }
                         }
                     }
 
-                    onOpened: {
-                        searchField.forceActiveFocus()
-                        searchField.selectAll()
-                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
 
-                    onClosed: {
-                        librariesCombobox.searchText = ""
-                    }
-                }
-
-                onCurrentIndexChanged: {
-                    if (testerModel && currentIndex >= 0) {
-                        currentDataIndex = 0
-                        refreshCurrentModels()
-                        descriptionField.text = testerModel.getDescription(currentIndex)
-                    }
-                }
-
-                onCountChanged: {
-                    if (count > 0 && currentIndex === -1)
-                        currentIndex = 0
-                }
-            }
-        }
-
-        RowLayout {
-            spacing: 10
-            visible: testerModel.count > 0
-
-            Item {
-                implicitHeight: 1
-                implicitWidth: 1
-            }
-
-            Label {
-                text: "Name:"
-            }
-
-            TextField {
-                id: presetNameField
-                text: testerModel.count > 0 ? testerModel.getPresetName(librariesCombobox.currentIndex) : ""
-                placeholderText: "Enter Preset-Name"
-                Layout.fillWidth: true
-                onTextChanged: {
-                    if (testerModel) {
-                        testerModel.setPresetName(librariesCombobox.currentIndex, presetNameField.text)
-                    }
-                }
-            }
-            /* Button {
-                text: "Print tree"
-                onClicked: {
-                    testerModel.printTree()
-                }
-            } */
-            Item {
-                implicitHeight: 1
-                implicitWidth: 1
-            }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            visible: testerModel.count > 0
-            spacing: 4
-
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 10
-
-                Label {
-                    Layout.leftMargin: 10
-                    Layout.fillWidth: true
-                    text: testerModel.getDescriptionName(librariesCombobox.currentIndex)
-                    wrapMode: Text.Wrap
-                }
-
-                Button {
-                    Layout.rightMargin: 1
-                    text: (testerRev, testerModel.getIsStarted(librariesCombobox.currentIndex)) ? "Stop" : "Start"
-                    onClicked: {
-                        if (testerModel.getIsStarted(librariesCombobox.currentIndex)) {
-                            testerModel.stopItem(librariesCombobox.currentIndex)
-                        } else {
-                            testerModel.startItem(librariesCombobox.currentIndex)
+                        Label {
+                            text: qsTrId("tester.description")
+                            font.pixelSize: 10
+                            color: listenerTabId.secondaryTextColor
                         }
-                    }
-                }
-            }
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                spacing: 8
+                        Item {
+                            Layout.fillWidth: true
+                            implicitHeight: 26
 
-                Label {
-                    text: qsTrId("tester.description")
-                }
+                            Label {
+                                id: descriptionPreview
+                                anchors.left: parent.left
+                                anchors.right: descriptionExpandIndicator.left
+                                anchors.rightMargin: 8
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: {
+                                    const description = (testerRev, testerModel.getDescription(librariesCombobox.currentIndex))
+                                    return description.length > 0 ? description : qsTrId("tester.description.placeholder")
+                                }
+                                opacity: (testerRev, testerModel.getDescription(librariesCombobox.currentIndex).length > 0) ? 1 : 0.55
+                                font.italic: (testerRev, testerModel.getDescription(librariesCombobox.currentIndex).length === 0)
+                                elide: Text.ElideRight
+                                maximumLineCount: 1
+                            }
 
-                Item {
-                    Layout.fillWidth: true
-                    implicitHeight: 26
+                            ChevronIcon {
+                                id: descriptionExpandIndicator
+                                width: 16
+                                height: 16
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                iconColor: rootWindow.isDarkMode ? "#b0b0b0" : "#606060"
+                                rotation: isDescriptionExpanded ? 180 : 0
+                                opacity: 0.7
 
-                    Label {
-                        id: descriptionPreview
-                        anchors.left: parent.left
-                        anchors.right: descriptionExpandIndicator.left
-                        anchors.rightMargin: 8
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: {
-                            const description = (testerRev, testerModel.getDescription(librariesCombobox.currentIndex))
-                            return description.length > 0 ? description : qsTrId("tester.description.placeholder")
-                        }
-                        opacity: (testerRev, testerModel.getDescription(librariesCombobox.currentIndex).length > 0) ? 1 : 0.55
-                        font.italic: (testerRev, testerModel.getDescription(librariesCombobox.currentIndex).length === 0)
-                        elide: Text.ElideRight
-                        maximumLineCount: 1
-                    }
+                                Behavior on rotation {
+                                    NumberAnimation {
+                                        duration: 120
+                                        easing.type: Easing.OutCubic
+                                    }
+                                }
+                            }
 
-                    ChevronIcon {
-                        id: descriptionExpandIndicator
-                        width: 16
-                        height: 16
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        iconColor: rootWindow.isDarkMode ? "#b0b0b0" : "#606060"
-                        rotation: isDescriptionExpanded ? 180 : 0
-                        opacity: 0.7
+                            Rectangle {
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                height: 1
+                                color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
+                                opacity: descriptionMouseArea.containsMouse ? 1 : 0.6
+                            }
 
-                        Behavior on rotation {
-                            NumberAnimation {
-                                duration: 120
-                                easing.type: Easing.OutCubic
+                            MouseArea {
+                                id: descriptionMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    isDescriptionExpanded = !isDescriptionExpanded
+                                    if (isDescriptionExpanded) {
+                                        descriptionField.forceActiveFocus()
+                                    }
+                                }
                             }
                         }
                     }
 
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
-                        height: 1
-                        color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
-                        opacity: descriptionMouseArea.containsMouse ? 1 : 0.6
-                    }
+                    ScrollView {
+                        id: descriptionScrollView
+                        visible: isDescriptionExpanded
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 80
+                        Layout.minimumHeight: 80
+                        Layout.maximumHeight: 120
+                        clip: true
 
-                    MouseArea {
-                        id: descriptionMouseArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            isDescriptionExpanded = !isDescriptionExpanded
-                            if (isDescriptionExpanded) {
-                                descriptionField.forceActiveFocus()
+                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+                        TextArea {
+                            id: descriptionField
+                            placeholderText: qsTrId("tester.description.placeholder")
+                            wrapMode: TextEdit.Wrap
+                            selectByMouse: true
+                            persistentSelection: true
+
+                            onTextChanged: {
+                                if (visible && testerModel && librariesCombobox.currentIndex >= 0) {
+                                    testerModel.setDescription(librariesCombobox.currentIndex, text)
+                                }
                             }
-                        }
-                    }
-                }
-            }
-
-            ScrollView {
-                id: descriptionScrollView
-                visible: isDescriptionExpanded
-                Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                Layout.preferredHeight: 80
-                Layout.minimumHeight: 80
-                Layout.maximumHeight: 120
-                clip: true
-
-                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                ScrollBar.vertical.policy: ScrollBar.AsNeeded
-
-                TextArea {
-                    id: descriptionField
-                    placeholderText: qsTrId("tester.description.placeholder")
-                    wrapMode: TextEdit.Wrap
-                    selectByMouse: true
-                    persistentSelection: true
-
-                    onTextChanged: {
-                        if (visible && testerModel && librariesCombobox.currentIndex >= 0) {
-                            testerModel.setDescription(librariesCombobox.currentIndex, text)
                         }
                     }
                 }
@@ -424,29 +457,18 @@ Rectangle {
 
         Item {
             visible: testerModel.count > 0
-            implicitHeight: 10
+            implicitHeight: 2
             implicitWidth: 1
-        }
-
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 10
-
-            Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 1
-                color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
-            }
         }
 
         RowLayout {
             Layout.fillWidth: true
             Layout.leftMargin: 3
             Layout.rightMargin: 3
+            Layout.bottomMargin: -11
             visible: dataTreeModel !== null && sequenceModel === null
             spacing: 3
+            z: 2
 
             Rectangle {
                 Layout.fillWidth: true
@@ -479,10 +501,14 @@ Rectangle {
                         y: selected ? 0 : 3
                         radius: 5
                         color: selected
-                               ? (rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent)
+                               ? listenerTabId.surfaceColor
                                : (rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor)
                         border.width: 1
-                        border.color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
+                        border.color: selected
+                                      ? listenerTabId.borderColor
+                                      : (rootWindow.isDarkMode
+                                         ? Constants.darkSeparator
+                                         : Constants.lightSeparator)
                         opacity: selected || dataItemTabMouseArea.containsMouse ? 1 : 0.75
 
                         Rectangle {
@@ -698,10 +724,14 @@ Rectangle {
 
        Rectangle {
             id: contentRec
-            color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+            color: listenerTabId.surfaceColor
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.margins: 3
+            radius: 8
+            border.width: 1
+            border.color: listenerTabId.borderColor
+            clip: true
+            z: 1
 
             Rectangle {
                 anchors.fill: parent
@@ -710,144 +740,159 @@ Rectangle {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    spacing: 0
+                    anchors.margins: 8
+                    spacing: 8
 
-                    Button {
-                        text: isSequenceEditorVisible ? "Stop Modify Sequence" : "Modify Sequence"
-                        onClicked: {
-                            isSequenceEditorVisible = !isSequenceEditorVisible
-                        }
-                    }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    id: sequenceEditor
-                    property int availableIndex: -1
-                    property int sequenceIndex: -1
-
-                    GroupBox {
-                        title: "Available"
+                    RowLayout {
                         Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        visible: isSequenceEditorVisible
 
-                        ListView {
-                            id: availableList
-                            anchors.fill: parent
-                            clip: true
-                            model: (testerRev, testerModel.getAvailableDataItemCount())
-                            currentIndex: sequenceEditor.availableIndex
-                            onCurrentIndexChanged: sequenceEditor.availableIndex = currentIndex
-
-                            delegate: ItemDelegate {
-                                required property int index
-                                width: ListView.view.width
-                                text: (testerRev, testerModel.getAvailableDataItemName(index))
-                                highlighted: index === availableList.currentIndex
-                                onClicked: availableList.currentIndex = index
-                            }
-
-                            ScrollBar.vertical: ScrollBar { }
+                        Label {
+                            text: "Sequence"
+                            font.pixelSize: 13
+                            font.bold: true
                         }
-                    }
 
-                    ColumnLayout {
-                        visible: isSequenceEditorVisible
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: 8
-
-                        Button {
-                            id: addSequenceItemButton
-                            enabled: availableList.currentIndex >= 0
-                            implicitWidth: addSequenceItemContent.implicitWidth + leftPadding + rightPadding
-
-                            Row {
-                                id: addSequenceItemContent
-                                anchors.centerIn: parent
-                                z: 1
-                                spacing: 5
-
-                                Label {
-                                    text: "Add"
-                                    color: addSequenceItemButton.enabled ? addSequenceItemButton.palette.buttonText : addSequenceItemButton.palette.mid
-                                }
-
-                                ArrowIcon {
-                                    width: 18
-                                    height: 18
-                                    y: (parent.height - height) / 2
-                                    iconColor: addSequenceItemButton.enabled ? addSequenceItemButton.palette.buttonText : addSequenceItemButton.palette.mid
-                                }
-                            }
-                            onClicked: {
-                                if (testerModel && sequenceModel) {
-                                    sequenceModel.addSequenceItem(
-                                                testerModel.getAvailableDataItemId(availableList.currentIndex))
-                                    testerRev++
-                                }
-                            }
+                        Item {
+                            Layout.fillWidth: true
                         }
 
                         Button {
-                            id: removeSequenceItemButton
-                            enabled: sequenceList.currentIndex >= 0
-                            implicitWidth: removeSequenceItemContent.implicitWidth + leftPadding + rightPadding
-
-                            Row {
-                                id: removeSequenceItemContent
-                                anchors.centerIn: parent
-                                z: 1
-                                spacing: 5
-
-                                ArrowIcon {
-                                    width: 18
-                                    height: 18
-                                    y: (parent.height - height) / 2
-                                    direction: "left"
-                                    iconColor: removeSequenceItemButton.enabled ? removeSequenceItemButton.palette.buttonText : removeSequenceItemButton.palette.mid
-                                }
-
-                                Label {
-                                    text: "Remove"
-                                    color: removeSequenceItemButton.enabled ? removeSequenceItemButton.palette.buttonText : removeSequenceItemButton.palette.mid
-                                }
-                            }
+                            text: isSequenceEditorVisible ? "Done" : "Edit sequence"
+                            flat: true
                             onClicked: {
-                                if (sequenceModel) {
-                                    sequenceModel.removeSequenceItem(sequenceList.currentIndex)
-                                    testerRev++
-                                }
+                                isSequenceEditorVisible = !isSequenceEditorVisible
                             }
                         }
                     }
 
-                    // RIGHT: Sequence
-                    GroupBox {
-                        title: "Sequence"
+                    RowLayout {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        id: sequenceEditor
+                        property int availableIndex: -1
+                        property int sequenceIndex: -1
 
-                        ListView {
-                            id: sequenceList
-                            anchors.fill: parent
-                            clip: true
-                            model: sequenceModel
-                            currentIndex: sequenceEditor.sequenceIndex
+                        GroupBox {
+                            title: "Available"
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            visible: isSequenceEditorVisible
 
-                            delegate: ItemDelegate {
-                                required property int index
-                                required property string dataItemId
-                                width: ListView.view.width
-                                text: (testerRev, testerModel.getDataItemDisplayName(dataItemId))
-                                highlighted: index === sequenceList.currentIndex
-                                onClicked: sequenceList.currentIndex = index
+                            ListView {
+                                id: availableList
+                                anchors.fill: parent
+                                clip: true
+                                model: (testerRev, testerModel.getAvailableDataItemCount())
+                                currentIndex: sequenceEditor.availableIndex
+                                onCurrentIndexChanged: sequenceEditor.availableIndex = currentIndex
+
+                                delegate: ItemDelegate {
+                                    required property int index
+                                    width: ListView.view.width
+                                    text: (testerRev, testerModel.getAvailableDataItemName(index))
+                                    highlighted: index === availableList.currentIndex
+                                    onClicked: availableList.currentIndex = index
+                                }
+
+                                ScrollBar.vertical: ScrollBar { }
+                            }
+                        }
+
+                        ColumnLayout {
+                            visible: isSequenceEditorVisible
+                            Layout.alignment: Qt.AlignVCenter
+                            spacing: 8
+
+                            Button {
+                                id: addSequenceItemButton
+                                enabled: availableList.currentIndex >= 0
+                                implicitWidth: addSequenceItemContent.implicitWidth + leftPadding + rightPadding
+
+                                Row {
+                                    id: addSequenceItemContent
+                                    anchors.centerIn: parent
+                                    z: 1
+                                    spacing: 5
+
+                                    Label {
+                                        text: "Add"
+                                        color: addSequenceItemButton.enabled ? addSequenceItemButton.palette.buttonText : addSequenceItemButton.palette.mid
+                                    }
+
+                                    ArrowIcon {
+                                        width: 18
+                                        height: 18
+                                        y: (parent.height - height) / 2
+                                        iconColor: addSequenceItemButton.enabled ? addSequenceItemButton.palette.buttonText : addSequenceItemButton.palette.mid
+                                    }
+                                }
+                                onClicked: {
+                                    if (testerModel && sequenceModel) {
+                                        sequenceModel.addSequenceItem(
+                                                    testerModel.getAvailableDataItemId(availableList.currentIndex))
+                                        testerRev++
+                                    }
+                                }
                             }
 
-                            ScrollBar.vertical: ScrollBar { }
+                            Button {
+                                id: removeSequenceItemButton
+                                enabled: sequenceList.currentIndex >= 0
+                                implicitWidth: removeSequenceItemContent.implicitWidth + leftPadding + rightPadding
+
+                                Row {
+                                    id: removeSequenceItemContent
+                                    anchors.centerIn: parent
+                                    z: 1
+                                    spacing: 5
+
+                                    ArrowIcon {
+                                        width: 18
+                                        height: 18
+                                        y: (parent.height - height) / 2
+                                        direction: "left"
+                                        iconColor: removeSequenceItemButton.enabled ? removeSequenceItemButton.palette.buttonText : removeSequenceItemButton.palette.mid
+                                    }
+
+                                    Label {
+                                        text: "Remove"
+                                        color: removeSequenceItemButton.enabled ? removeSequenceItemButton.palette.buttonText : removeSequenceItemButton.palette.mid
+                                    }
+                                }
+                                onClicked: {
+                                    if (sequenceModel) {
+                                        sequenceModel.removeSequenceItem(sequenceList.currentIndex)
+                                        testerRev++
+                                    }
+                                }
+                            }
+                        }
+
+                        GroupBox {
+                            title: isSequenceEditorVisible ? "Sequence" : ""
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+
+                            ListView {
+                                id: sequenceList
+                                anchors.fill: parent
+                                clip: true
+                                model: sequenceModel
+                                currentIndex: sequenceEditor.sequenceIndex
+
+                                delegate: ItemDelegate {
+                                    required property int index
+                                    required property string dataItemId
+                                    width: ListView.view.width
+                                    text: (testerRev, testerModel.getDataItemDisplayName(dataItemId))
+                                    highlighted: index === sequenceList.currentIndex
+                                    onClicked: sequenceList.currentIndex = index
+                                }
+
+                                ScrollBar.vertical: ScrollBar { }
+                            }
                         }
                     }
-                }
                 }
             }
 
@@ -855,6 +900,7 @@ Rectangle {
                 id: treeView
                 model: dataTreeModel
                 anchors.fill: parent
+                anchors.margins: 8
                 visible: dataTreeModel !== null && sequenceModel === null && librariesCombobox.count > 0
                 clip: true
                 ScrollBar.vertical: ScrollBar {}
@@ -1041,41 +1087,48 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 20
+            Layout.preferredHeight: 46
             visible: testerModel.count > 0
             enabled: (testerRev, testerModel.getIsStarted(librariesCombobox.currentIndex))
+            radius: 8
+            color: listenerTabId.surfaceColor
+            border.width: 1
+            border.color: listenerTabId.borderColor
 
-            Button {
-                text: "Write"
-                visible: testerModel.count > 0
-                onClicked: {
-                    console.log("Write Button clicked")
-                    testerModel.writeData(librariesCombobox.currentIndex, currentDataIndex)
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 8
+                anchors.rightMargin: 8
+                spacing: 8
+
+                Button {
+                    id: writeButton
+                    text: "Write"
+                    font.bold: true
+                    highlighted: true
+                    onClicked: testerModel.writeData(
+                                   librariesCombobox.currentIndex,
+                                   currentDataIndex)
                 }
-            }
-            Item {
-                Layout.fillWidth: true
-            }
-            Button {
-                text: "Dispose"
-                visible: testerModel.count > 0
-                onClicked: {
-                    console.log("Dispose Button clicked")
-                    testerModel.disposeData(librariesCombobox.currentIndex, currentDataIndex)
+
+                Item {
+                    Layout.fillWidth: true
                 }
-            }
-            Button {
-                text: "Unregister"
-                visible: testerModel.count > 0
-                onClicked: {
-                    console.log("Unregister Button clicked")
-                    testerModel.unregisterData(librariesCombobox.currentIndex, currentDataIndex)
+
+                Button {
+                    text: "Dispose"
+                    flat: true
+                    onClicked: testerModel.disposeData(
+                                   librariesCombobox.currentIndex,
+                                   currentDataIndex)
+                }
+
+                Button {
+                    text: "Unregister"
+                    flat: true
+                    onClicked: testerModel.unregisterData(
+                                   librariesCombobox.currentIndex,
+                                   currentDataIndex)
                 }
             }
         }
