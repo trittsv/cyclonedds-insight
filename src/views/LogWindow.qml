@@ -14,217 +14,207 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 
 import org.eclipse.cyclonedds.insight
+import "qrc:/src/views/selection_details"
 
 
 Window {
     id: logWindowId
-    property string endpointText
 
-    title: "Log Window"
+    readonly property color surfaceColor: rootWindow.isDarkMode
+                                          ? Constants.darkCardBackgroundColor
+                                          : Constants.lightCardBackgroundColor
+    readonly property color borderColor: rootWindow.isDarkMode
+                                         ? "#464646" : "#dddddd"
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2" : "#505050"
+    readonly property var logLevels: [
+        "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"
+    ]
+
+    title: "Application Log"
     visible: false
-    width: 800
-    height: 450
-    minimumHeight: 100
-    minimumWidth: 700
-    flags: Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
+    width: 860
+    height: 520
+    minimumHeight: 300
+    minimumWidth: 620
+    flags: Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.WindowTitleHint
+           | Qt.WindowCloseButtonHint
+    color: rootWindow.isDarkMode
+           ? Constants.darkMainContent : Constants.lightMainContent
 
     property bool autoScrollEnabled: true
     property string logCache: ""
     property int maxLength: 10000
     property int removeLength: 2500
 
-    Rectangle {
-        anchors.fill: parent
-        color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
-        border.color : autoScrollEnabled ? "transparent" : "orange"
-        border.width : 2
-    }
-
-    Label {
-        id: colorLabel
-        visible: false
-    }
-
     function logClear() {
         logTextArea.text = ""
         logCache = ""
     }
 
+    function scrollToEnd() {
+        logTextArea.cursorPosition = logTextArea.length
+        logScrollView.contentItem.contentY = Math.max(
+            0, logTextArea.contentHeight - logScrollView.availableHeight)
+    }
+
+    function setAutoScroll(enabled) {
+        autoScrollEnabled = enabled
+        if (enabled) {
+            if (logCache.length > 0) {
+                logTextArea.append(logCache.slice(0, -1))
+            }
+            logCache = ""
+            Qt.callLater(scrollToEnd)
+        }
+    }
+
     Connections {
         target: loggerConfig
+
         function onLogMessage(out) {
-            if (autoScrollEnabled) {
+            if (logWindowId.autoScrollEnabled) {
                 logTextArea.append(out)
                 if (logTextArea.text.length >= logWindowId.maxLength) {
-                    logTextArea.remove(0, removeLength)
+                    logTextArea.remove(0, logWindowId.removeLength)
                     logTextArea.insert(0, "Previous output was removed.\n")
                 }
             } else {
-                logCache += out + "\n"
+                logWindowId.logCache += out + "\n"
             }
         }
+
         function onLogLevelChanged(logLevel) {
-            if (logLevel === "CRITICAL") {
-                logLevelCriticalId.checked = true
-            } else if (logLevel === "ERROR") {
-                logLevelErrorId.checked = true
-            } else if (logLevel === "WARNING") {
-                logLevelWarningId.checked = true
-            } else if (logLevel === "INFO") {
-                logLevelInfoId.checked = true
-            } else if (logLevel === "DEBUG") {
-                logLevelDebugId.checked = true
-            } else if (logLevel === "TRACE") {
-                logLevelTraceId.checked = true
+            const index = logWindowId.logLevels.indexOf(logLevel)
+            if (index >= 0) {
+                logLevelCombo.currentIndex = index
             }
         }
     }
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 0
+        anchors.margins: 16
+        spacing: 12
 
         RowLayout {
-            Layout.minimumHeight: 40
-            Layout.maximumHeight: 40
-            spacing: 10
+            Layout.fillWidth: true
+            Layout.preferredHeight: 30
+            spacing: 9
+
+            DetailBadge {
+                kind: "log"
+            }
+
+            Label {
+                text: "Application Log"
+                font.pixelSize: 20
+                font.bold: true
+            }
 
             Item {
-                implicitHeight: 1
-                implicitWidth: 1
-            }
-            Button {
-                text: "Clear Log"
-                onClicked: logClear()
-            }
-            Button {
-                text: logWindowId.autoScrollEnabled ? "Pause Log" : "Resume Log"
-                onClicked: {
-                    logWindowId.autoScrollEnabled = !logWindowId.autoScrollEnabled
-                    if (logWindowId.autoScrollEnabled) {
-                        if (logCache.length > 0) {
-                            logTextArea.append(logCache.slice(0, -1))
-                        }
-                        logCache = ""
-                        logTextArea.cursorPosition = logTextArea.length
-                        scrollView.contentY = logTextArea - scrollView.height
-                    } else {
-                        logTextArea.cursorPosition = logTextArea.cursorPosition - 1
-                    }
-                }
-            }
-            RadioButton {
-                id: logLevelCriticalId
-                text: "CRITICAL"
-                checked: false
-                checkable: true
-                onClicked: {
-                    if (checked) {
-                        loggerConfig.setGlobalLogLevel("CRITICAL")
-                    }
-                }
-            }
-            RadioButton {
-                id: logLevelErrorId
-                text: "ERROR"
-                checked: false
-                checkable: true
-                onClicked: {
-                    if (checked) {
-                        loggerConfig.setGlobalLogLevel("ERROR")
-                    }
-                }
-            }
-            RadioButton {
-                id: logLevelWarningId
-                text: "WARNING"
-                checked: false
-                checkable: true
-                onClicked: {
-                    if (checked) {
-                        loggerConfig.setGlobalLogLevel("WARNING")
-                    }
-                }
-            }
-            RadioButton {
-                id: logLevelInfoId
-                text: "INFO"
-                checked: false
-                checkable: true
-                onClicked: {
-                    if (checked) {
-                        loggerConfig.setGlobalLogLevel("INFO")
-                    }
-                }
-            }
-            RadioButton {
-                id: logLevelDebugId
-                text: "DEBUG"
-                checked: false
-                checkable: true
-                onClicked: {
-                    if (checked) {
-                        loggerConfig.setGlobalLogLevel("DEBUG")
-                    }
-                }
-            }
-            RadioButton {
-                id: logLevelTraceId
-                text: "TRACE"
-                checked: false
-                checkable: true
-                onClicked: {
-                    if (checked) {
-                        loggerConfig.setGlobalLogLevel("TRACE")
-                    }
-                }
-            }
-            Item {
-                implicitHeight: 1
                 Layout.fillWidth: true
             }
+
+            Rectangle {
+                Layout.preferredWidth: 8
+                Layout.preferredHeight: 8
+                radius: 4
+                color: logWindowId.autoScrollEnabled
+                       ? "#36a269" : Constants.warningColor
+            }
+
+            Label {
+                text: logWindowId.autoScrollEnabled ? "Live" : "Paused"
+                font.pixelSize: 11
+                font.bold: true
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            Button {
+                text: logWindowId.autoScrollEnabled ? "Pause" : "Resume"
+                onClicked: logWindowId.setAutoScroll(
+                               !logWindowId.autoScrollEnabled)
+            }
+
+            Button {
+                text: "Clear"
+                onClicked: logWindowId.logClear()
+            }
+
             Item {
-                implicitHeight: 1
-                implicitWidth: 1
+                Layout.fillWidth: true
+            }
+
+            Label {
+                text: "Log level"
+                font.pixelSize: 10
+                color: logWindowId.secondaryTextColor
+            }
+
+            ComboBox {
+                id: logLevelCombo
+                Layout.preferredWidth: 125
+                model: logWindowId.logLevels
+                onActivated: loggerConfig.setGlobalLogLevel(currentText)
             }
         }
 
         Rectangle {
-            color: rootWindow.isDarkMode ? "black" : "white"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.margins: 3
+            radius: 8
+            clip: true
+            color: logWindowId.surfaceColor
+            border.width: 1
+            border.color: logWindowId.autoScrollEnabled
+                          ? logWindowId.borderColor : Constants.warningColor
 
-            Flickable {
-                id: scrollView
+            ScrollView {
+                id: logScrollView
                 anchors.fill: parent
-                boundsBehavior: Flickable.StopAtBounds
-                interactive: true
-                ScrollBar.vertical: ScrollBar {}
+                anchors.margins: 8
+                contentWidth: availableWidth
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-                TextArea.flickable: TextArea {
+                TextEdit {
                     id: logTextArea
+                    width: logScrollView.availableWidth
                     readOnly: true
                     tabStopDistance: 40
-                    wrapMode: TextArea.Wrap
+                    wrapMode: TextEdit.Wrap
                     selectByMouse: true
                     selectByKeyboard: true
+                    font.family: Qt.platform.os === "windows"
+                                 ? "Consolas"
+                                 : Qt.platform.os === "osx"
+                                   ? "Menlo" : "DejaVu Sans Mono"
+                    font.pixelSize: 11
+                    color: rootWindow.isDarkMode ? "#e4e4e4" : "#262626"
+                    selectionColor: "#274ff6"
+                    selectedTextColor: "#ffffff"
+                    padding: 4
+
                     onContentHeightChanged: {
                         if (logWindowId.autoScrollEnabled) {
-                            logTextArea.cursorPosition = logTextArea.length
-                            scrollView.contentY = logTextArea.height - scrollView.height
+                            Qt.callLater(logWindowId.scrollToEnd)
                         }
                     }
-                    onPressed: logWindowId.autoScrollEnabled = false
+
+                    TapHandler {
+                        onTapped: logWindowId.setAutoScroll(false)
+                    }
                 }
             }
         }
     }
 
-    Component.onCompleted: {
-        loggerConfig.requestCurrentLogLevel()
-    }
+    Component.onCompleted: loggerConfig.requestCurrentLogLevel()
 }
