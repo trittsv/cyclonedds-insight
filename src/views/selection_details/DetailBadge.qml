@@ -48,6 +48,8 @@ Rectangle {
                 return detailsIcon
             if (badge.kind === "settings")
                 return settingsIcon
+            if (badge.kind === "configuration")
+                return configurationIcon
             return participantIcon
         }
     }
@@ -459,6 +461,53 @@ Rectangle {
                     x: modelData[0]
                     y: modelData[1]
                     width: 12
+                    height: 2
+
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width
+                        height: 1.5
+                        radius: 0.75
+                        color: badge.iconColor
+                    }
+
+                    Rectangle {
+                        x: modelData[2]
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 4
+                        height: 4
+                        radius: 2
+                        color: badge.iconColor
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: configurationIcon
+
+        Item {
+            width: 14
+            height: 14
+
+            Rectangle {
+                width: 14
+                height: 14
+                radius: 2
+                color: "transparent"
+                border.width: 1.5
+                border.color: badge.iconColor
+            }
+
+            Repeater {
+                model: [[3, 4, 5], [3, 8, 8]]
+
+                Item {
+                    required property var modelData
+                    x: modelData[0]
+                    y: modelData[1]
+                    width: 9
                     height: 2
 
                     Rectangle {
