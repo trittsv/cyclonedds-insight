@@ -305,6 +305,12 @@
     <message id="qos.provider.dialog.title">
         <translation>QoS-Provider</translation>
     </message>
+    <message id="endpoint.details">
+        <translation>Details</translation>
+    </message>
+    <message id="endpoint.preview">
+        <translation>Vorschau</translation>
+    </message>
 
 </context>
 </TS>

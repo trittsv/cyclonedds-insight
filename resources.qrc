@@ -41,6 +41,7 @@
         <file>src/views/SettingsView.qml</file>
         <file>src/views/TopicOverview.qml</file>
         <file>src/views/selection_details/TopicEndpointView.qml</file>
+        <file>src/views/selection_details/EndpointCard.qml</file>
         <file>src/views/icons/WarningTriangle.qml</file>
         <file>src/views/icons/ChevronIcon.qml</file>
         <file>src/views/icons/SearchIcon.qml</file>
