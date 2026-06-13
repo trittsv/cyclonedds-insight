@@ -123,7 +123,6 @@ Item {
                     text: card.endpoint_process_name.length > 0
                           ? card.endpoint_process_name
                           : "Unknown process"
-                    font.pixelSize: 13
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -133,7 +132,6 @@ Item {
                           ? "PID " + card.endpoint_process_id
                           : ""
                     visible: text.length > 0
-                    font.pixelSize: 10
                     opacity: 0.6
                 }
             }
@@ -145,7 +143,7 @@ Item {
                       + (card.addresses.length > 0
                          ? "  |  " + card.addresses
                          : "")
-                font.pixelSize: 10
+                font.pixelSize: 11
                 color: rootWindow.isDarkMode ? "#d0d0d0" : "#454545"
                 elide: Text.ElideRight
 
@@ -167,10 +165,8 @@ Item {
                 Layout.preferredHeight: 12
                 text: card.endpoint_key
                 color: rootWindow.isDarkMode ? "#a8a8a8" : "#666666"
-                font.pixelSize: 9
-                minimumPixelSize: 7
+                font.pixelSize: 10
                 fontSizeMode: Text.HorizontalFit
-                opacity: 0.62
                 verticalAlignment: Text.AlignVCenter
             }
 
@@ -182,8 +178,6 @@ Item {
                 Label {
                     text: "No partition"
                     visible: !card.has_partitions
-                    font.pixelSize: 10
-                    opacity: 0.55
                 }
 
                 Flickable {
@@ -219,7 +213,6 @@ Item {
                                     id: partitionLabel
                                     anchors.centerIn: parent
                                     text: partition_name
-                                    font.pixelSize: 10
                                 }
 
                                 MouseArea {
@@ -272,7 +265,6 @@ Item {
                     id: previewLabel
                     anchors.centerIn: parent
                     text: qsTrId("endpoint.preview")
-                    font.pixelSize: 9
                     color: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
                 }
 
