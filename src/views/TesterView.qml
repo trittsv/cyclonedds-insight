@@ -115,6 +115,8 @@ Rectangle {
 
                 Menu {
                     id: presetActionsMenu
+                    x: presetActionsButton.width - width
+                    y: presetActionsButton.height + 4
 
                     MenuItem {
                         text: qsTrId("tester.duplicate")

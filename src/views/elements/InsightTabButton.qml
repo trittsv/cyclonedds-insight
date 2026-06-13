@@ -20,28 +20,87 @@ import "qrc:/src/views"
 TabButton {
     id: control
     property alias tabText: label.text
-
-
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
+    property bool showLeftSeparator: false
 
     background: Rectangle {
-        color: control.checked ? (rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent) : (control.hovered ? (rootWindow.isDarkMode ? "#454545" : "#c9c7c7") : (rootWindow.isDarkMode ? "#383838" : "#dcdcdc"))
-        
+        id: tabBackground
+        radius: 7
+        color: control.checked
+               ? rootWindow.isDarkMode
+                 ? Constants.darkMainContent : Constants.lightMainContent
+               : control.hovered
+                 ? rootWindow.isDarkMode ? "#454545" : "#c9c7c7"
+                 : rootWindow.isDarkMode ? "#383838" : "#dcdcdc"
+        border.width: 1
+        border.color: control.checked
+                      ? rootWindow.isDarkMode ? "#555555" : "#d2d2d2"
+                      : rootWindow.isDarkMode ? "#424242" : "#d8d8d8"
+
         Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 7
+            color: tabBackground.color
+        }
+
+        Rectangle {
+            visible: control.showLeftSeparator
+            anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            anchors.right: parent.right
+            anchors.topMargin: 8
+            anchors.bottomMargin: 8
             width: 1
-            color: rootWindow.isDarkMode ? "#1e1e1e" : "#b9b9b9"
+            color: rootWindow.isDarkMode ? "#171717" : "#707070"
+            z: 3
+        }
+
+        Rectangle {
+            visible: control.checked
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: 1
+            anchors.rightMargin: 1
+            anchors.bottomMargin: -1
+            height: 8
+            color: parent.color
+            z: 2
+        }
+
+        Rectangle {
+            visible: control.checked
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.topMargin: 7
+            width: 1
+            color: tabBackground.border.color
+            z: 3
+        }
+
+        Rectangle {
+            visible: control.checked
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.topMargin: 7
+            width: 1
+            color: tabBackground.border.color
+            z: 3
         }
 
         Rectangle {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
+            anchors.leftMargin: 7
+            anchors.rightMargin: 7
+            anchors.topMargin: 1
             height: 3
-            color: "#144fff"
+            radius: 1
+            color: "#274ff6"
             visible: control.checked
         }
     }
@@ -54,7 +113,8 @@ TabButton {
         Label {
             id: label
             text: control.tabText
-            font.pixelSize: 16
+            font.pixelSize: 14
+            font.bold: control.checked
 
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
             Layout.leftMargin: 16
