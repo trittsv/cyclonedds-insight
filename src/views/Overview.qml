@@ -62,45 +62,59 @@ SplitView {
         Column {
             anchors.fill: parent
 
-            TabBar {
+            Item {
                 id: bar
+                property int currentIndex: 0
+
                 width: parent.width
                 height: 36
-                spacing: 0
-                leftPadding: 0
-                rightPadding: 0
-                topPadding: 4
-                bottomPadding: 0
 
-                background: Rectangle {
+                Rectangle {
+                    anchors.fill: parent
                     color: rootWindow.isDarkMode ? Constants.darkHeaderBackground : Constants.lightHeaderBackground
                 }
 
-                InsightTabButton {
-                    tabText: qsTrId("tab.details")
-                    height: 33
-                    width: 150
-                }
-                InsightTabButton {
-                    tabText: qsTrId("tab.statistics")
-                    showLeftSeparator: bar.currentIndex !== 0
-                                       && bar.currentIndex !== 1
-                    height: 33
-                    width: 150
-                }
-                InsightTabButton {
-                    tabText: qsTrId("tab.tester")
-                    showLeftSeparator: bar.currentIndex !== 1
-                                       && bar.currentIndex !== 2
-                    height: 33
-                    width: 150
-                }
-                InsightTabButton {
-                    tabText: qsTrId("tab.listener")
-                    showLeftSeparator: bar.currentIndex !== 2
-                                       && bar.currentIndex !== 3
-                    height: 33
-                    width: 150
+                Row {
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.topMargin: 4
+                    spacing: 0
+
+                    InsightTabButton {
+                        tabText: qsTrId("tab.details")
+                        checked: bar.currentIndex === 0
+                        onClicked: bar.currentIndex = 0
+                        height: parent.height
+                        width: 150
+                    }
+                    InsightTabButton {
+                        tabText: qsTrId("tab.statistics")
+                        checked: bar.currentIndex === 1
+                        showLeftSeparator: bar.currentIndex !== 0
+                                           && bar.currentIndex !== 1
+                        onClicked: bar.currentIndex = 1
+                        height: parent.height
+                        width: 150
+                    }
+                    InsightTabButton {
+                        tabText: qsTrId("tab.tester")
+                        checked: bar.currentIndex === 2
+                        showLeftSeparator: bar.currentIndex !== 1
+                                           && bar.currentIndex !== 2
+                        onClicked: bar.currentIndex = 2
+                        height: parent.height
+                        width: 150
+                    }
+                    InsightTabButton {
+                        tabText: qsTrId("tab.listener")
+                        checked: bar.currentIndex === 3
+                        showLeftSeparator: bar.currentIndex !== 2
+                                           && bar.currentIndex !== 3
+                        onClicked: bar.currentIndex = 3
+                        height: parent.height
+                        width: 150
+                    }
                 }
             }
             StackLayout {
