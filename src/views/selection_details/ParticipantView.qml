@@ -71,38 +71,8 @@ Rectangle {
                 Layout.fillWidth: true
                 spacing: 9
 
-                Rectangle {
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
-                    radius: 7
-                    color: rootWindow.isDarkMode ? "#3f315d" : "#eee5ff"
-
-                    Item {
-                        anchors.centerIn: parent
-                        width: 12
-                        height: 14
-
-                        readonly property color iconColor: rootWindow.isDarkMode
-                                                            ? "#c6a9ff"
-                                                            : "#6b3fa0"
-
-                        Rectangle {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            width: 6
-                            height: 6
-                            radius: 3
-                            color: parent.iconColor
-                        }
-
-                        Rectangle {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.bottom: parent.bottom
-                            width: 12
-                            height: 7
-                            radius: 3.5
-                            color: parent.iconColor
-                        }
-                    }
+                DetailBadge {
+                    kind: "participant"
                 }
 
                 Label {

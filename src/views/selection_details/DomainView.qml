@@ -27,19 +27,55 @@ Rectangle {
 
     property int domainId
 
-    ColumnLayout  {
-        anchors.fill: parent
-        anchors.margins: 10
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2"
+                                                : "#4f4f4f"
 
-        Label {
-            text: qsTrId("Domain")
-            font.pixelSize: 18
-            font.bold: true
-            horizontalAlignment: Text.AlignLeft
-            Layout.alignment: Qt.AlignLeft
-        }
-        Label {
-            text: qsTrId("Domain ID: ") + domainViewId.domainId
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 16
+        spacing: 14
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 7
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 9
+
+                DetailBadge {
+                    kind: "domain"
+                }
+
+                Label {
+                    text: qsTrId("Domain")
+                    font.pixelSize: 20
+                    font.bold: true
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 14
+                spacing: 8
+
+                Label {
+                    text: qsTrId("Domain ID: ")
+                    font.pixelSize: 10
+                    color: domainViewId.secondaryTextColor
+                }
+
+                Label {
+                    text: domainViewId.domainId
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+            }
         }
 
         NodeView {

@@ -16,10 +16,13 @@ import QtQuick.Layouts
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views"
+import "qrc:/src/views/selection_details"
 
 TabButton {
     id: control
     property alias tabText: label.text
+    property string badgeKind: ""
+    readonly property bool hasBadge: badgeKind.length > 0
 
 
     anchors.top: parent.top
@@ -41,7 +44,7 @@ TabButton {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 3
-            color: "#144fff"
+            color: "#274ff6"
             visible: control.checked
         }
     }
@@ -49,15 +52,25 @@ TabButton {
     contentItem: RowLayout {
         anchors.fill: parent
         anchors.margins: 0
-        spacing: 0
+        spacing: control.hasBadge ? 7 : 0
+
+        DetailBadge {
+            visible: control.hasBadge
+            kind: control.badgeKind
+            Layout.preferredWidth: 20
+            Layout.preferredHeight: 20
+            Layout.leftMargin: 10
+            Layout.alignment: Qt.AlignVCenter
+        }
 
         Label {
             id: label
             text: control.tabText
-            font.pixelSize: 16
+            font.pixelSize: control.hasBadge ? 14 : 16
+            font.bold: control.checked && control.hasBadge
 
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
-            Layout.leftMargin: 16
+            Layout.leftMargin: control.hasBadge ? 0 : 16
         }
     }
 }

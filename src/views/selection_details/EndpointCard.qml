@@ -45,7 +45,7 @@ Item {
 
     readonly property color accentColor: card.isWriter
         ? rootWindow.isDarkMode ? "#8cc8ff" : "#145c9e"
-        : rootWindow.isDarkMode ? "#c6a9ff" : "#6b3fa0"
+        : "#274ff6"
 
     readonly property string endpointDetails:
         "Key: " + endpoint_key

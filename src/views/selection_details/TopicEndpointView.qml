@@ -30,6 +30,10 @@ Rectangle {
     property int writerCount: 0
     property int readerCount: 0
 
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2"
+                                                : "#4f4f4f"
+
     EndpointModel {
         id: endpointWriterModel
     }
@@ -66,29 +70,30 @@ Rectangle {
         endpointReaderModel.setDomainId(parseInt(domainId), topicName, 3)
     }
 
-    ColumnLayout  {
+    ColumnLayout {
         anchors.fill: parent
+        anchors.margins: 16
 
         ColumnLayout {
             Layout.fillWidth: true
+            Layout.fillHeight: true
             spacing: 0
-            Layout.leftMargin: 1
 
             RowLayout {
                 Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.topMargin: 10
-                Layout.rightMargin: 10
+                spacing: 9
+
+                DetailBadge {
+                    kind: "topic"
+                }
 
                 Label {
                     text: qsTrId("Topic")
-                    font.pixelSize: 18
+                    font.pixelSize: 20
                     font.bold: true
                 }
 
-
                 Item {
-                    Layout.preferredHeight: 1
                     Layout.fillWidth: true
                 }
 
@@ -148,14 +153,39 @@ Rectangle {
                 }
             }
 
-            Label {
-                text: "Domain Id: " + domainId
-                Layout.leftMargin: 10
-            }
-            Label {
-                text: "Topic Name: " + topicName
-                Layout.leftMargin: 10
-                Layout.bottomMargin: 10
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 14
+                Layout.topMargin: 7
+                Layout.bottomMargin: 14
+                spacing: 8
+
+                Label {
+                    text: "Domain ID:"
+                    font.pixelSize: 10
+                    color: topicEndpointView.secondaryTextColor
+                }
+
+                Label {
+                    text: domainId
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+
+                Label {
+                    text: "Topic Name:"
+                    font.pixelSize: 10
+                    color: topicEndpointView.secondaryTextColor
+                    Layout.leftMargin: 12
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    text: topicName
+                    font.pixelSize: 11
+                    font.bold: true
+                    elide: Text.ElideRight
+                }
             }
 
             RowLayout {
@@ -165,7 +195,6 @@ Rectangle {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 8
-                    Layout.leftMargin: 10
 
                     RowLayout {
                         Layout.fillWidth: true
@@ -230,7 +259,6 @@ Rectangle {
                     Layout.fillWidth: true
                     spacing: 8
                     Layout.leftMargin: 9
-                    Layout.rightMargin: 10
 
                     RowLayout {
                         Layout.fillWidth: true
@@ -245,7 +273,7 @@ Rectangle {
                             Layout.preferredWidth: readerCountLabel.implicitWidth + 12
                             Layout.preferredHeight: 20
                             radius: 10
-                            color: rootWindow.isDarkMode ? "#3f315d" : "#eee5ff"
+                            color: rootWindow.isDarkMode ? "#17254f" : "#e6ebff"
 
                             Label {
                                 id: readerCountLabel
@@ -253,7 +281,7 @@ Rectangle {
                                 text: readerCount
                                 font.pixelSize: 10
                                 font.bold: true
-                                color: rootWindow.isDarkMode ? "#c6a9ff" : "#6b3fa0"
+                                color: "#274ff6"
                             }
                         }
 

@@ -26,30 +26,83 @@ Rectangle {
     property int domainId
     property string endpointKey
 
-    ColumnLayout  {
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2"
+                                                : "#4f4f4f"
+
+    ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: 16
+        spacing: 14
 
-        Label {
-            text: qsTrId("Endpoint")
-            font.pixelSize: 18
-            font.bold: true
-            horizontalAlignment: Text.AlignLeft
-            Layout.alignment: Qt.AlignLeft
-        }
-        Label {
-            text: qsTrId("Domain ID: ") + endpointViewId.domainId
-        }
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 7
 
-        Label {
-            text: qsTrId("Endpoint-Key: ") + endpointViewId.endpointKey
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 9
+
+                DetailBadge {
+                    kind: "endpoint"
+                }
+
+                Label {
+                    text: qsTrId("Endpoint")
+                    font.pixelSize: 20
+                    font.bold: true
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 14
+                spacing: 8
+
+                Label {
+                    text: qsTrId("Domain ID: ")
+                    font.pixelSize: 10
+                    color: endpointViewId.secondaryTextColor
+                }
+
+                Label {
+                    text: endpointViewId.domainId
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: 14
+                spacing: 8
+
+                Label {
+                    text: qsTrId("Endpoint-Key: ")
+                    font.pixelSize: 10
+                    color: endpointViewId.secondaryTextColor
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 17
+                    text: endpointViewId.endpointKey
+                    color: rootWindow.isDarkMode ? "#e0e0e0" : "#303030"
+                    font.pixelSize: 11
+                    minimumPixelSize: 8
+                    fontSizeMode: Text.HorizontalFit
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
         }
 
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
         }
-
     }
-
 }
