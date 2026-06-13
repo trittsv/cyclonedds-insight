@@ -24,12 +24,125 @@ ColumnLayout {
     spacing: 0
 
     RowLayout {
+        id: viewToolbar
+        readonly property int controlHeight:
+            Qt.platform.os === "osx" ? 30 : 24
+        readonly property int actionWidth:
+            Qt.platform.os === "osx" ? 38 : 32
+
         spacing: 0
 
-        ComboBox {
+        Rectangle {
             id: viewSelector
-            model: ["Topic View", "Participant View"]
+            property int currentIndex: 0
+
             Layout.fillWidth: true
+            Layout.preferredHeight: viewToolbar.controlHeight
+            Layout.leftMargin: 4
+            Layout.rightMargin: 4
+            radius: 5
+            color: rootWindow.isDarkMode ? "#292929" : "#e9e9e9"
+            border.width: 1
+            border.color: rootWindow.isDarkMode ? "#484848" : "#d0d0d0"
+
+            Row {
+                anchors.fill: parent
+                anchors.margins: 2
+                spacing: 2
+
+                Repeater {
+                    model: ["Topic View", "Participant View"]
+
+                    Rectangle {
+                        id: viewOption
+
+                        required property int index
+                        required property string modelData
+                        readonly property bool selected:
+                            viewSelector.currentIndex === index
+
+                        width: (parent.width - 2) / 2
+                        height: parent.height
+                        radius: 3
+                        color: selected
+                               ? rootWindow.isDarkMode
+                                 ? "#484848" : "#ffffff"
+                               : optionMouseArea.containsMouse
+                                 ? rootWindow.isDarkMode
+                                   ? "#363636" : "#dddddd"
+                                 : rootWindow.isDarkMode
+                                   ? "#242424" : "transparent"
+                        border.width: 1
+                        border.color: selected
+                                      ? rootWindow.isDarkMode
+                                        ? "#747474" : "#c6c6c6"
+                                      : "transparent"
+
+                        Rectangle {
+                            visible: viewOption.selected
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.leftMargin: 5
+                            width: 2
+                            height: parent.height - 8
+                            radius: 1
+                            color: "#274ff6"
+                        }
+
+                        Label {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.leftMargin: 11
+                            anchors.rightMargin: 6
+                            text: viewOption.modelData
+                            font.pixelSize: 10
+                            font.bold: viewOption.selected
+                            horizontalAlignment: Text.AlignLeft
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                            color: rootWindow.isDarkMode
+                                   ? viewOption.selected
+                                     ? "#ffffff" : "#b8b8b8"
+                                   : "#262626"
+                        }
+
+                        MouseArea {
+                            id: optionMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: viewSelector.currentIndex =
+                                           viewOption.index
+                        }
+
+                        ToolTip {
+                            id: viewOptionTooltip
+                            parent: viewOption
+                            visible: optionMouseArea.containsMouse
+                                     && viewOption.width < 105
+                            delay: 400
+                            text: viewOption.modelData
+                            contentItem: Label {
+                                text: viewOptionTooltip.text
+                                padding: 4
+                                color: rootWindow.isDarkMode
+                                       ? "#eeeeee" : "#262626"
+                            }
+                            background: Rectangle {
+                                radius: 5
+                                border.width: 1
+                                border.color: rootWindow.isDarkMode
+                                              ? Constants.darkBorderColor
+                                              : Constants.lightBorderColor
+                                color: rootWindow.isDarkMode
+                                       ? Constants.darkCardBackgroundColor
+                                       : Constants.lightCardBackgroundColor
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         Button {
@@ -38,6 +151,10 @@ ColumnLayout {
             onClicked: menu.open()
             hoverEnabled: true
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.preferredWidth: viewToolbar.actionWidth
+            Layout.minimumWidth: viewToolbar.actionWidth
+            Layout.maximumWidth: viewToolbar.actionWidth
+            Layout.preferredHeight: viewToolbar.controlHeight
 
             Menu {
                 id: menu
@@ -73,6 +190,10 @@ ColumnLayout {
             id: removeDomainButton
             text: "-"
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.preferredWidth: viewToolbar.actionWidth
+            Layout.minimumWidth: viewToolbar.actionWidth
+            Layout.maximumWidth: viewToolbar.actionWidth
+            Layout.preferredHeight: viewToolbar.controlHeight
             onClicked: {
                 if (viewSelector.currentIndex === 0) {
                     if (treeModelProxy.getIsRowDomain(topicOverview.getCurrentIndex())) {
@@ -110,7 +231,8 @@ ColumnLayout {
         Button {
             flat: true
             highlighted: searchField.visible
-            visible: viewSelector.currentIndex === 0
+            opacity: viewSelector.currentIndex === 0 ? 1 : 0
+            enabled: viewSelector.currentIndex === 0
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             SearchIcon {
                 anchors.centerIn: parent
@@ -129,8 +251,10 @@ ColumnLayout {
                     }
                 }
             }
-            Layout.preferredWidth: Qt.platform.os === "osx" ? 50 : 30
-            Layout.preferredHeight: Qt.platform.os === "osx" ? 30 : 24
+            Layout.preferredWidth: viewToolbar.actionWidth
+            Layout.minimumWidth: viewToolbar.actionWidth
+            Layout.maximumWidth: viewToolbar.actionWidth
+            Layout.preferredHeight: viewToolbar.controlHeight
         }
     }
 
