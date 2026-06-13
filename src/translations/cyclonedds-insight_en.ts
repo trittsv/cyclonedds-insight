@@ -254,5 +254,51 @@
         <translation>Describe this preset...</translation>
     </message>
 
+    <message id="qos.provider.source.manual">
+        <translation>Configure manually</translation>
+    </message>
+    <message id="qos.provider.source.provider">
+        <translation>QoS Provider</translation>
+    </message>
+    <message id="qos.provider.file">
+        <translation>QoS provider XML file</translation>
+    </message>
+    <message id="qos.provider.file.placeholder">
+        <translation>Select a QoS provider XML file</translation>
+    </message>
+    <message id="qos.provider.browse">
+        <translation>Browse...</translation>
+    </message>
+    <message id="qos.provider.profile-key">
+        <translation>QoS profile key</translation>
+    </message>
+    <message id="qos.provider.profile-key.placeholder">
+        <translation>Required, for example: qoslib01::qosprofile01</translation>
+    </message>
+    <message id="qos.provider.profile-key.manual">
+        <translation>Enter key manually</translation>
+    </message>
+    <message id="qos.provider.description">
+        <translation>Select a detected key. If necessary, enable manual entry below. The provider supplies Topic and the matching Reader/Subscriber or Writer/Publisher QoS.</translation>
+    </message>
+    <message id="qos.provider.error.file-required">
+        <translation>Please select a QoS provider XML file.</translation>
+    </message>
+    <message id="qos.provider.error.profile-key-required">
+        <translation>Please enter a QoS profile key, for example qoslib01::qosprofile01.</translation>
+    </message>
+    <message id="qos.provider.filter.xml">
+        <translation>XML files (*.xml)</translation>
+    </message>
+    <message id="qos.provider.filter.all">
+        <translation>All files (*)</translation>
+    </message>
+    <message id="qos.provider.file-dialog.title">
+        <translation>Select QoS provider XML file</translation>
+    </message>
+    <message id="qos.provider.dialog.title">
+        <translation>QoS Provider</translation>
+    </message>
+
 </context>
 </TS>

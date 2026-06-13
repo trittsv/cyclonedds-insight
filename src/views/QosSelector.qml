@@ -10,10 +10,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 */
 
+import QtCore
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/elements"
@@ -42,6 +44,8 @@ Popup {
     property var topicTypeNameList: []
     property string selectedTypeText: ""
     property string buttonName: ""
+    property string qosProviderFilePath: ""
+    property var qosProviderKeys: []
 
     function setType(topicType, entityType) {
         topicTypeNameList = []
@@ -75,18 +79,20 @@ Popup {
     }
 
     ScrollView {
+        id: qosScrollView
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: buttonRow.top
         clip: true
+        contentWidth: availableWidth
 
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
         Column {
             id: lay
-            width: parent.width
+            width: qosScrollView.availableWidth
             spacing: 5
 
             Label {
@@ -149,7 +155,25 @@ Popup {
                 font.bold: true
             }
             TabBar {
+                id: qosSourceTabBar
+                width: readerTesterDiaId.width - 40
+                height: 38
+
+                InsightTabButton {
+                    tabText: qsTrId("qos.provider.source.manual")
+                    width: qosSourceTabBar.width / 2
+                    height: qosSourceTabBar.height
+                }
+
+                InsightTabButton {
+                    tabText: qsTrId("qos.provider.source.provider")
+                    width: qosSourceTabBar.width / 2
+                    height: qosSourceTabBar.height
+                }
+            }
+            TabBar {
                 id: bar
+                visible: qosSourceTabBar.currentIndex === 0
                 width: readerTesterDiaId.width - 40
 
                 InsightTabButton {
@@ -176,6 +200,7 @@ Popup {
 
             StackLayout {
                 id: mainLayoutId
+                visible: qosSourceTabBar.currentIndex === 0
                 width: readerTesterDiaId.width - 40
                 currentIndex: bar.currentIndex
                 height: {
@@ -1294,25 +1319,155 @@ Popup {
                     }
                 }
             }
+
+            Column {
+                visible: qosSourceTabBar.currentIndex === 1
+                width: readerTesterDiaId.width - 40
+                spacing: 6
+
+                Label {
+                    text: qsTrId("qos.provider.file")
+                    font.bold: true
+                }
+
+                RowLayout {
+                    width: parent.width
+
+                    TextField {
+                        Layout.fillWidth: true
+                        text: readerTesterDiaId.qosProviderFilePath
+                        placeholderText: qsTrId("qos.provider.file.placeholder")
+                        readOnly: true
+                    }
+
+                    Button {
+                        text: qsTrId("qos.provider.browse")
+                        onClicked: qosProviderFileDialog.open()
+                    }
+                }
+
+                Label {
+                    text: qsTrId("qos.provider.profile-key")
+                    font.bold: true
+                }
+                ComboBox {
+                    id: qosProviderKeyComboBox
+                    width: parent.width
+                    model: readerTesterDiaId.qosProviderKeys
+                    currentIndex: readerTesterDiaId.qosProviderKeys.length > 0 ? 0 : -1
+                    enabled: readerTesterDiaId.qosProviderFilePath.length > 0
+                             && !manualQosProviderKeyCheckBox.checked
+                    displayText: currentIndex >= 0
+                                 ? currentText
+                                 : readerTesterDiaId.qosProviderFilePath.length > 0
+                                   ? qsTrId("qos.provider.profile-key.placeholder")
+                                   : ""
+                }
+
+                CheckBox {
+                    id: manualQosProviderKeyCheckBox
+                    text: qsTrId("qos.provider.profile-key.manual")
+                    enabled: readerTesterDiaId.qosProviderFilePath.length > 0
+                }
+
+                TextField {
+                    id: manualQosProviderKeyTextField
+                    width: parent.width
+                    visible: manualQosProviderKeyCheckBox.checked
+                    enabled: readerTesterDiaId.qosProviderFilePath.length > 0
+                    placeholderText: qsTrId("qos.provider.profile-key.placeholder")
+                    selectByMouse: true
+                }
+
+                Label {
+                    width: parent.width
+                    wrapMode: Text.Wrap
+                    opacity: 0.7
+                    text: qsTrId("qos.provider.description")
+                    enabled: readerTesterDiaId.qosProviderFilePath.length > 0
+                }
+            }
         }
     }
 
-    Row {
+    Rectangle {
         id: buttonRow
-        spacing: 10
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.margins: 10
+        height: 32
+        color: rootWindow.isDarkMode
+               ? Constants.darkOverviewBackground
+               : Constants.lightOverviewBackground
 
-        Button {
-            text: buttonName
-            onClicked: {
-                var pubSubPartitions = [];
-                for (var i = 0; i < partitionModel.count; i++) {
-                    pubSubPartitions.push(partitionModel.get(i).partition);
-                }
-                model.setQosSelection(
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 1
+            color: rootWindow.isDarkMode ? "#454545" : "#c5c5c5"
+        }
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 6
+            anchors.rightMargin: 6
+            anchors.topMargin: 2
+            spacing: 6
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: qsTrId("general.cancel")
+                Layout.preferredHeight: 26
+                onClicked: readerTesterDiaId.close()
+            }
+
+            Button {
+                id: createEndpointButton
+                text: buttonName
+                highlighted: true
+                Layout.preferredHeight: 26
+                onClicked: {
+                    if (qosSourceTabBar.currentIndex === 1) {
+                        if (readerTesterDiaId.qosProviderFilePath.length === 0) {
+                            qosProviderErrorDialog.text = qsTrId("qos.provider.error.file-required")
+                            qosProviderErrorDialog.open()
+                            return
+                        }
+                        const profileKey = manualQosProviderKeyCheckBox.checked
+                                ? manualQosProviderKeyTextField.text.trim()
+                                : qosProviderKeyComboBox.currentText.trim()
+                        if (profileKey.length === 0) {
+                            qosProviderErrorDialog.text = qsTrId("qos.provider.error.profile-key-required")
+                            qosProviderErrorDialog.open()
+                            if (manualQosProviderKeyCheckBox.checked) {
+                                manualQosProviderKeyTextField.forceActiveFocus()
+                            } else {
+                                qosProviderKeyComboBox.forceActiveFocus()
+                            }
+                            return
+                        }
+                        const success = readerTesterDiaId.model.setQosProviderSelection(
+                                          domainIdTextField.text,
+                                          topicNameTextFieldId.text,
+                                          readerTesterDiaId.topicType,
+                                          readerTesterDiaId.entityType,
+                                          readerTesterDiaId.qosProviderFilePath,
+                                          profileKey)
+                        if (success) {
+                            readerTesterDiaId.close()
+                        }
+                        return
+                    }
+
+                    var pubSubPartitions = [];
+                    for (var i = 0; i < partitionModel.count; i++) {
+                        pubSubPartitions.push(partitionModel.get(i).partition);
+                    }
+                    model.setQosSelection(
                     // General
                     domainIdTextField.text,
                     topicNameTextFieldId.text,
@@ -1404,15 +1559,53 @@ Popup {
                     dpReuseParticipantCheckbox.checked,
                     dpUserdataField.text,
                     dpEntityFactoryAutoenableCreatedEntitiesCheckbox.checked
-                )
-                readerTesterDiaId.close()
+                    )
+                    readerTesterDiaId.close()
+                }
             }
         }
-        Button {
-            text: qsTrId("general.cancel")
-            onClicked: {
-                readerTesterDiaId.close()
-            }
+    }
+
+    Shortcut {
+        sequences: ["Return", "Enter"]
+        context: Qt.WindowShortcut
+        enabled: readerTesterDiaId.opened && !qosProviderErrorDialog.visible
+        onActivated: createEndpointButton.clicked()
+    }
+
+    FileDialog {
+        id: qosProviderFileDialog
+        currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
+        fileMode: FileDialog.OpenFile
+        nameFilters: [qsTrId("qos.provider.filter.xml"), qsTrId("qos.provider.filter.all")]
+        title: qsTrId("qos.provider.file-dialog.title")
+        onAccepted: {
+            readerTesterDiaId.qosProviderFilePath = qmlUtils.toLocalFile(selectedFile)
+            readerTesterDiaId.qosProviderKeys =
+                    readerTesterDiaId.model.getQosProviderKeys(
+                        readerTesterDiaId.qosProviderFilePath,
+                        readerTesterDiaId.entityType)
+            qosProviderKeyComboBox.currentIndex =
+                    readerTesterDiaId.qosProviderKeys.length > 0 ? 0 : -1
+            manualQosProviderKeyTextField.clear()
+            manualQosProviderKeyCheckBox.checked =
+                    readerTesterDiaId.qosProviderKeys.length === 0
         }
+    }
+
+    Connections {
+        target: readerTesterDiaId.model
+        ignoreUnknownSignals: true
+
+        function onQosProviderError(message) {
+            qosProviderErrorDialog.text = message
+            qosProviderErrorDialog.open()
+        }
+    }
+
+    MessageDialog {
+        id: qosProviderErrorDialog
+        title: qsTrId("qos.provider.dialog.title")
+        buttons: MessageDialog.Ok
     }
 }

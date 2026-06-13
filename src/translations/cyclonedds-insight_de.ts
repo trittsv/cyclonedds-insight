@@ -260,5 +260,51 @@
         <translation>Dieses Preset beschreiben...</translation>
     </message>
 
+    <message id="qos.provider.source.manual">
+        <translation>Manuell konfigurieren</translation>
+    </message>
+    <message id="qos.provider.source.provider">
+        <translation>QoS-Provider</translation>
+    </message>
+    <message id="qos.provider.file">
+        <translation>QoS-Provider-XML-Datei</translation>
+    </message>
+    <message id="qos.provider.file.placeholder">
+        <translation>QoS-Provider-XML-Datei auswählen</translation>
+    </message>
+    <message id="qos.provider.browse">
+        <translation>Durchsuchen...</translation>
+    </message>
+    <message id="qos.provider.profile-key">
+        <translation>QoS-Profil-Schlüssel</translation>
+    </message>
+    <message id="qos.provider.profile-key.placeholder">
+        <translation>Erforderlich, zum Beispiel: qoslib01::qosprofile01</translation>
+    </message>
+    <message id="qos.provider.profile-key.manual">
+        <translation>Schlüssel manuell eingeben</translation>
+    </message>
+    <message id="qos.provider.description">
+        <translation>Wählen Sie einen erkannten Schlüssel aus. Aktivieren Sie bei Bedarf darunter die manuelle Eingabe. Der Provider liefert die Topic-QoS sowie die passende Reader-/Subscriber- oder Writer-/Publisher-QoS.</translation>
+    </message>
+    <message id="qos.provider.error.file-required">
+        <translation>Bitte wählen Sie eine QoS-Provider-XML-Datei aus.</translation>
+    </message>
+    <message id="qos.provider.error.profile-key-required">
+        <translation>Bitte geben Sie einen QoS-Profil-Schlüssel ein, zum Beispiel qoslib01::qosprofile01.</translation>
+    </message>
+    <message id="qos.provider.filter.xml">
+        <translation>XML-Dateien (*.xml)</translation>
+    </message>
+    <message id="qos.provider.filter.all">
+        <translation>Alle Dateien (*)</translation>
+    </message>
+    <message id="qos.provider.file-dialog.title">
+        <translation>QoS-Provider-XML-Datei auswählen</translation>
+    </message>
+    <message id="qos.provider.dialog.title">
+        <translation>QoS-Provider</translation>
+    </message>
+
 </context>
 </TS>
