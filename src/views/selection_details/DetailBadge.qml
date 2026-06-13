@@ -18,6 +18,7 @@ Rectangle {
     id: badge
 
     property string kind: "participant"
+    property real iconScale: 1.0
     readonly property color iconColor: "#274ff6"
 
     implicitWidth: 24
@@ -27,6 +28,7 @@ Rectangle {
 
     Loader {
         anchors.centerIn: parent
+        scale: badge.iconScale
         sourceComponent: {
             if (badge.kind === "domain")
                 return domainIcon
@@ -60,6 +62,8 @@ Rectangle {
                 return aboutIcon
             if (badge.kind === "log")
                 return logIcon
+            if (badge.kind === "selection")
+                return selectionIcon
             return participantIcon
         }
     }
@@ -699,6 +703,47 @@ Rectangle {
                     height: 1.5
                     radius: 0.75
                     color: badge.iconColor
+                }
+            }
+        }
+    }
+
+    Component {
+        id: selectionIcon
+
+        Item {
+            width: 14
+            height: 14
+
+            Rectangle {
+                x: 1
+                y: 1
+                width: 10
+                height: 9
+                radius: 2
+                color: "transparent"
+                border.width: 1.5
+                border.color: badge.iconColor
+            }
+
+            Canvas {
+                anchors.fill: parent
+
+                onPaint: {
+                    const context = getContext("2d")
+                    context.clearRect(0, 0, width, height)
+                    context.beginPath()
+                    context.moveTo(7, 6)
+                    context.lineTo(13.5, 9.5)
+                    context.lineTo(10.8, 10.7)
+                    context.lineTo(9.7, 13.5)
+                    context.closePath()
+                    context.lineJoin = "round"
+                    context.lineWidth = 2.5
+                    context.strokeStyle = badge.color
+                    context.stroke()
+                    context.fillStyle = badge.iconColor
+                    context.fill()
                 }
             }
         }

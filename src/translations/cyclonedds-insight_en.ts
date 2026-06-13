@@ -27,6 +27,9 @@
     <message id="general.nothing.selected">
         <translation>Nothing Selected</translation>
     </message>
+    <message id="details.selection.hint">
+        <translation>Select a domain, topic, participant, or endpoint from the overview to inspect its details.</translation>
+    </message>
     <message id="general.search.placeholder">
         <translation>Enter search term and press "Enter" ...</translation>
     </message>

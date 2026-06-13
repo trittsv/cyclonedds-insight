@@ -19,6 +19,7 @@ import QtQuick.Dialogs
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/statistics"
 import "qrc:/src/views/elements"
+import "qrc:/src/views/selection_details"
 
 
 SplitView {
@@ -125,9 +126,38 @@ SplitView {
                 Item {
                     id: inspectTab
 
-                    Label {
-                        text: qsTrId("general.nothing.selected")
+                    ColumnLayout {
                         anchors.centerIn: parent
+                        width: Math.min(380, Math.max(220, parent.width - 48))
+                        spacing: 8
+
+                        DetailBadge {
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.preferredWidth: 44
+                            Layout.preferredHeight: 44
+                            radius: 13
+                            kind: "selection"
+                            iconScale: 1.45
+                        }
+
+                        Label {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 4
+                            text: qsTrId("general.nothing.selected")
+                            horizontalAlignment: Text.AlignHCenter
+                            font.pixelSize: 17
+                            font.bold: true
+                        }
+
+                        Label {
+                            Layout.fillWidth: true
+                            text: qsTrId("details.selection.hint")
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.Wrap
+                            font.pixelSize: 11
+                            color: rootWindow.isDarkMode
+                                   ? "#b8b8b8" : "#5c5c5c"
+                        }
                     }
 
                     StackView {

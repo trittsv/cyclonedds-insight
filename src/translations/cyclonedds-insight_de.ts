@@ -30,6 +30,9 @@
     <message id="general.nothing.selected">
         <translation>Nichts ausgewählt</translation>
     </message>
+    <message id="details.selection.hint">
+        <translation>Wählen Sie in der Übersicht eine Domain, ein Topic, einen Participant oder einen Endpoint aus, um die Details anzuzeigen.</translation>
+    </message>
     <message id="general.search.placeholder">
         <translation>Suchbegriff eingeben und "Enter" drücken ...</translation>
     </message>
