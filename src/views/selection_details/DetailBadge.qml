@@ -52,6 +52,8 @@ Rectangle {
                 return configurationIcon
             if (badge.kind === "shapes")
                 return shapesIcon
+            if (badge.kind === "qos")
+                return qosIcon
             return participantIcon
         }
     }
@@ -573,6 +575,17 @@ Rectangle {
                     context.fill()
                 }
             }
+        }
+    }
+
+    Component {
+        id: qosIcon
+
+        Text {
+            text: "QoS"
+            color: badge.iconColor
+            font.pixelSize: 8
+            font.bold: true
         }
     }
 }

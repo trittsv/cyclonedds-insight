@@ -18,7 +18,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 import org.eclipse.cyclonedds.insight
-import "qrc:/src/views/elements"
+import "qrc:/src/views/selection_details"
 
 
 Popup {
@@ -32,10 +32,29 @@ Popup {
 
     width: 600
     height: 400
+    padding: 0
 
     property int domainId: 0
     property string topicType
     property int entityType
+    property int qosSourceIndex: 0
+    property int qosPolicyIndex: 0
+    readonly property color surfaceColor: rootWindow.isDarkMode
+                                          ? Constants.darkCardBackgroundColor
+                                          : Constants.lightCardBackgroundColor
+    readonly property color borderColor: rootWindow.isDarkMode
+                                         ? "#505050" : "#d5d5d5"
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c8c8c8" : "#555555"
+
+    background: Rectangle {
+        radius: 10
+        color: rootWindow.isDarkMode
+               ? Constants.darkMainContent
+               : Constants.lightMainContent
+        border.width: 1
+        border.color: readerTesterDiaId.borderColor
+    }
 
     Component.onCompleted: {
         console.log("Reader", readerTesterDiaId.topicType)
@@ -84,6 +103,10 @@ Popup {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: buttonRow.top
+        anchors.topMargin: 14
+        anchors.leftMargin: 16
+        anchors.rightMargin: 10
+        anchors.bottomMargin: 8
         clip: true
         contentWidth: availableWidth
 
@@ -93,127 +116,281 @@ Popup {
         Column {
             id: lay
             width: qosScrollView.availableWidth
-            spacing: 5
+            spacing: 10
 
-            Label {
-                text: readerTesterDiaId.entityType === 3 ? "Create Reader" : "Create Writer"
-                font.bold: true
-                font.pixelSize: 30
-            }
+            Row {
+                spacing: 9
 
-            Label {
-                text: "Domain"
-                font.bold: true
-            }
-            TextField {
-                id: domainIdTextField
-                text: "0"
-                validator: IntValidator {
-                    bottom: 0
-                    top: 232
+                DetailBadge {
+                    anchors.verticalCenter: parent.verticalCenter
+                    kind: "qos"
                 }
-                focus: true
-                onTextChanged: {
-                    if (domainIdTextField.text > 232) {
-                        domainIdTextField.text = 232
-                    }
-                }
-            }
 
-            Label {
-                text: "Topic Type"
-                font.bold: true
-            }
-            Column {
-                ComboBox {
-                    id: typeComboBox
-                    model: topicTypeNameList
-                    visible: topicTypeNameList.length !== 0
-                    width: readerTesterDiaId.width - 30
-                    onCurrentTextChanged: {
-                        topicType = typeComboBox.currentText;
-                    }
-                }
                 Label {
-                    text: readerTesterDiaId.topicType
-                    visible: topicTypeNameList.length === 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: readerTesterDiaId.entityType === 3
+                          ? "Create Reader" : "Create Writer"
+                    font.bold: true
+                    font.pixelSize: 22
                 }
             }
 
-            Label {
-                text: "Topic Name"
-                font.bold: true
-            }
-            TextField {
-                id: topicNameTextFieldId
-                text: topicName
-                width: readerTesterDiaId.width - 40
+            Rectangle {
+                width: parent.width
+                implicitHeight: endpointBasics.implicitHeight + 20
+                radius: 8
+                color: readerTesterDiaId.surfaceColor
+                border.width: 1
+                border.color: readerTesterDiaId.borderColor
+
+                GridLayout {
+                    id: endpointBasics
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 10
+                    columns: 2
+                    columnSpacing: 12
+                    rowSpacing: 7
+
+                    Label {
+                        Layout.row: 0
+                        Layout.column: 0
+                        text: "Domain"
+                        color: readerTesterDiaId.secondaryTextColor
+                        font.pixelSize: 11
+                    }
+                    TextField {
+                        id: domainIdTextField
+                        Layout.row: 0
+                        Layout.column: 1
+                        Layout.fillWidth: true
+                        text: "0"
+                        validator: IntValidator {
+                            bottom: 0
+                            top: 232
+                        }
+                        focus: true
+                        onTextChanged: {
+                            if (domainIdTextField.text > 232) {
+                                domainIdTextField.text = 232
+                            }
+                        }
+                    }
+
+                    Label {
+                        Layout.row: 1
+                        Layout.column: 0
+                        text: "Topic Type"
+                        color: readerTesterDiaId.secondaryTextColor
+                        font.pixelSize: 11
+                    }
+                    ComboBox {
+                        id: typeComboBox
+                        Layout.row: 1
+                        Layout.column: 1
+                        Layout.fillWidth: true
+                        model: topicTypeNameList
+                        visible: topicTypeNameList.length !== 0
+                        onCurrentTextChanged: {
+                            topicType = typeComboBox.currentText
+                        }
+                    }
+                    Label {
+                        Layout.row: 1
+                        Layout.column: 1
+                        Layout.fillWidth: true
+                        text: readerTesterDiaId.topicType
+                        visible: topicTypeNameList.length === 0
+                        wrapMode: Text.WrapAnywhere
+                        color: readerTesterDiaId.secondaryTextColor
+                    }
+
+                    Label {
+                        Layout.row: 2
+                        Layout.column: 0
+                        text: "Topic Name"
+                        color: readerTesterDiaId.secondaryTextColor
+                        font.pixelSize: 11
+                    }
+                    TextField {
+                        id: topicNameTextFieldId
+                        Layout.row: 2
+                        Layout.column: 1
+                        Layout.fillWidth: true
+                        text: topicName
+                    }
+                }
             }
 
             Label {
                 text: "Quality of Service (QoS)"
                 font.bold: true
+                font.pixelSize: 13
             }
-            TabBar {
-                id: qosSourceTabBar
-                width: readerTesterDiaId.width - 40
+
+            Rectangle {
+                width: parent.width
                 height: 38
+                radius: 7
+                color: rootWindow.isDarkMode ? "#292929" : "#ededed"
+                border.width: 1
+                border.color: readerTesterDiaId.borderColor
 
-                InsightTabButton {
-                    tabText: qsTrId("qos.provider.source.manual")
-                    width: qosSourceTabBar.width / 2
-                    height: qosSourceTabBar.height
-                }
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 3
+                    spacing: 3
 
-                InsightTabButton {
-                    tabText: qsTrId("qos.provider.source.provider")
-                    width: qosSourceTabBar.width / 2
-                    height: qosSourceTabBar.height
+                    Repeater {
+                        model: [
+                            qsTrId("qos.provider.source.manual"),
+                            qsTrId("qos.provider.source.provider")
+                        ]
+
+                        Rectangle {
+                            id: sourceOption
+                            required property int index
+                            required property string modelData
+                            readonly property bool selected:
+                                readerTesterDiaId.qosSourceIndex === index
+
+                            width: (parent.width - 3) / 2
+                            height: parent.height
+                            radius: 5
+                            color: selected
+                                   ? readerTesterDiaId.surfaceColor
+                                   : sourceMouseArea.containsMouse
+                                     ? rootWindow.isDarkMode
+                                       ? "#3a3a3a" : "#dfdfdf"
+                                     : "transparent"
+                            border.width: selected ? 1 : 0
+                            border.color: readerTesterDiaId.borderColor
+
+                            Label {
+                                anchors.centerIn: parent
+                                text: sourceOption.modelData
+                                font.pixelSize: 11
+                                font.bold: sourceOption.selected
+                            }
+
+                            MouseArea {
+                                id: sourceMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked:
+                                    readerTesterDiaId.qosSourceIndex =
+                                        sourceOption.index
+                            }
+                        }
+                    }
                 }
             }
-            TabBar {
-                id: bar
-                visible: qosSourceTabBar.currentIndex === 0
-                width: readerTesterDiaId.width - 40
 
-                InsightTabButton {
-                    tabText: readerTesterDiaId.entityType === 3 ? qsTrId("Reader") : qsTrId("Writer")
-                    height: parent.height
-                    width: 150
-                }
-                InsightTabButton {
-                    tabText: readerTesterDiaId.entityType === 3 ? qsTrId("Subscriber") : qsTrId("Publisher")
-                    height: parent.height
-                    width: 150
-                }
-                InsightTabButton {
-                    tabText: qsTrId("Topic")
-                    height: parent.height
-                    width: 150
-                }
-                /*InsightTabButton {
-                    tabText: qsTrId("Participant")
-                    height: parent.height
-                    width: 150
-                }*/
-            }
+            Column {
+                visible: readerTesterDiaId.qosSourceIndex === 0
+                width: parent.width
+                spacing: -1
 
-            StackLayout {
-                id: mainLayoutId
-                visible: qosSourceTabBar.currentIndex === 0
-                width: readerTesterDiaId.width - 40
-                currentIndex: bar.currentIndex
-                height: {
-                    let child = mainLayoutId.children[mainLayoutId.currentIndex];
-                    return child && child.implicitHeight > 0 ? child.implicitHeight : 0;
+                Row {
+                    width: parent.width
+                    height: 32
+                    spacing: 3
+                    z: 2
+
+                    Repeater {
+                        model: [
+                            readerTesterDiaId.entityType === 3
+                            ? qsTrId("Reader") : qsTrId("Writer"),
+                            readerTesterDiaId.entityType === 3
+                            ? qsTrId("Subscriber") : qsTrId("Publisher"),
+                            qsTrId("Topic")
+                        ]
+
+                        Rectangle {
+                            id: policyTab
+                            required property int index
+                            required property string modelData
+                            readonly property bool selected:
+                                readerTesterDiaId.qosPolicyIndex === index
+
+                            width: (parent.width - 6) / 3
+                            height: selected ? 33 : 29
+                            y: selected ? 0 : 3
+                            radius: 6
+                            color: selected
+                                   ? readerTesterDiaId.surfaceColor
+                                   : policyTabMouseArea.containsMouse
+                                     ? rootWindow.isDarkMode
+                                       ? "#3b3b3b" : "#e1e1e1"
+                                     : rootWindow.isDarkMode
+                                       ? "#303030" : "#ebebeb"
+                            border.width: 1
+                            border.color: selected
+                                          ? readerTesterDiaId.borderColor
+                                          : rootWindow.isDarkMode
+                                            ? "#454545" : "#d3d3d3"
+
+                            Rectangle {
+                                visible: policyTab.selected
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                anchors.leftMargin: 1
+                                anchors.rightMargin: 1
+                                height: 2
+                                color: readerTesterDiaId.surfaceColor
+                            }
+
+                            Label {
+                                anchors.centerIn: parent
+                                text: policyTab.modelData
+                                font.pixelSize: 11
+                                font.bold: policyTab.selected
+                            }
+
+                            MouseArea {
+                                id: policyTabMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked:
+                                    readerTesterDiaId.qosPolicyIndex =
+                                        policyTab.index
+                            }
+                        }
+                    }
                 }
 
-                Item {
-                    id: endpointTab
-                    implicitHeight: endpointTabCol.implicitHeight
+                Rectangle {
+                    width: parent.width
+                    implicitHeight: mainLayoutId.height + 20
+                    radius: 8
+                    color: readerTesterDiaId.surfaceColor
+                    border.width: 1
+                    border.color: readerTesterDiaId.borderColor
+                    z: 1
 
-                    Column {
-                        id: endpointTabCol
+                    StackLayout {
+                        id: mainLayoutId
+                        y: 8
+                        width: parent.width
+                        currentIndex: readerTesterDiaId.qosPolicyIndex
+                        height: {
+                            let child =
+                                mainLayoutId.children[
+                                    mainLayoutId.currentIndex]
+                            return child && child.implicitHeight > 0
+                                    ? child.implicitHeight : 0
+                        }
+
+                        Item {
+                            id: endpointTab
+                            implicitHeight: endpointTabCol.implicitHeight
+
+                            Column {
+                                id: endpointTabCol
 
                         Label {
                             text: "Reliability"
@@ -1319,72 +1496,101 @@ Popup {
                     }
                 }
             }
-
-            Column {
-                visible: qosSourceTabBar.currentIndex === 1
-                width: readerTesterDiaId.width - 40
-                spacing: 6
-
-                Label {
-                    text: qsTrId("qos.provider.file")
-                    font.bold: true
                 }
+            }
 
-                RowLayout {
-                    width: parent.width
+            Rectangle {
+                visible: readerTesterDiaId.qosSourceIndex === 1
+                width: parent.width
+                implicitHeight: providerContent.implicitHeight + 20
+                radius: 8
+                color: readerTesterDiaId.surfaceColor
+                border.width: 1
+                border.color: readerTesterDiaId.borderColor
+
+                ColumnLayout {
+                    id: providerContent
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 10
+                    spacing: 7
+
+                    Label {
+                        text: qsTrId("qos.provider.file")
+                        font.bold: true
+                        font.pixelSize: 11
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+
+                        TextField {
+                            Layout.fillWidth: true
+                            text: readerTesterDiaId.qosProviderFilePath
+                            placeholderText:
+                                qsTrId("qos.provider.file.placeholder")
+                            readOnly: true
+                        }
+
+                        Button {
+                            text: qsTrId("qos.provider.browse")
+                            onClicked: qosProviderFileDialog.open()
+                        }
+                    }
+
+                    Label {
+                        text: qsTrId("qos.provider.profile-key")
+                        font.bold: true
+                        font.pixelSize: 11
+                    }
+                    ComboBox {
+                        id: qosProviderKeyComboBox
+                        Layout.fillWidth: true
+                        model: readerTesterDiaId.qosProviderKeys
+                        currentIndex:
+                            readerTesterDiaId.qosProviderKeys.length > 0
+                            ? 0 : -1
+                        enabled:
+                            readerTesterDiaId.qosProviderFilePath.length > 0
+                            && !manualQosProviderKeyCheckBox.checked
+                        displayText:
+                            currentIndex >= 0
+                            ? currentText
+                            : readerTesterDiaId.qosProviderFilePath.length > 0
+                              ? qsTrId(
+                                    "qos.provider.profile-key.placeholder")
+                              : ""
+                    }
+
+                    CheckBox {
+                        id: manualQosProviderKeyCheckBox
+                        text: qsTrId(
+                                  "qos.provider.profile-key.manual")
+                        enabled:
+                            readerTesterDiaId.qosProviderFilePath.length > 0
+                    }
 
                     TextField {
+                        id: manualQosProviderKeyTextField
                         Layout.fillWidth: true
-                        text: readerTesterDiaId.qosProviderFilePath
-                        placeholderText: qsTrId("qos.provider.file.placeholder")
-                        readOnly: true
+                        visible: manualQosProviderKeyCheckBox.checked
+                        enabled:
+                            readerTesterDiaId.qosProviderFilePath.length > 0
+                        placeholderText:
+                            qsTrId("qos.provider.profile-key.placeholder")
+                        selectByMouse: true
                     }
 
-                    Button {
-                        text: qsTrId("qos.provider.browse")
-                        onClicked: qosProviderFileDialog.open()
+                    Label {
+                        Layout.fillWidth: true
+                        wrapMode: Text.Wrap
+                        color: readerTesterDiaId.secondaryTextColor
+                        font.pixelSize: 11
+                        text: qsTrId("qos.provider.description")
+                        enabled:
+                            readerTesterDiaId.qosProviderFilePath.length > 0
                     }
-                }
-
-                Label {
-                    text: qsTrId("qos.provider.profile-key")
-                    font.bold: true
-                }
-                ComboBox {
-                    id: qosProviderKeyComboBox
-                    width: parent.width
-                    model: readerTesterDiaId.qosProviderKeys
-                    currentIndex: readerTesterDiaId.qosProviderKeys.length > 0 ? 0 : -1
-                    enabled: readerTesterDiaId.qosProviderFilePath.length > 0
-                             && !manualQosProviderKeyCheckBox.checked
-                    displayText: currentIndex >= 0
-                                 ? currentText
-                                 : readerTesterDiaId.qosProviderFilePath.length > 0
-                                   ? qsTrId("qos.provider.profile-key.placeholder")
-                                   : ""
-                }
-
-                CheckBox {
-                    id: manualQosProviderKeyCheckBox
-                    text: qsTrId("qos.provider.profile-key.manual")
-                    enabled: readerTesterDiaId.qosProviderFilePath.length > 0
-                }
-
-                TextField {
-                    id: manualQosProviderKeyTextField
-                    width: parent.width
-                    visible: manualQosProviderKeyCheckBox.checked
-                    enabled: readerTesterDiaId.qosProviderFilePath.length > 0
-                    placeholderText: qsTrId("qos.provider.profile-key.placeholder")
-                    selectByMouse: true
-                }
-
-                Label {
-                    width: parent.width
-                    wrapMode: Text.Wrap
-                    opacity: 0.7
-                    text: qsTrId("qos.provider.description")
-                    enabled: readerTesterDiaId.qosProviderFilePath.length > 0
                 }
             }
         }
@@ -1395,43 +1601,27 @@ Popup {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: 32
+        height: 44
+        radius: 10
         color: rootWindow.isDarkMode
-               ? Constants.darkOverviewBackground
-               : Constants.lightOverviewBackground
-
-        Rectangle {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            height: 1
-            color: rootWindow.isDarkMode ? "#454545" : "#c5c5c5"
-        }
+               ? "#292929" : "#f0f0f0"
 
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: 6
             anchors.rightMargin: 6
-            anchors.topMargin: 2
+            anchors.topMargin: 6
+            anchors.bottomMargin: 6
             spacing: 6
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Button {
-                text: qsTrId("general.cancel")
-                Layout.preferredHeight: 26
-                onClicked: readerTesterDiaId.close()
-            }
 
             Button {
                 id: createEndpointButton
+                objectName: "createEndpointButton"
                 text: buttonName
                 highlighted: true
-                Layout.preferredHeight: 26
+                Layout.preferredHeight: 30
                 onClicked: {
-                    if (qosSourceTabBar.currentIndex === 1) {
+                    if (readerTesterDiaId.qosSourceIndex === 1) {
                         if (readerTesterDiaId.qosProviderFilePath.length === 0) {
                             qosProviderErrorDialog.text = qsTrId("qos.provider.error.file-required")
                             qosProviderErrorDialog.open()
@@ -1561,7 +1751,18 @@ Popup {
                     dpEntityFactoryAutoenableCreatedEntitiesCheckbox.checked
                     )
                     readerTesterDiaId.close()
-                }
+                    }
+            }
+
+            Button {
+                objectName: "cancelButton"
+                text: qsTrId("general.cancel")
+                Layout.preferredHeight: 30
+                onClicked: readerTesterDiaId.close()
+            }
+
+            Item {
+                Layout.fillWidth: true
             }
         }
     }
