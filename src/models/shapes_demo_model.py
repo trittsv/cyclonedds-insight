@@ -19,6 +19,10 @@ import uuid
 from dds_access.dispatcher import DispatcherThread
 from dds_access.dds_data import DdsData
 from dds_access import dds_utils
+from dds_access.qos_provider_utils import (
+    get_qos_provider_keys,
+    load_qos_from_provider,
+)
 from cyclonedds.core import Qos, Policy
 from cyclonedds.util import duration
 from dds_access.datatypes.entity_type import EntityType
@@ -41,6 +45,7 @@ class ShapesDemoModel(QAbstractListModel):
     QosRole = Qt.UserRole + 2
 
     shapeUpdateSignale = Signal(str, str, str, int, int, int, float, int, bool, bool)
+    qosProviderError = Signal(str)
 
     def __init__(self, parent=typing.Optional[QObject]) -> None:
         super().__init__()
@@ -193,6 +198,32 @@ class ShapesDemoModel(QAbstractListModel):
             self.publish(qos, domain_id)
         elif entityType == EntityType.READER:
             self.subscibe(qos, domain_id)
+
+    @Slot(int, str, str, int, str, str, result=bool)
+    def setQosProviderSelection(
+            self, domain_id, topic_name, topic_type, entityTypeInteger,
+            file_path, profile_key):
+        try:
+            entityType = EntityType(entityTypeInteger)
+            qos = load_qos_from_provider(
+                file_path, profile_key, entityType
+            )
+            if entityType == EntityType.WRITER:
+                self.publish(qos, domain_id)
+            elif entityType == EntityType.READER:
+                self.subscibe(qos, domain_id)
+            return True
+        except Exception as error:
+            message = f"Failed to load QoS provider: {error}"
+            logging.error(message)
+            self.qosProviderError.emit(message)
+            return False
+
+    @Slot(str, int, result=list)
+    def getQosProviderKeys(self, file_path, entityTypeInteger):
+        return get_qos_provider_keys(
+            file_path, EntityType(entityTypeInteger)
+        )
 
     @Slot()
     def pause(self):

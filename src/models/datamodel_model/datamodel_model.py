@@ -20,6 +20,10 @@ import json
 from dds_access.dispatcher import DispatcherThread
 from dds_access.dds_data import DdsData
 from dds_access import dds_utils
+from dds_access.qos_provider_utils import (
+    get_qos_provider_keys,
+    load_qos_from_provider,
+)
 from cyclonedds.core import Qos
 from dds_access.datatypes.entity_type import EntityType
 from module_handler import DataModelHandler
@@ -36,6 +40,7 @@ class DatamodelModel(QAbstractListModel):
     requestDataType = Signal(str, int, str, str)
     newWriterSignal = Signal(str, int, str, str, object)
     newReaderSignal = Signal(str, int, str, str, object)
+    qosProviderError = Signal(str)
 
     def __init__(self, threads, dataModelHandler, parent=typing.Optional[QObject]) -> None:
         super().__init__()
@@ -128,6 +133,32 @@ class DatamodelModel(QAbstractListModel):
 
         id = "m" + str(uuid.uuid4()).replace("-", "_")
         self.handleEndpointCreation(id, domain_id, topic_name, topic_type, qos, entityType)
+
+    @Slot(int, str, str, int, str, str, result=bool)
+    def setQosProviderSelection(
+            self, domain_id, topic_name, topic_type, entityTypeInteger,
+            file_path, profile_key):
+        try:
+            entityType = EntityType(entityTypeInteger)
+            qos = load_qos_from_provider(
+                file_path, profile_key, entityType
+            )
+            endpointId = "m" + str(uuid.uuid4()).replace("-", "_")
+            self.handleEndpointCreation(
+                endpointId, domain_id, topic_name, topic_type, qos, entityType
+            )
+            return True
+        except Exception as error:
+            message = f"Failed to load QoS provider: {error}"
+            logging.error(message)
+            self.qosProviderError.emit(message)
+            return False
+
+    @Slot(str, int, result=list)
+    def getQosProviderKeys(self, file_path, entityTypeInteger):
+        return get_qos_provider_keys(
+            file_path, EntityType(entityTypeInteger)
+        )
 
     def handleEndpointCreation(self, mId, domain_id, topic_name, topic_type, qos, entityType):
         if self.dataModelHandler.hasType(topic_type):
