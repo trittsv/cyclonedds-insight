@@ -15,18 +15,28 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 
 import "qrc:/src/views"
+import "qrc:/src/views/selection_details"
 
 
 Window {
     id: updaterRootWindow
-    width: 300
+
+    readonly property color surfaceColor: rootWindow.isDarkMode
+                                          ? Constants.darkCardBackgroundColor
+                                          : Constants.lightCardBackgroundColor
+    readonly property color borderColor: rootWindow.isDarkMode
+                                         ? "#464646" : "#dddddd"
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2" : "#505050"
+
+    width: 420
     height: 350
     visible: true
     title: "CycloneDDS Insight Updater"
-    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+    color: rootWindow.isDarkMode
+           ? Constants.darkMainContent : Constants.lightMainContent
     flags: Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint
     modality: Qt.ApplicationModal
     maximumWidth: width
@@ -35,7 +45,6 @@ Window {
     minimumHeight: height
 
     property bool isError: false
-
     property string organization: ""
     property string project: ""
     property string newBuildId: "0"
@@ -46,25 +55,27 @@ Window {
         updaterRootWindow.project = project
         updaterRootWindow.newBuildId = newBuildId
         updaterRootWindow.isExternUpdater = isExternUpdater
-        console.log("Starting update process...");
+        updaterRootWindow.isError = false
+        progressBar.value = 0
+        statusText.text = "Preparing update..."
         updaterView.visible = true
-        updaterModel.downloadFile(organization, project, newBuildId, isExternUpdater)
+        updaterModel.downloadFile(
+            organization, project, newBuildId, isExternUpdater)
     }
 
     Connections {
         target: updaterModel
         function onUpdateStepCompleted(msg) {
-            statusText.text = msg;
+            statusText.text = msg
         }
         function onCompleted() {
             progressBar.value += 1
         }
         function onError(error) {
             updaterRootWindow.isError = true
-            statusText.text = error;
+            statusText.text = error
         }
         function onProxyAuthRequiredUpdater() {
-            console.info("Proxy auth needed, show auth window ...")
             updaterRootWindow.visible = false
             proxyAuthWindowUpdater.visible = true
         }
@@ -72,55 +83,132 @@ Window {
 
     function showAndCheckForUpdates() {
         updaterRootWindow.visible = true
-        updaterRootWindow.startUpdate(updaterRootWindow.organization, updaterRootWindow.project, updaterRootWindow.newBuildId, updaterRootWindow.isExternUpdater)
+        updaterRootWindow.startUpdate(
+            updaterRootWindow.organization,
+            updaterRootWindow.project,
+            updaterRootWindow.newBuildId,
+            updaterRootWindow.isExternUpdater)
     }
 
     function showWithoutUpdate() {
         updaterRootWindow.visible = true
     }
 
-    Item {
+    ColumnLayout {
         anchors.fill: parent
+        anchors.margins: 18
+        spacing: 14
 
-        AnimatedImage {
-            id: animatedLoadingId
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: 40
-            source: "qrc:/res/images/spinning.gif"
-            sourceSize.height: 100
-            sourceSize.width: 100
-            height: 100
-            width: 100
-            paused: isError
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 9
+
+            DetailBadge {
+                kind: "update"
+            }
+
+            Label {
+                text: updaterRootWindow.isError
+                      ? "Error" : "Zap! Pow! Update!"
+                font.pixelSize: 20
+                font.bold: true
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
         }
 
-        ColumnLayout {
-            anchors.topMargin: 50
-            anchors.top: animatedLoadingId.bottom
-            anchors.horizontalCenter: animatedLoadingId.horizontalCenter
-            
-            Label {
-                text: isError ? "Error" : "Zap! Pow! Update!"
-                font.bold: true
-                Layout.alignment: Qt.AlignHCenter
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            radius: 9
+            color: updaterRootWindow.surfaceColor
+            border.width: 1
+            border.color: updaterRootWindow.isError
+                          ? "#d04a4a" : updaterRootWindow.borderColor
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 13
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 82
+
+                    AnimatedImage {
+                        anchors.centerIn: parent
+                        source: "qrc:/res/images/spinning.gif"
+                        sourceSize.width: 72
+                        sourceSize.height: 72
+                        width: 72
+                        height: 72
+                        paused: updaterRootWindow.isError
+                        opacity: updaterRootWindow.isError ? 0.35 : 1
+                    }
+
+                    Rectangle {
+                        visible: updaterRootWindow.isError
+                        anchors.centerIn: parent
+                        width: 38
+                        height: 38
+                        radius: 19
+                        color: rootWindow.isDarkMode ? "#4b2528" : "#ffe6e8"
+                        border.width: 1
+                        border.color: "#d04a4a"
+
+                        Label {
+                            anchors.centerIn: parent
+                            text: "!"
+                            font.pixelSize: 20
+                            font.bold: true
+                            color: "#d04a4a"
+                        }
+                    }
+                }
+
+                Label {
+                    id: statusText
+                    Layout.fillWidth: true
+                    text: "Preparing update..."
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                    font.pixelSize: 12
+                    font.bold: true
+                }
+
+                ProgressBar {
+                    id: progressBar
+                    Layout.fillWidth: true
+                    from: 0
+                    to: 4
+                    value: 0
+                    indeterminate: value === 0
+                                   && !updaterRootWindow.isError
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    text: updaterRootWindow.isError
+                          ? "The update could not be completed."
+                          : "Keep this window open while files are installed."
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                    color: updaterRootWindow.secondaryTextColor
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+
+            Item {
+                Layout.fillWidth: true
             }
 
-            Label {
-                id: statusText
-                text: "Init ..."
-                Layout.alignment: Qt.AlignHCenter
-            }
-            ProgressBar {
-                id: progressBar
-                Layout.alignment: Qt.AlignHCenter
-                from: 0
-                to: 4
-                value: 0
-            }
             Button {
-                text: isError ? "Exit" : "Cancel"
-                Layout.alignment: Qt.AlignHCenter
+                text: updaterRootWindow.isError ? "Exit" : "Cancel"
                 onClicked: {
                     updaterModel.cancel()
                     Qt.quit()

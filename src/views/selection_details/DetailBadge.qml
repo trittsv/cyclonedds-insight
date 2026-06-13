@@ -54,6 +54,10 @@ Rectangle {
                 return shapesIcon
             if (badge.kind === "qos")
                 return qosIcon
+            if (badge.kind === "update")
+                return updateIcon
+            if (badge.kind === "about")
+                return aboutIcon
             return participantIcon
         }
     }
@@ -586,6 +590,84 @@ Rectangle {
             color: badge.iconColor
             font.pixelSize: 8
             font.bold: true
+        }
+    }
+
+    Component {
+        id: updateIcon
+
+        Item {
+            width: 14
+            height: 14
+
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 1
+                width: 2
+                height: 8
+                radius: 1
+                color: badge.iconColor
+            }
+
+            Canvas {
+                anchors.fill: parent
+                onPaint: {
+                    const context = getContext("2d")
+                    context.clearRect(0, 0, width, height)
+                    context.strokeStyle = badge.iconColor
+                    context.fillStyle = badge.iconColor
+                    context.lineWidth = 1.5
+                    context.beginPath()
+                    context.moveTo(3, 6)
+                    context.lineTo(7, 10)
+                    context.lineTo(11, 6)
+                    context.stroke()
+                }
+            }
+
+            Rectangle {
+                x: 2
+                y: 11
+                width: 10
+                height: 2
+                radius: 1
+                color: badge.iconColor
+            }
+        }
+    }
+
+    Component {
+        id: aboutIcon
+
+        Item {
+            width: 14
+            height: 14
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 7
+                color: "transparent"
+                border.width: 1.5
+                border.color: badge.iconColor
+            }
+
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 3
+                width: 2
+                height: 2
+                radius: 1
+                color: badge.iconColor
+            }
+
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 6
+                width: 2
+                height: 5
+                radius: 1
+                color: badge.iconColor
+            }
         }
     }
 }

@@ -168,6 +168,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("loggerConfig", loggerConfig)
     engine.rootContext().setContextProperty("CYCLONEDDS_URI", os.getenv("CYCLONEDDS_URI", "<not set>"))
     engine.rootContext().setContextProperty("CYCLONEDDS_INSIGHT_VERSION", CYCLONEDDS_INSIGHT_VERSION)
+    engine.rootContext().setContextProperty("QT_VERSION", qVersion())
     engine.rootContext().setContextProperty("CYCLONEDDS_INSIGHT_GIT_HASH_SHORT", build_info_helper.getBuildInfoGitHashShort())
     engine.rootContext().setContextProperty("CYCLONEDDS_PYTHON_GIT_HASH_SHORT", build_info_helper.getBuildInfoCyclonePythonGitHashShort())
     engine.rootContext().setContextProperty("CYCLONEDDS_GIT_HASH_SHORT", build_info_helper.getBuildInfoCycloneGitHashShort())

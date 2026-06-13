@@ -16,19 +16,35 @@ import QtQuick.Layouts
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views"
+import "qrc:/src/views/selection_details"
 
 
 Window {
     id: checkForUpdatesWindow
 
+    readonly property color surfaceColor: rootWindow.isDarkMode
+                                          ? Constants.darkCardBackgroundColor
+                                          : Constants.lightCardBackgroundColor
+    readonly property color borderColor: rootWindow.isDarkMode
+                                         ? "#464646" : "#dddddd"
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2" : "#505050"
+    readonly property color statusColor: updateError
+                                         ? "#d04a4a"
+                                         : updateAvailable
+                                           ? Constants.warningColor
+                                           : "#36a269"
+
     title: "Check for Updates"
     visible: false
     flags: Qt.Dialog
     modality: Qt.ApplicationModal
-    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+    color: rootWindow.isDarkMode
+           ? Constants.darkMainContent : Constants.lightMainContent
+
 
     property int updateCheckWidth: 400
-    property int updateCheckHeight: 130
+    property int updateCheckHeight: 200
 
     width: updateCheckWidth
     height: updateCheckHeight
@@ -67,18 +83,11 @@ Window {
             proxyAuthRequired()
         }
         function onNewBuildFound(newBuildIdFromModel) {
-            if (newBuildIdFromModel === "") {
-                updateCheckRunning = false
-                checkedForUpdate = true
-                updateAvailable = false
-                updateError = false
-            } else {
-                updateCheckRunning = false
-                checkedForUpdate = true
-                updateAvailable = true
-                newBuildId = newBuildIdFromModel
-                updateError = false
-            }
+            updateCheckRunning = false
+            checkedForUpdate = true
+            updateAvailable = newBuildIdFromModel !== ""
+            newBuildId = updateAvailable ? newBuildIdFromModel : "0"
+            updateError = false
             lastUpdateTime = new Date().toLocaleString()
         }
         function onNewBuildError(newBuildIdFromModel) {
@@ -89,64 +98,154 @@ Window {
         }
     }
 
-    Column {
+    ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 20
-        spacing: 10
+        anchors.margins: 18
+        spacing: 14
 
-        Label {
-            text: updateCheckRunning ? "Checking for updates..." : updateError ? "Failed to check for updates, try again later." : "Last checked: " + lastUpdateTime
-        }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 9
 
-        Row {
-            spacing: 10
-
-            Label {
-                text: updateAvailable ? "Update available" : "You're up to date!"
-                visible: checkedForUpdate && !updateCheckRunning && !updateError
+            DetailBadge {
+                kind: "update"
             }
 
             Label {
-                text: "download manually here"
-                font.underline: true
+                text: "Software Update"
+                font.pixelSize: 20
                 font.bold: true
-                visible: updateAvailable && !updateCheckRunning && !updateError
+            }
 
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: Qt.openUrlExternally("https://dev.azure.com/" + organization + "/" + project + "/_build/results?buildId=" + newBuildId + "&view=artifacts&type=publishedArtifacts")
+            Item {
+                Layout.fillWidth: true
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            radius: 9
+            color: checkForUpdatesWindow.surfaceColor
+            border.width: 1
+            border.color: checkForUpdatesWindow.borderColor
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: 14
+                spacing: 13
+
+                Rectangle {
+                    Layout.preferredWidth: 38
+                    Layout.preferredHeight: 38
+                    radius: 19
+                    color: rootWindow.isDarkMode ? "#292929" : "#eeeeee"
+                    border.width: 2
+                    border.color: checkForUpdatesWindow.statusColor
+
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        width: 28
+                        height: 28
+                        running: checkForUpdatesWindow.updateCheckRunning
+                        visible: running
+                    }
+
+                    Label {
+                        anchors.centerIn: parent
+                        visible: !checkForUpdatesWindow.updateCheckRunning
+                        text: checkForUpdatesWindow.updateError
+                              ? "!" : checkForUpdatesWindow.updateAvailable
+                                ? "\u2191" : "\u2713"
+                        font.pixelSize: 18
+                        font.bold: true
+                        color: checkForUpdatesWindow.statusColor
+                    }
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: updateCheckRunning
+                              ? "Checking for updates..."
+                              : updateError
+                                ? "Update check failed"
+                                : updateAvailable
+                                  ? "A new version is available"
+                                  : checkedForUpdate
+                                    ? "CycloneDDS Insight is up to date"
+                                    : "Ready to check for updates"
+                        font.pixelSize: 14
+                        font.bold: true
+                        wrapMode: Text.Wrap
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: updateError
+                              ? "Please try again later."
+                              : lastUpdateTime.length > 0
+                                ? "Last checked: " + lastUpdateTime
+                                : "Checks the configured release channel."
+                        font.pixelSize: 10
+                        color: checkForUpdatesWindow.secondaryTextColor
+                        wrapMode: Text.Wrap
+                    }
+
+                    Label {
+                        visible: updateAvailable && !updateCheckRunning
+                                 && !updateError
+                        text: "Open build artifacts"
+                        font.pixelSize: 10
+                        font.bold: true
+                        color: "#274ff6"
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Qt.openUrlExternally(
+                                "https://dev.azure.com/" + organization + "/"
+                                + project + "/_build/results?buildId="
+                                + newBuildId
+                                + "&view=artifacts&type=publishedArtifacts")
+                        }
+                    }
                 }
             }
         }
-    }
 
-    Item {
-        anchors.fill: parent
-        
-        Row {
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: 10
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
 
             Button {
                 id: updaterButton
-                visible: updateAvailable && !updateCheckRunning && !updateError && IS_FROZEN
+                visible: updateAvailable && !updateCheckRunning
+                         && !updateError && IS_FROZEN
                 text: "Update Now"
+                highlighted: true
                 onClicked: {
                     checkForUpdatesWindow.visible = false
-                    updaterView.startUpdate(organization, project, newBuildId, "")
+                    updaterView.startUpdate(
+                        organization, project, newBuildId, "")
                 }
             }
 
             Button {
-                text: "Check for Updates"
-                visible: checkedForUpdate
+                text: checkedForUpdate ? "Check Again" : "Check for Updates"
+                enabled: !updateCheckRunning
                 onClicked: getLatestBuildArtifacts()
             }
 
+            Item {
+                Layout.fillWidth: true
+            }
+
             Button {
-                text: "OK"
+                text: "Close"
                 onClicked: checkForUpdatesWindow.visible = false
             }
         }
@@ -156,7 +255,6 @@ Window {
         updateError = false
         checkedForUpdate = true
         updateCheckRunning = true
-
         updaterModel.checkForUpdate()
     }
 }

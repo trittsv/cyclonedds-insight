@@ -1107,7 +1107,6 @@ Rectangle {
                     id: writeButton
                     text: "Write"
                     font.bold: true
-                    highlighted: true
                     onClicked: testerModel.writeData(
                                    librariesCombobox.currentIndex,
                                    currentDataIndex)

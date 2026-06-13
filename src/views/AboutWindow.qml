@@ -15,13 +15,18 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import org.eclipse.cyclonedds.insight
+import "qrc:/src/views/selection_details"
 
 
 Window {
     id: aboutWindow
 
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2" : "#505050"
+
+
     property int aboutWidth: 570
-    property int aboutHeight: 230
+    property int aboutHeight: 260
 
     width: aboutWidth
     height: aboutHeight
@@ -34,116 +39,163 @@ Window {
     visible: false
     flags: Qt.Dialog
     modality: Qt.ApplicationModal
+    color: rootWindow.isDarkMode
+           ? Constants.darkMainContent : Constants.lightMainContent
 
-    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+    component VersionRow: RowLayout {
+        id: versionRow
 
-    RowLayout {
+        property string label: ""
+        property string value: ""
+        property string url: ""
+
+        Layout.fillWidth: true
+        implicitHeight: 20
+        spacing: 6
+
+        Label {
+            text: versionRow.label
+            font.pixelSize: 10
+            color: aboutWindow.secondaryTextColor
+        }
+
+        Label {
+            text: versionRow.value
+            font.pixelSize: 10
+            font.underline: versionRow.url.length > 0
+            color: aboutWindow.secondaryTextColor
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: versionRow.url.length > 0
+                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onClicked: Qt.openUrlExternally(versionRow.url)
+            }
+        }
+    }
+
+    ColumnLayout {
         anchors.fill: parent
+        anchors.margins: 18
+        spacing: 14
 
-        Rectangle {
-            Layout.preferredWidth: parent.width * 0.30
-            Layout.fillHeight: true
-            color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 9
 
-            Image {
-                source: "qrc:/res/images/cyclonedds.png"
-                anchors.centerIn: parent
-                fillMode: Image.PreserveAspectFit
-                width: parent.width * 0.8
-                height: parent.height * 0.8
+            DetailBadge {
+                kind: "about"
+            }
+
+            Label {
+                text: "About"
+                font.pixelSize: 20
+                font.bold: true
+            }
+
+            Item {
+                Layout.fillWidth: true
             }
         }
 
-        Rectangle {
-            Layout.preferredWidth: parent.width * 0.70
+        RowLayout {
+            Layout.fillWidth: true
             Layout.fillHeight: true
-            color: rootWindow.isDarkMode ? Constants.darkHeaderBackground : Constants.lightHeaderBackground
+            spacing: 28
 
-            Column {
-                anchors.centerIn: parent
-                spacing: 10
+            Item {
+                Layout.preferredWidth: 175
+                Layout.fillHeight: true
+
+                Image {
+                    anchors.centerIn: parent
+                    width: 138
+                    height: 138
+                    source: "qrc:/res/images/cyclonedds.png"
+                    fillMode: Image.PreserveAspectFit
+                }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+                spacing: 5
 
                 Label {
                     text: "Eclipse Cyclone DDS™"
-                    font.pixelSize: 10
-                    horizontalAlignment: Text.AlignHCenter
+                    font.pixelSize: 11
+                    color: aboutWindow.secondaryTextColor
                 }
 
                 Label {
                     text: "CycloneDDS Insight"
-                    font.pixelSize: 25
+                    font.pixelSize: 24
                     font.bold: true
-                    horizontalAlignment: Text.AlignHCenter
                 }
 
-                Row {
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 5
+
                     Label {
-                        text: "Version " + CYCLONEDDS_INSIGHT_VERSION + " ("
+                        text: "Version " + CYCLONEDDS_INSIGHT_VERSION
                         font.pixelSize: 15
-                        horizontalAlignment: Text.AlignHCenter
+                        color: aboutWindow.secondaryTextColor
                     }
+
                     Label {
-                        text: CYCLONEDDS_INSIGHT_GIT_HASH_SHORT
-                        font.underline: true
-                        font.bold: false
+                        text: "(" + CYCLONEDDS_INSIGHT_GIT_HASH_SHORT + ")"
                         font.pixelSize: 15
-                        horizontalAlignment: Text.AlignHCenter
+                        font.underline: true
+                        color: aboutWindow.secondaryTextColor
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Qt.openUrlExternally("https://github.com/eclipse-cyclonedds/cyclonedds-insight/commit/" + CYCLONEDDS_INSIGHT_GIT_HASH)
+                            onClicked: Qt.openUrlExternally(
+                                "https://github.com/eclipse-cyclonedds/cyclonedds-insight/commit/"
+                                + CYCLONEDDS_INSIGHT_GIT_HASH)
                         }
-                    }
-                    Label {
-                        text: ")"
-                        font.pixelSize: 15
-                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
 
-                Row {
-                    Label {
-                        text: "Based on CycloneDDS-Python: "
-                        font.pixelSize: 10
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                    Label {
-                        text: CYCLONEDDS_PYTHON_GIT_HASH_SHORT
-                        font.underline: true
-                        font.bold: false
-                        font.pixelSize: 10
-                        horizontalAlignment: Text.AlignHCenter
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: Qt.openUrlExternally("https://github.com/eclipse-cyclonedds/cyclonedds-python/commit/" + CYCLONEDDS_PYTHON_GIT_HASH)
-                        }
-                    }
+                Item {
+                    Layout.preferredHeight: 8
                 }
-                Row {
-                    Label {
-                        text: "Based on CycloneDDS: " 
-                        font.pixelSize: 10
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                    Label {
-                        text: CYCLONEDDS_GIT_HASH_SHORT
-                        font.underline: true
-                        font.bold: false
-                        font.pixelSize: 10
-                        horizontalAlignment: Text.AlignHCenter
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: Qt.openUrlExternally("https://github.com/eclipse-cyclonedds/cyclonedds/commit/" + CYCLONEDDS_GIT_HASH)
-                        }
-                    }
+
+                VersionRow {
+                    label: "Based on CycloneDDS Python:"
+                    value: CYCLONEDDS_PYTHON_GIT_HASH_SHORT
+                    url: "https://github.com/eclipse-cyclonedds/cyclonedds-python/commit/"
+                         + CYCLONEDDS_PYTHON_GIT_HASH
                 }
-                Label {
-                    text: "Thanks to all contributors of the Eclipse Cyclone DDS project ❤️"
-                    font.pixelSize: 12
-                    horizontalAlignment: Text.AlignHCenter
+                VersionRow {
+                    label: "Based on Cyclone DDS:"
+                    value: CYCLONEDDS_GIT_HASH_SHORT
+                    url: "https://github.com/eclipse-cyclonedds/cyclonedds/commit/"
+                         + CYCLONEDDS_GIT_HASH
                 }
+                VersionRow {
+                    label: "Qt runtime:"
+                    value: QT_VERSION
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+
+            Label {
+                Layout.fillWidth: true
+                text: "Thanks to all contributors of the Eclipse Cyclone DDS project ❤️"
+                wrapMode: Text.Wrap
+                font.pixelSize: 12
+                color: aboutWindow.secondaryTextColor
+            }
+
+            Button {
+                text: "Close"
+                onClicked: aboutWindow.close()
             }
         }
     }
