@@ -17,12 +17,22 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import org.eclipse.cyclonedds.insight
+import "qrc:/src/views/selection_details"
 
 
 Rectangle {
     id: settingsViewId
-    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
     property int port: 8080
+    readonly property color surfaceColor: rootWindow.isDarkMode
+                                          ? Constants.darkCardBackgroundColor
+                                          : Constants.lightCardBackgroundColor
+    readonly property color borderColor: rootWindow.isDarkMode
+                                         ? "#464646"
+                                         : "#dddddd"
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2"
+                                                : "#4f4f4f"
 
     Settings {
         id: proxySettings
@@ -38,188 +48,329 @@ Rectangle {
     }
 
     ScrollView {
+        id: settingsScrollView
         anchors.fill: parent
+        contentWidth: availableWidth
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+        ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-        GridLayout {
-            columns: 2
-            anchors.fill: parent
-            anchors.margins: 10
-            rowSpacing: 10
-            columnSpacing: 10
+        ColumnLayout {
+            x: 16
+            width: Math.max(0, settingsScrollView.availableWidth - 32)
+            spacing: 14
 
-            Label {
-                text: qsTrId("general.settings")
-                font.bold: true
-                Layout.alignment: Qt.AlignHCenter
-            }
-            Item {}
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 16
+                spacing: 9
 
-            Label {
-                id: cycloneUriLabelId
-                text: "CYCLONEDDS_URI:"
-            }
-            TextField {
-                id: login
-                text: CYCLONEDDS_URI
-                Layout.preferredWidth: settingsViewId.width - cycloneUriLabelId.width - 30
-                Layout.minimumWidth: 200
-                readOnly: true
-            }
-
-            Item  {}
-            Button {
-                id: editConfigButton
-                text: "Edit Configuration File"
-                onClicked: layout.currentIndex = 2
-            }
-
-            Label {
-                text: qsTrId("settings.appearance") + ":"
-            }
-            Row {
-                RadioButton {
-                    text: "Automatic (System)"
-                    checked: true
-                    checkable: true
-                    onClicked: {
-                        if (checked) {
-                            qmlUtils.setColorScheme(0)
-                        }
-                    }
+                DetailBadge {
+                    kind: "settings"
                 }
-                RadioButton {
-                    text: "Light"
-                    checked: false
-                    checkable: true
-                    onClicked: {
-                        if (checked) {
-                            qmlUtils.setColorScheme(1)
-                        }
-                    }
-                }
-                RadioButton {
-                    text: "Dark"
-                    checked: false
-                    checkable: true
-                    onClicked: {
-                        if (checked) {
-                            qmlUtils.setColorScheme(2)
-                        }
-                    }
-                }
-            }
 
-            Label {
-                text: qsTrId("settings.appdata.location") + ":"
-            }
-            Button {
-                text: "Open Folder"
-                onClicked: Qt.openUrlExternally(StandardPaths.writableLocation(StandardPaths.AppDataLocation));
-            }
-
-            Label {
-                id: proxySettingsLabelId
-                text: qsTrId("settings.proxy.settings") + ":"
-            }
-            CheckBox {
-                id: useProxyCheckBox
-                checked: false
-                text: qsTrId("settings.proxy.use")
-                onCheckedChanged: {
-                    proxySettings.enabled = checked
-                }
-                Component.onCompleted: {
-                    checked = proxySettings.enabled
-                }
-            }
-
-            Item {}
-            Row {
-                enabled: useProxyCheckBox.checked
-                spacing: 0
                 Label {
-                    id: proxyLabelId
-                    text: "HTTP proxy:"
-                    rightPadding: 5
+                    text: qsTrId("general.settings")
+                    font.pixelSize: 20
+                    font.bold: true
                 }
-                TextField {
-                    id: httpProxy
-                    text: ""
-                    placeholderText: ""
-                    width: 200
-                    Component.onCompleted: {
-                        text = proxySettings.host
-                    }
-                    onTextChanged: {
-                        proxySettings.host = text
-                    }
+
+                Item {
+                    Layout.fillWidth: true
                 }
-                Label {
-                    id: portLabelId
-                    text: "Port:"
-                    leftPadding: 5
-                    rightPadding: 5
-                }
-                TextField {
-                    id: portTextField
-                    text: "0"
-                    validator: IntValidator {
-                        bottom: 0
-                        top: 65535
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: configurationLayout.implicitHeight + 24
+                radius: 8
+                color: settingsViewId.surfaceColor
+                border.width: 1
+                border.color: settingsViewId.borderColor
+
+                ColumnLayout {
+                    id: configurationLayout
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 12
+                    spacing: 10
+
+                    Label {
+                        text: "Configuration"
+                        font.pixelSize: 13
+                        font.bold: true
                     }
-                    width: 60
-                    Component.onCompleted: {
-                        portTextField.text = proxySettings.port
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 1
+                        color: rootWindow.isDarkMode
+                               ? Constants.darkSeparator
+                               : Constants.lightSeparator
                     }
-                    onTextChanged: {
-                        var port = parseInt(text)
-                        if (isNaN(port)) {
-                            settingsViewId.port = 0
-                        } else {
-                            settingsViewId.port = port
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 3
+
+                            Label {
+                                text: "CYCLONEDDS_URI"
+                                font.pixelSize: 10
+                                color: settingsViewId.secondaryTextColor
+                            }
+
+                            TextField {
+                                id: login
+                                Layout.fillWidth: true
+                                text: CYCLONEDDS_URI
+                                readOnly: true
+                                selectByMouse: true
+                            }
+                        }
+
+                        Button {
+                            id: editConfigButton
+                            text: "Edit Configuration File"
+                            onClicked: layout.currentIndex = 2
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 3
+
+                            Label {
+                                text: qsTrId("settings.appdata.location")
+                                font.pixelSize: 11
+                                font.bold: true
+                            }
+
+                            Label {
+                                Layout.fillWidth: true
+                                text: StandardPaths.writableLocation(StandardPaths.AppDataLocation)
+                                font.pixelSize: 10
+                                color: settingsViewId.secondaryTextColor
+                                elide: Text.ElideMiddle
+                            }
+                        }
+
+                        Button {
+                            text: "Open Folder"
+                            onClicked: Qt.openUrlExternally(
+                                           StandardPaths.writableLocation(
+                                               StandardPaths.AppDataLocation))
                         }
                     }
                 }
             }
 
-            Item {}
-            Label {
-                enabled: useProxyCheckBox.checked
-                text: "The proxy is used for update checks and downloading updates."
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: appearanceLayout.implicitHeight + 24
+                radius: 8
+                color: settingsViewId.surfaceColor
+                border.width: 1
+                border.color: settingsViewId.borderColor
+
+                ColumnLayout {
+                    id: appearanceLayout
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 12
+                    spacing: 8
+
+                    Label {
+                        text: qsTrId("settings.appearance")
+                        font.pixelSize: 13
+                        font.bold: true
+                    }
+
+                    Label {
+                        text: "Choose how the application follows the system color scheme."
+                        font.pixelSize: 10
+                        color: settingsViewId.secondaryTextColor
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 14
+
+                        RadioButton {
+                            text: "Automatic (System)"
+                            checked: true
+                            onClicked: if (checked) qmlUtils.setColorScheme(0)
+                        }
+
+                        RadioButton {
+                            text: "Light"
+                            onClicked: if (checked) qmlUtils.setColorScheme(1)
+                        }
+
+                        RadioButton {
+                            text: "Dark"
+                            onClicked: if (checked) qmlUtils.setColorScheme(2)
+                        }
+
+                        Item {
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: proxyLayout.implicitHeight + 24
+                radius: 8
+                color: settingsViewId.surfaceColor
+                border.width: 1
+                border.color: settingsViewId.borderColor
+
+                ColumnLayout {
+                    id: proxyLayout
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 12
+                    spacing: 8
+
+                    RowLayout {
+                        Layout.fillWidth: true
+
+                        Label {
+                            text: qsTrId("settings.proxy.settings")
+                            font.pixelSize: 13
+                            font.bold: true
+                        }
+
+                        Item {
+                            Layout.fillWidth: true
+                        }
+
+                        CheckBox {
+                            id: useProxyCheckBox
+                            text: qsTrId("settings.proxy.use")
+                            onCheckedChanged: proxySettings.enabled = checked
+                            Component.onCompleted: checked = proxySettings.enabled
+                        }
+                    }
+
+                    Label {
+                        text: "The proxy is used for update checks and downloading updates."
+                        font.pixelSize: 10
+                        color: settingsViewId.secondaryTextColor
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        enabled: useProxyCheckBox.checked
+                        opacity: enabled ? 1 : 0.45
+                        spacing: 8
+
+                        Label {
+                            text: "HTTP proxy"
+                            font.pixelSize: 10
+                            color: settingsViewId.secondaryTextColor
+                        }
+
+                        TextField {
+                            id: httpProxy
+                            Layout.fillWidth: true
+                            Component.onCompleted: text = proxySettings.host
+                            onTextChanged: proxySettings.host = text
+                        }
+
+                        Label {
+                            text: "Port"
+                            font.pixelSize: 10
+                            color: settingsViewId.secondaryTextColor
+                        }
+
+                        TextField {
+                            id: portTextField
+                            Layout.preferredWidth: 80
+                            text: "0"
+                            validator: IntValidator {
+                                bottom: 0
+                                top: 65535
+                            }
+                            Component.onCompleted: text = proxySettings.port
+                            onTextChanged: {
+                                const parsedPort = parseInt(text)
+                                settingsViewId.port = isNaN(parsedPort)
+                                                      ? 0
+                                                      : parsedPort
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: domainsLayout.implicitHeight + 24
+                radius: 8
+                color: settingsViewId.surfaceColor
+                border.width: 1
+                border.color: settingsViewId.borderColor
+
+                ColumnLayout {
+                    id: domainsLayout
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 12
+                    spacing: 8
+
+                    Label {
+                        text: qsTrId("settings.default_domains.label")
+                        font.pixelSize: 13
+                        font.bold: true
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTrId("settings.default_domains.description")
+                        font.pixelSize: 10
+                        color: settingsViewId.secondaryTextColor
+                        wrapMode: Text.Wrap
+                    }
+
+                    TextField {
+                        id: defaultDomainsTextField
+                        Layout.fillWidth: true
+                        placeholderText: "0,1,2"
+                        validator: RegularExpressionValidator {
+                            regularExpression: /^((0|[1-9]\d?|1\d\d|2[0-1]\d|22\d|23[0-2])(,(0|[1-9]\d?|1\d\d|2[0-1]\d|22\d|23[0-2]))*)?$/
+                        }
+                        onTextChanged: {
+                            const parts = text.split(",")
+                            const seen = new Set()
+                            for (let i = 0; i < parts.length; ++i) {
+                                if (parts[i] !== "" && seen.has(parts[i])) {
+                                    text = parts.slice(0, i)
+                                                .concat(parts.slice(i + 1))
+                                                .join(",")
+                                    return
+                                }
+                                seen.add(parts[i])
+                            }
+                        }
+                    }
+                }
             }
 
             Item {
-                Layout.columnSpan: 2
-                Layout.fillHeight: true
-            }
-
-            Label {
-                text: qsTrId("settings.default_domains.label") + ":"
-            }
-            TextField {
-                id: defaultDomainsTextField
-                text: ""
-                Layout.preferredWidth: 380
-                Layout.minimumWidth: 50
-                readOnly: false
-                validator: RegularExpressionValidator {
-                    regularExpression: /^((0|[1-9]\d?|1\d\d|2[0-1]\d|22\d|23[0-2])(,(0|[1-9]\d?|1\d\d|2[0-1]\d|22\d|23[0-2]))*)?$/
-                }
-                onTextChanged: {
-                    const parts = text.split(",")
-                    const seen = new Set()
-                    for (let i = 0; i < parts.length; ++i) {
-                        if (parts[i] !== "" && seen.has(parts[i])) {
-                            text = parts.slice(0, i).concat(parts.slice(i + 1)).join(",")
-                            return
-                        }
-                        seen.add(parts[i])
-                    }
-                }
-            }
-            Item {}
-            Label {
-                text: qsTrId("settings.default_domains.description")
+                Layout.preferredHeight: 2
             }
         }
     }

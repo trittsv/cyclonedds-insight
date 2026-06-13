@@ -46,6 +46,8 @@ Rectangle {
                 return listenerIcon
             if (badge.kind === "details")
                 return detailsIcon
+            if (badge.kind === "settings")
+                return settingsIcon
             return participantIcon
         }
     }
@@ -437,6 +439,44 @@ Rectangle {
                     height: 1.5
                     radius: 0.75
                     color: badge.iconColor
+                }
+            }
+        }
+    }
+
+    Component {
+        id: settingsIcon
+
+        Item {
+            width: 14
+            height: 14
+
+            Repeater {
+                model: [[2, 3, 8], [2, 7, 4], [2, 11, 9]]
+
+                Item {
+                    required property var modelData
+                    x: modelData[0]
+                    y: modelData[1]
+                    width: 12
+                    height: 2
+
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width
+                        height: 1.5
+                        radius: 0.75
+                        color: badge.iconColor
+                    }
+
+                    Rectangle {
+                        x: modelData[2]
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 4
+                        height: 4
+                        radius: 2
+                        color: badge.iconColor
+                    }
                 }
             }
         }
