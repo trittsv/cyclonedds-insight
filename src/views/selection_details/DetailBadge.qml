@@ -58,6 +58,8 @@ Rectangle {
                 return updateIcon
             if (badge.kind === "about")
                 return aboutIcon
+            if (badge.kind === "log")
+                return logIcon
             return participantIcon
         }
     }
@@ -667,6 +669,37 @@ Rectangle {
                 height: 5
                 radius: 1
                 color: badge.iconColor
+            }
+        }
+    }
+
+    Component {
+        id: logIcon
+
+        Item {
+            width: 14
+            height: 14
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 2
+                color: "transparent"
+                border.width: 1.5
+                border.color: badge.iconColor
+            }
+
+            Repeater {
+                model: [3, 6.5, 10]
+
+                Rectangle {
+                    required property real modelData
+                    x: 3
+                    y: modelData
+                    width: modelData === 10 ? 5 : 8
+                    height: 1.5
+                    radius: 0.75
+                    color: badge.iconColor
+                }
             }
         }
     }
