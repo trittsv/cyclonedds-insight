@@ -65,9 +65,12 @@ SplitView {
             TabBar {
                 id: bar
                 width: parent.width
-                height: 30
+                height: 36
                 spacing: 0
-                padding: 0 
+                leftPadding: 0
+                rightPadding: 0
+                topPadding: 4
+                bottomPadding: 0
 
                 background: Rectangle {
                     color: rootWindow.isDarkMode ? Constants.darkHeaderBackground : Constants.lightHeaderBackground
@@ -75,22 +78,28 @@ SplitView {
 
                 InsightTabButton {
                     tabText: qsTrId("tab.details")
-                    height: parent.height
+                    height: 33
                     width: 150
                 }
                 InsightTabButton {
                     tabText: qsTrId("tab.statistics")
-                    height: parent.height
+                    showLeftSeparator: bar.currentIndex !== 0
+                                       && bar.currentIndex !== 1
+                    height: 33
                     width: 150
                 }
                 InsightTabButton {
                     tabText: qsTrId("tab.tester")
-                    height: parent.height
+                    showLeftSeparator: bar.currentIndex !== 1
+                                       && bar.currentIndex !== 2
+                    height: 33
                     width: 150
                 }
                 InsightTabButton {
                     tabText: qsTrId("tab.listener")
-                    height: parent.height
+                    showLeftSeparator: bar.currentIndex !== 2
+                                       && bar.currentIndex !== 3
+                    height: 33
                     width: 150
                 }
             }
