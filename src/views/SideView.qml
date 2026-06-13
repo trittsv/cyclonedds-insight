@@ -51,7 +51,7 @@ ColumnLayout {
                 spacing: 2
 
                 Repeater {
-                    model: ["Topic View", "Participant View"]
+                    model: ["Topics", "Participants"]
 
                     Rectangle {
                         id: viewOption
@@ -96,7 +96,6 @@ ColumnLayout {
                             anchors.leftMargin: 11
                             anchors.rightMargin: 6
                             text: viewOption.modelData
-                            font.pixelSize: 10
                             font.bold: viewOption.selected
                             horizontalAlignment: Text.AlignLeft
                             verticalAlignment: Text.AlignVCenter

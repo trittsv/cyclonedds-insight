@@ -22,6 +22,15 @@ TabButton {
     property alias tabText: label.text
     property bool showLeftSeparator: false
 
+    leftInset: 0
+    rightInset: 0
+    topInset: 0
+    bottomInset: 0
+    leftPadding: 0
+    rightPadding: 0
+    topPadding: 0
+    bottomPadding: 0
+
     background: Rectangle {
         id: tabBackground
         radius: 7
@@ -113,7 +122,7 @@ TabButton {
         Label {
             id: label
             text: control.tabText
-            font.pixelSize: 14
+            font.pixelSize: 16
             font.bold: control.checked
 
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
