@@ -19,6 +19,7 @@ import QtQuick.Dialogs
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views"
 import "qrc:/src/views/icons"
+import "qrc:/src/views/selection_details"
 
 
 Rectangle {
@@ -26,25 +27,66 @@ Rectangle {
     anchors.fill: parent
     color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
     property bool statsRunning: false
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2"
+                                                : "#4f4f4f"
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 0
-        anchors.margins: 10
+        spacing: 14
+        anchors.margins: 16
 
-        Label {
-            text: qsTrId("statistics")
-            font.pixelSize: 18
-            font.bold: true
-        }
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 7
 
-        Label {
-            text: qsTrId("statistic.monitor.usage.hint")
-            font.italic: true
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 9
+
+                DetailBadge {
+                    kind: "statistics"
+                }
+
+                Label {
+                    text: qsTrId("statistics")
+                    font.pixelSize: 20
+                    font.bold: true
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Rectangle {
+                    Layout.preferredWidth: 8
+                    Layout.preferredHeight: 8
+                    radius: 4
+                    color: statisticsMainViewId.statsRunning
+                           ? "#36a269"
+                           : "#d04a4a"
+                }
+
+                Label {
+                    text: statisticsMainViewId.statsRunning
+                          ? qsTrId("statistic.status.running")
+                          : qsTrId("statistic.status.stopped")
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+            }
+
+            Label {
+                Layout.fillWidth: true
+                Layout.leftMargin: 14
+                text: qsTrId("statistic.monitor.usage.hint")
+                font.pixelSize: 10
+                color: statisticsMainViewId.secondaryTextColor
+                elide: Text.ElideRight
+            }
         }
 
         RowLayout {
-            Layout.fillHeight: true
             Layout.fillWidth: true
             spacing: 0
 
@@ -137,20 +179,6 @@ Rectangle {
                                 }
                                 statsRunning = !statsRunning
                             }
-                        }
-                        Label {
-                            text: qsTrId("statistic.status") + ": "
-                        }
-                        Label {
-                            text: statsRunning ? qsTrId("statistic.status.running") : qsTrId("statistic.status.stopped")
-                        }
-                        Rectangle {
-                            width: 10
-                            height: 10
-                            radius: width / 2
-                            clip: true
-                            color: statsRunning ? "green" : "red"
-                            Layout.leftMargin: 5
                         }
                     }
                 }

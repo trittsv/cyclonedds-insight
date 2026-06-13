@@ -19,6 +19,7 @@ import QtQuick.Dialogs
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/icons"
+import "qrc:/src/views/selection_details"
 
 
 Rectangle {
@@ -60,13 +61,21 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 0
+        anchors.margins: 16
+        spacing: 10
 
         RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 36
+            spacing: 9
+
+            DetailBadge {
+                kind: "tester"
+            }
 
             Label {
-                text: "Tester"
-                leftPadding: 10
+                text: qsTrId("tab.tester")
+                font.pixelSize: 20
                 font.bold: true
             }
 
@@ -154,17 +163,15 @@ Rectangle {
         }
 
         RowLayout {
-            Layout.minimumHeight: 40
-            Layout.maximumHeight: 40
-            spacing: 10
-
-            Item {
-                implicitHeight: 1
-                implicitWidth: 1
-            }
+            Layout.fillWidth: true
+            Layout.leftMargin: 14
+            Layout.preferredHeight: 34
+            spacing: 8
 
             Label {
                 text: "Selected:"
+                font.pixelSize: 10
+                color: rootWindow.isDarkMode ? "#c2c2c2" : "#4f4f4f"
             }
 
             ComboBox {
@@ -245,11 +252,6 @@ Rectangle {
                     if (count > 0 && currentIndex === -1)
                         currentIndex = 0
                 }
-            }
-
-            Item {
-                implicitHeight: 1
-                implicitWidth: 1
             }
         }
 

@@ -18,6 +18,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 import org.eclipse.cyclonedds.insight
+import "qrc:/src/views/selection_details"
 
 
 Rectangle {
@@ -26,8 +27,12 @@ Rectangle {
     color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
     property bool started: true
     property bool autoScrollEnabled: true
-    border.color : !started ? "red" : autoScrollEnabled ? "transparent" : "orange"
-    border.width : 2
+    readonly property color surfaceColor: rootWindow.isDarkMode
+                                          ? Constants.darkCardBackgroundColor
+                                          : Constants.lightCardBackgroundColor
+    readonly property color borderColor: rootWindow.isDarkMode
+                                         ? "#464646"
+                                         : "#dddddd"
 
     Connections {
         target: receiverProxyModel
@@ -46,21 +51,50 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 0
+        anchors.margins: 16
+        spacing: 10
 
         RowLayout {
-            Layout.minimumHeight: 40
-            Layout.maximumHeight: 40
-            spacing: 10
+            Layout.fillWidth: true
+            Layout.preferredHeight: 30
+            spacing: 9
+
+            DetailBadge {
+                kind: "listener"
+            }
+
+            Label {
+                text: qsTrId("tab.listener")
+                font.pixelSize: 20
+                font.bold: true
+            }
 
             Item {
-                implicitHeight: 1
-                implicitWidth: 1
+                Layout.fillWidth: true
             }
-            Button {
-                text: qsTrId("general.clear")
-                onClicked: receiverModel.clear()
+
+            Rectangle {
+                Layout.preferredWidth: 8
+                Layout.preferredHeight: 8
+                radius: 4
+                color: listenerTabId.started ? "#36a269" : "#d04a4a"
             }
+
+            Label {
+                text: listenerTabId.started
+                      ? qsTrId("statistic.status.running")
+                      : qsTrId("statistic.status.stopped")
+                font.pixelSize: 11
+                font.bold: true
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: 14
+            Layout.preferredHeight: 36
+            spacing: 8
+
             Button {
                 text: started ? "Stop" : "Start"
                 onClicked: {
@@ -71,6 +105,11 @@ Rectangle {
                         listenerModel.stopAllReaders()
                     }
                 }
+            }
+
+            Button {
+                text: qsTrId("general.clear")
+                onClicked: receiverModel.clear()
             }
 
             Button {
@@ -116,31 +155,21 @@ Rectangle {
                     }
                 }
             }
-            Item {
-                implicitHeight: 1
-                implicitWidth: 1
-            }
         }
 
-       Rectangle {
-            color: rootWindow.isDarkMode ? "black" : "white"
+        Rectangle {
+            color: listenerTabId.surfaceColor
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.margins: 3
-
-            Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 1
-                color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
-            }
+            radius: 8
+            border.width: 1
+            border.color: listenerTabId.borderColor
 
             ListView {
                 id: listView
                 anchors.fill: parent
                 model: receiverProxyModel
-                anchors.margins: 5
+                anchors.margins: 10
                 clip: true
 
                 delegate: Column {

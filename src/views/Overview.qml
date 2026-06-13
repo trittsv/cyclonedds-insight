@@ -75,25 +75,21 @@ SplitView {
 
                 InsightTabButton {
                     tabText: qsTrId("tab.details")
-                    badgeKind: "details"
                     height: parent.height
                     width: 150
                 }
                 InsightTabButton {
                     tabText: qsTrId("tab.statistics")
-                    badgeKind: "statistics"
                     height: parent.height
                     width: 150
                 }
                 InsightTabButton {
                     tabText: qsTrId("tab.tester")
-                    badgeKind: "tester"
                     height: parent.height
                     width: 150
                 }
                 InsightTabButton {
                     tabText: qsTrId("tab.listener")
-                    badgeKind: "listener"
                     height: parent.height
                     width: 150
                 }
