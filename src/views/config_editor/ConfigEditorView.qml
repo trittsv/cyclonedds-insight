@@ -8,166 +8,314 @@
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
-*/
+ */
 
 import QtCore
 import QtQuick
-import QtQuick.Window
 import QtQuick.Controls
-import QtQuick.Layouts
 import QtQuick.Dialogs
+import QtQuick.Layouts
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views"
-import "qrc:/src/views/elements"
 import "qrc:/src/views/icons"
+import "qrc:/src/views/selection_details"
 
 Rectangle {
-    id: settingsViewId
-    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+    id: configEditorView
+
+    color: rootWindow.isDarkMode
+           ? Constants.darkMainContent
+           : Constants.lightMainContent
+
     property string fileContent: ""
     property string lastSavedTime: ""
     property bool configFileAvailable: false
+    property int currentTab: 0
+
+    readonly property color surfaceColor: rootWindow.isDarkMode
+                                          ? Constants.darkCardBackgroundColor
+                                          : Constants.lightCardBackgroundColor
+    readonly property color borderColor: rootWindow.isDarkMode
+                                         ? "#464646"
+                                         : "#dddddd"
+    readonly property color secondaryTextColor: rootWindow.isDarkMode
+                                                ? "#c2c2c2"
+                                                : "#4f4f4f"
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 5
-        anchors.topMargin: 10
-        anchors.leftMargin: 10
-        anchors.rightMargin: 10
-        anchors.bottomMargin: 10
+        anchors.margins: 16
+        spacing: 0
 
-        Label {
-            text: qsTrId("general.configeditor")
-            font.bold: true
-            font.pointSize: 16
-            Layout.alignment: Qt.AlignLeft
-        }
-
-        TabBar {
-            id: bar
+        RowLayout {
             Layout.fillWidth: true
+            Layout.bottomMargin: 14
+            spacing: 9
 
-            InsightTabButton {
-                tabText: qsTrId("config.tab.file")
-                width: 250
+            DetailBadge {
+                kind: "configuration"
             }
-            InsightTabButton {
-                tabText: qsTrId("config.tab.configdocumentation")
-                width: 250
-            }
-        }
 
-        StackLayout {
-            id: mainLayoutId
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            currentIndex: bar.currentIndex
-        
+            Label {
+                text: qsTrId("general.configeditor")
+                font.pixelSize: 20
+                font.bold: true
+            }
 
             Item {
-                id: createTabItem
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+            }
+        }
 
+        Row {
+            id: tabRow
+            Layout.preferredHeight: 30
+            Layout.bottomMargin: -1
+            spacing: 3
+            z: 2
 
-                ColumnLayout {
-                    anchors.fill: parent
-                    spacing: 5
-                    anchors.topMargin: 10
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    anchors.bottomMargin: 10
+            Repeater {
+                model: [
+                    qsTrId("config.tab.file"),
+                    qsTrId("config.tab.configdocumentation")
+                ]
 
-                    Label {
-                        id: uriLabel
-                        text: "CYCLONEDDS_URI: " + CYCLONEDDS_URI
-                        font.bold: true
+                Rectangle {
+                    id: tab
+
+                    required property int index
+                    required property string modelData
+                    readonly property bool selected: index === configEditorView.currentTab
+
+                    width: Math.max(150, tabLabel.implicitWidth + 32)
+                    height: selected ? 30 : 27
+                    y: selected ? 0 : 3
+                    radius: 6
+                    color: selected
+                           ? configEditorView.surfaceColor
+                           : rootWindow.isDarkMode
+                             ? "#383838"
+                             : "#e2e2e2"
+                    border.width: 1
+                    border.color: selected
+                                  ? configEditorView.borderColor
+                                  : rootWindow.isDarkMode
+                                    ? Constants.darkSeparator
+                                    : Constants.lightSeparator
+                    opacity: selected || tabMouseArea.containsMouse ? 1 : 0.78
+
+                    Rectangle {
+                        visible: tab.selected
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.leftMargin: 1
+                        anchors.rightMargin: 1
+                        height: 2
+                        color: parent.color
                     }
 
+                    Label {
+                        id: tabLabel
+                        anchors.centerIn: parent
+                        text: tab.modelData
+                        font.pixelSize: 13
+                        font.bold: tab.selected
+                    }
 
-                    ScrollView {
-                        id: scrollView
-                        visible: configFileAvailable
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        TextArea {
-                            id: textArea
-                            text: fileContent
-                            wrapMode: TextEdit.Wrap
-                            selectByMouse: true
-                            selectByKeyboard: true
-                            onTextChanged: {
-                                qmlUtils.saveFileContent(CYCLONEDDS_URI, text)
-                                lastSavedTime = new Date().toLocaleString()
+                    MouseArea {
+                        id: tabMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: configEditorView.currentTab = tab.index
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            radius: 8
+            color: configEditorView.surfaceColor
+            border.width: 1
+            border.color: configEditorView.borderColor
+            clip: true
+            z: 1
+
+            StackLayout {
+                anchors.fill: parent
+                currentIndex: configEditorView.currentTab
+
+                Item {
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 10
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 10
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 3
+
+                                Label {
+                                    text: "CYCLONEDDS_URI"
+                                    font.pixelSize: 10
+                                    color: configEditorView.secondaryTextColor
+                                }
+
+                                TextField {
+                                    id: uriField
+                                    Layout.fillWidth: true
+                                    text: CYCLONEDDS_URI
+                                    readOnly: true
+                                    selectByMouse: true
+                                }
+                            }
+
+                            Button {
+                                visible: configEditorView.configFileAvailable
+                                text: "Reload"
+                                flat: true
+                                onClicked: {
+                                    configEditorView.fileContent =
+                                            qmlUtils.loadFileContent(CYCLONEDDS_URI)
+                                    configTextArea.text =
+                                        configEditorView.fileContent
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            radius: 6
+                            color: rootWindow.isDarkMode ? "#191919" : "#ffffff"
+                            border.width: 1
+                            border.color: configEditorView.borderColor
+                            clip: true
+
+                            ScrollView {
+                                anchors.fill: parent
+                                visible: configEditorView.configFileAvailable
+                                contentWidth: availableWidth
+                                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+                                TextArea {
+                                    id: configTextArea
+                                    width: parent.width
+                                    text: configEditorView.fileContent
+                                    wrapMode: TextEdit.Wrap
+                                    selectByMouse: true
+                                    selectByKeyboard: true
+                                    background: null
+                                    padding: 10
+
+                                    onTextChanged: {
+                                        qmlUtils.saveFileContent(
+                                            CYCLONEDDS_URI, text)
+                                        configEditorView.lastSavedTime =
+                                            new Date().toLocaleString()
+                                    }
+                                }
+                            }
+
+                            Column {
+                                anchors.centerIn: parent
+                                width: Math.min(parent.width - 40, 440)
+                                spacing: 12
+                                visible: !configEditorView.configFileAvailable
+
+                                Label {
+                                    width: parent.width
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: "No configuration file was found in CYCLONEDDS_URI."
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                    wrapMode: Text.Wrap
+                                }
+
+                                Label {
+                                    width: parent.width
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: "Create a new XML file and configure the environment variable to use it."
+                                    font.pixelSize: 10
+                                    color: configEditorView.secondaryTextColor
+                                    wrapMode: Text.Wrap
+                                }
+
+                                Button {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    text: "Create New Configuration"
+                                    highlighted: true
+                                    onClicked: fileDialog.open()
+                                }
+
+                                TextEdit {
+                                    id: envHintText
+                                    width: parent.width
+                                    visible: text.length > 0
+                                    readOnly: true
+                                    wrapMode: Text.WordWrap
+                                    selectByMouse: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    color: rootWindow.isDarkMode
+                                           ? "#e0e0e0"
+                                           : "#303030"
+                                }
+                            }
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            visible: configEditorView.configFileAvailable
+
+                            Label {
+                                text: "Changes take effect after restarting the application."
+                                font.pixelSize: 10
+                                color: configEditorView.secondaryTextColor
+                            }
+
+                            Item {
+                                Layout.fillWidth: true
+                            }
+
+                            Label {
+                                text: configEditorView.lastSavedTime.length > 0
+                                      ? "Automatically saved: "
+                                        + configEditorView.lastSavedTime
+                                      : "Automatically saved"
+                                font.pixelSize: 10
+                                color: configEditorView.secondaryTextColor
                             }
                         }
                     }
 
-                    Label {
-                        visible: !configFileAvailable 
-                        text: "No file found in the env variable CYCLONEDDS_URI."
-                    }
+                    FileDialog {
+                        id: fileDialog
+                        currentFolder: StandardPaths.standardLocations(
+                                           StandardPaths.HomeLocation)[0]
+                        fileMode: FileDialog.SaveFile
+                        defaultSuffix: "xml"
+                        title: "Create New Configuration File"
 
-                    Button {
-                        id: reloadButton
-                        text: "Create New Configuration"
-                        visible: !configFileAvailable 
-                        Layout.alignment: Qt.AlignLeft
-                        onClicked: {
-                            fileDialog.open()
-                        }
-                    }
-
-                    RowLayout {
-                        visible: configFileAvailable
-                        spacing: 0
-                        Label {
-                            visible: configFileAvailable
-                            text: "Changes will take effect after restarting the application."
-                        }
-                        Item {
-                            visible: configFileAvailable
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                        }
-                        Label {
-                            text: "Automatically saved: "
-                        }
-                        Label {
-                            text: lastSavedTime
-                        }
-                    }
-
-                    TextEdit {
-                        id: envHintText
-                        visible: false
-                        text: ""
-                        readOnly: true
-                        wrapMode: Text.WordWrap
-                        selectByMouse: true
-                        color: uriLabel.color
-                    }
-
-                    Item {
-                        visible: !configFileAvailable
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                    }
-                }
-
-                FileDialog {
-                    id: fileDialog
-                    currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
-                    fileMode: FileDialog.SaveFile
-                    defaultSuffix: "xml"
-                    title: "Create New Configuration File"
-                    onAccepted: {
-                        qmlUtils.createFileFromQUrl(selectedFile)
-                        var localPath = qmlUtils.toLocalFile(selectedFile);
-                        envHintText.text = "The new configuration file has been created.\n\nSet the env-variable:\nCYCLONEDDS_URI=file://" + localPath + "\n\nAnd restart the application."
-                        envHintText.visible = true
-                        var defaultConfig = `<?xml version="1.0" encoding="UTF-8" ?>
+                        onAccepted: {
+                            qmlUtils.createFileFromQUrl(selectedFile)
+                            const localPath =
+                                qmlUtils.toLocalFile(selectedFile)
+                            envHintText.text =
+                                "The new configuration file has been created.\n\n"
+                                + "Set the environment variable:\n"
+                                + "CYCLONEDDS_URI=file://" + localPath
+                                + "\n\nThen restart the application."
+                            const defaultConfig =
+`<?xml version="1.0" encoding="UTF-8" ?>
 <CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd">
     <Domain Id="any">
         <General>
@@ -177,122 +325,139 @@ Rectangle {
         </General>
     </Domain>
 </CycloneDDS>
-`;
-                        qmlUtils.saveFileContent(localPath, defaultConfig);
-                    }
-                }
-
-                Component {
-                    id: textAreaBackgroundComponent
-                    Rectangle {
-                        color: rootWindow.isDarkMode ? "black" : "white"
-                    }
-                }
-
-                Component.onCompleted: {
-                    if (Qt.platform.os !== "osx") {
-                        textArea.background = textAreaBackgroundComponent.createObject(textArea);
-                    }
-
-                    if (qmlUtils.isValidFile(CYCLONEDDS_URI) && CYCLONEDDS_URI !== "<not set>" && CYCLONEDDS_URI !== "") {
-                        configFileAvailable = true;
-                        fileContent = qmlUtils.loadFileContent(CYCLONEDDS_URI)
-                        textArea.text = fileContent
-                    } else {
-                        configFileAvailable = false;
-                    }
-                }
-            }
-
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                SplitView {
-                    id: configBrowSplit
-                    anchors.fill: parent
-
-                    TreeView {
-                        id: treeView
-                        clip: true
-                        ScrollBar.vertical: ScrollBar {}
-                        SplitView.preferredWidth: 300
-                        selectionModel: ItemSelectionModel {
-                            id: treeSelection
-                            onCurrentIndexChanged: {
-                                details.text = modelXsd.detailsAt(currentIndex)
-                            }
+`
+                            qmlUtils.saveFileContent(localPath, defaultConfig)
                         }
-                        model: modelXsd
+                    }
 
-                        delegate: Item {
-                            implicitWidth: treeView.width
-                            implicitHeight: label.implicitHeight * 1.5
+                    Component.onCompleted: {
+                        if (qmlUtils.isValidFile(CYCLONEDDS_URI)
+                                && CYCLONEDDS_URI !== "<not set>"
+                                && CYCLONEDDS_URI !== "") {
+                            configEditorView.configFileAvailable = true
+                            configEditorView.fileContent =
+                                qmlUtils.loadFileContent(CYCLONEDDS_URI)
+                            configTextArea.text =
+                                configEditorView.fileContent
+                        } else {
+                            configEditorView.configFileAvailable = false
+                        }
+                    }
+                }
 
-                            readonly property real indentation: 20
-                            readonly property real padding: 5
+                Item {
+                    SplitView {
+                        id: configBrowserSplit
+                        anchors.fill: parent
+                        anchors.margins: 10
 
-                            // Assigned to by TreeView:
-                            required property TreeView treeView
-                            required property bool isTreeNode
-                            required property bool expanded
-                            required property int hasChildren
-                            required property int depth
-                            required property int row
-                            required property int column
-                            required property bool current
+                        Rectangle {
+                            SplitView.preferredWidth: 300
+                            SplitView.minimumWidth: 180
+                            color: "transparent"
 
-                            Rectangle {
-                                id: background
-                                height: parent.height
-                                width: parent.width - 10
-                                visible: row === treeView.currentRow
-                                color: rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground
-                                opacity: 0.3
-                                radius: 5
-                            }
+                            TreeView {
+                                id: treeView
+                                anchors.fill: parent
+                                clip: true
+                                ScrollBar.vertical: ScrollBar {}
+                                selectionModel: ItemSelectionModel {
+                                    onCurrentIndexChanged: {
+                                        details.text =
+                                            modelXsd.detailsAt(currentIndex)
+                                    }
+                                }
+                                model: modelXsd
 
-                            ChevronIcon {
-                                id: indicator
-                                width: 14
-                                height: 14
-                                x: padding + (depth * indentation)
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: isTreeNode && hasChildren
-                                iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
-                                direction: expanded ? "down" : "right"
+                                delegate: Item {
+                                    implicitWidth: treeView.width
+                                    implicitHeight: label.implicitHeight * 1.6
 
-                                TapHandler {
-                                    onSingleTapped: {
-                                        let index = treeView.index(row, column)
-                                        treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate)
-                                        treeView.toggleExpanded(row)
+                                    readonly property real indentation: 20
+                                    readonly property real padding: 5
+
+                                    required property TreeView treeView
+                                    required property bool isTreeNode
+                                    required property bool expanded
+                                    required property int hasChildren
+                                    required property int depth
+                                    required property int row
+                                    required property int column
+                                    required property bool current
+
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        visible: row === treeView.currentRow
+                                        color: rootWindow.isDarkMode
+                                               ? Constants.darkSelectionBackground
+                                               : Constants.lightSelectionBackground
+                                        opacity: 0.3
+                                        radius: 5
+                                    }
+
+                                    ChevronIcon {
+                                        width: 14
+                                        height: 14
+                                        x: padding + depth * indentation
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: isTreeNode && hasChildren
+                                        iconColor: rootWindow.isDarkMode
+                                                   ? "#d0d0d0"
+                                                   : "#505050"
+                                        direction: expanded ? "down" : "right"
+
+                                        TapHandler {
+                                            onSingleTapped: {
+                                                const itemIndex =
+                                                    treeView.index(row, column)
+                                                treeView.selectionModel
+                                                    .setCurrentIndex(
+                                                        itemIndex,
+                                                        ItemSelectionModel.NoUpdate)
+                                                treeView.toggleExpanded(row)
+                                            }
+                                        }
+                                    }
+
+                                    Label {
+                                        id: label
+                                        x: padding + (isTreeNode
+                                                      ? (depth + 1)
+                                                        * indentation
+                                                      : 0)
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: parent.width - padding - x - 10
+                                        clip: true
+                                        text: model.display
+                                        elide: Text.ElideRight
                                     }
                                 }
                             }
-                            Label {
-                                id: label
-                                x: padding + (isTreeNode ? (depth + 1) * indentation : 0)
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width - padding - x - 10
-                                clip: true
-                                text: model.display
-                            }
                         }
-                    }
 
-                    ScrollView {
-                        SplitView.fillWidth: true
-                        clip: true
-                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                        Rectangle {
+                            SplitView.fillWidth: true
+                            color: rootWindow.isDarkMode ? "#191919" : "#ffffff"
+                            border.width: 1
+                            border.color: configEditorView.borderColor
+                            radius: 6
+                            clip: true
 
-                        TextArea {
-                            id: details
-                            readOnly: true
-                            wrapMode: TextEdit.Wrap
-                            text: qsTrId("general.nothing.selected")
-                            padding: 16
-                            width: parent.width
+                            ScrollView {
+                                anchors.fill: parent
+                                contentWidth: availableWidth
+                                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
+                                TextArea {
+                                    id: details
+                                    width: parent.width
+                                    readOnly: true
+                                    wrapMode: TextEdit.Wrap
+                                    text: qsTrId("general.nothing.selected")
+                                    padding: 16
+                                    background: null
+                                }
+                            }
                         }
                     }
                 }
