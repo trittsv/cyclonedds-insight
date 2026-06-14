@@ -24,7 +24,7 @@ import "qrc:/src/views/icons"
 
 Rectangle {
     id: domainViewId
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
     property int domainId
 
@@ -48,7 +48,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.margins: 0
         z: 10
-        color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+        color: Constants.mainContentColor(rootWindow.isDarkMode)
         width: controlsLayout.implicitWidth
         height: controlsLayout.implicitHeight
 

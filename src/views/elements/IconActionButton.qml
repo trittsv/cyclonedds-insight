@@ -25,13 +25,13 @@ Rectangle {
     property bool destructive: false
     readonly property color iconColor:
         destructive && mouseArea.containsMouse
-        ? "#d04a4a"
+        ? Constants.errorColor
         : rootWindow.isDarkMode ? "#e0e0e0" : "#404040"
     signal clicked()
 
     implicitWidth: 28
     implicitHeight: 28
-    radius: 6
+    radius: Constants.controlRadius
     color: mouseArea.containsMouse
            ? destructive
              ? rootWindow.isDarkMode ? "#4b2528" : "#ffe6e8"
@@ -39,10 +39,8 @@ Rectangle {
            : rootWindow.isDarkMode ? "#292929" : "#f5f5f5"
     border.width: 1
     border.color: mouseArea.containsMouse && destructive
-                  ? "#d04a4a"
-                  : rootWindow.isDarkMode
-                    ? Constants.darkBorderColor
-                    : Constants.lightBorderColor
+                  ? Constants.errorColor
+                  : Constants.borderColor(rootWindow.isDarkMode)
 
     Behavior on color {
         ColorAnimation {
@@ -120,13 +118,9 @@ Rectangle {
         }
 
         background: Rectangle {
-            color: rootWindow.isDarkMode
-                   ? Constants.darkCardBackgroundColor
-                   : Constants.lightCardBackgroundColor
+            color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
             border.width: 1
-            border.color: rootWindow.isDarkMode
-                          ? Constants.darkBorderColor
-                          : Constants.lightBorderColor
+            border.color: Constants.borderColor(rootWindow.isDarkMode)
         }
     }
 

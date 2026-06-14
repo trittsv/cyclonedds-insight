@@ -118,12 +118,8 @@ Item {
         background: Rectangle {
             radius: 5
             border.width: 1
-            border.color: rootWindow.isDarkMode
-                          ? Constants.darkBorderColor
-                          : Constants.lightBorderColor
-            color: rootWindow.isDarkMode
-                   ? Constants.darkCardBackgroundColor
-                   : Constants.lightCardBackgroundColor
+            border.color: Constants.borderColor(rootWindow.isDarkMode)
+            color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
         }
     }
 }

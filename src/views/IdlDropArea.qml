@@ -57,7 +57,7 @@ DropArea {
         visible: dropAreaId.isEntered
         anchors.fill: parent
         color: Constants.warningColor
-        border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+        border.color: Constants.borderColor(rootWindow.isDarkMode)
         border.width: 2
         radius: 10
 

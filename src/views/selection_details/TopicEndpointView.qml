@@ -22,7 +22,7 @@ import "qrc:/src/views/icons"
 
 Rectangle {
     id: topicEndpointView
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
     property int domainId
     property string topicName
@@ -30,9 +30,7 @@ Rectangle {
     property int writerCount: 0
     property int readerCount: 0
 
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2"
-                                                : "#4f4f4f"
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     EndpointModel {
         id: endpointWriterModel
@@ -72,7 +70,7 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -89,7 +87,7 @@ Rectangle {
 
                 Label {
                     text: qsTrId("Topic")
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
                 }
 
@@ -264,7 +262,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 text: readerCount
                                 font.bold: true
-                                color: "#274ff6"
+                                color: Constants.accentColor
                             }
                         }
 

@@ -23,20 +23,15 @@ import "qrc:/src/views/selection_details"
 Window {
     id: updaterRootWindow
 
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646" : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2" : "#505050"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     width: 420
     height: 350
     visible: true
     title: "CycloneDDS Insight Updater"
-    color: rootWindow.isDarkMode
-           ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
     flags: Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint
     modality: Qt.ApplicationModal
     maximumWidth: width
@@ -110,7 +105,7 @@ Window {
             Label {
                 text: updaterRootWindow.isError
                       ? "Error" : "Zap! Pow! Update!"
-                font.pixelSize: 20
+                font.pixelSize: Constants.pageTitleFontSize
                 font.bold: true
             }
 
@@ -126,11 +121,11 @@ Window {
             color: updaterRootWindow.surfaceColor
             border.width: 1
             border.color: updaterRootWindow.isError
-                          ? "#d04a4a" : updaterRootWindow.borderColor
+                          ? Constants.errorColor : updaterRootWindow.borderColor
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 16
+                anchors.margins: Constants.pageMargin
                 spacing: 13
 
                 Item {
@@ -156,14 +151,14 @@ Window {
                         radius: 19
                         color: rootWindow.isDarkMode ? "#4b2528" : "#ffe6e8"
                         border.width: 1
-                        border.color: "#d04a4a"
+                        border.color: Constants.errorColor
 
                         Label {
                             anchors.centerIn: parent
                             text: "!"
                             font.pixelSize: 20
                             font.bold: true
-                            color: "#d04a4a"
+                            color: Constants.errorColor
                         }
                     }
                 }

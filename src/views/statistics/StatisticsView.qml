@@ -25,7 +25,7 @@ import "qrc:/src/views"
 
 Rectangle {
     id: rootStatViewId
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
     property var statisticModel: Object.create(null)
     property int keepHistoryMinutes: 10
     property int itemCellHeight: 400
@@ -421,9 +421,9 @@ Rectangle {
             color: tooltip.textColor
         }
         background: Rectangle {
-            border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+            border.color: Constants.borderColor(rootWindow.isDarkMode)
             border.width: 1
-            color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+            color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
         }
     }
 }

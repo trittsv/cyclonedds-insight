@@ -45,7 +45,7 @@ Item {
 
     readonly property color accentColor: card.isWriter
         ? rootWindow.isDarkMode ? "#8cc8ff" : "#145c9e"
-        : "#274ff6"
+        : Constants.accentColor
 
     readonly property string endpointDetails:
         "Key: " + endpoint_key
@@ -73,20 +73,18 @@ Item {
         anchors.leftMargin: 1
         anchors.rightMargin: 6
         anchors.bottomMargin: 8
-        radius: 8
+        radius: Constants.cardRadius
         color: cardMouseArea.pressed
                ? rootWindow.isDarkMode ? "#3d3d3d" : "#e3e3e3"
                : cardMouseArea.containsMouse
                  ? rootWindow.isDarkMode ? "#383838" : "#ededed"
-                 : rootWindow.isDarkMode
-                   ? Constants.darkCardBackgroundColor
-                   : Constants.lightCardBackgroundColor
+                 : Constants.cardBackgroundColor(rootWindow.isDarkMode)
         border.width: 1
         border.color: card.endpoint_has_qos_mismatch
                       ? Constants.warningColor
                       : cardMouseArea.containsMouse
                         ? rootWindow.isDarkMode ? "#666666" : "#c2c2c2"
-                        : rootWindow.isDarkMode ? "#464646" : "#dddddd"
+                        : Constants.designBorderColor(rootWindow.isDarkMode)
 
         MouseArea {
             id: cardMouseArea
@@ -143,8 +141,8 @@ Item {
                       + (card.addresses.length > 0
                          ? "  |  " + card.addresses
                          : "")
-                font.pixelSize: 11
-                color: rootWindow.isDarkMode ? "#d0d0d0" : "#454545"
+                font.pixelSize: Constants.bodyFontSize
+                color: rootWindow.isDarkMode ? Constants.darkMutedForeground : "#454545"
                 elide: Text.ElideRight
 
                 HoverHandler {
@@ -165,7 +163,7 @@ Item {
                 Layout.preferredHeight: 12
                 text: card.endpoint_key
                 color: rootWindow.isDarkMode ? "#a8a8a8" : "#666666"
-                font.pixelSize: 10
+                font.pixelSize: Constants.captionFontSize
                 fontSizeMode: Text.HorizontalFit
                 verticalAlignment: Text.AlignVCenter
             }
@@ -265,7 +263,7 @@ Item {
                     id: previewLabel
                     anchors.centerIn: parent
                     text: qsTrId("endpoint.preview")
-                    color: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                    color: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                 }
 
                 MouseArea {
@@ -285,14 +283,10 @@ Item {
                         text: endpointPreview.text
                     }
                     background: Rectangle {
-                        border.color: rootWindow.isDarkMode
-                                      ? Constants.darkBorderColor
-                                      : Constants.lightBorderColor
+                        border.color: Constants.borderColor(rootWindow.isDarkMode)
                         border.width: 1
-                        color: rootWindow.isDarkMode
-                               ? Constants.darkCardBackgroundColor
-                               : Constants.lightCardBackgroundColor
-                        radius: 6
+                        color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+                        radius: Constants.controlRadius
                     }
                 }
             }

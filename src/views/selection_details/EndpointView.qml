@@ -21,18 +21,16 @@ import "qrc:/src/views"
 
 Rectangle {
     id: endpointViewId
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
     property int domainId
     property string endpointKey
 
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2"
-                                                : "#4f4f4f"
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
         spacing: 14
 
         ColumnLayout {
@@ -49,7 +47,7 @@ Rectangle {
 
                 Label {
                     text: qsTrId("Endpoint")
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
                 }
 

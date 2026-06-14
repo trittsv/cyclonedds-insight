@@ -24,7 +24,7 @@ Rectangle {
     id: dataModelOverviewId
     implicitHeight: parent.height
     implicitWidth: parent.width
-    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+    color: Constants.overviewBackgroundColor(rootWindow.isDarkMode)
 
     Component.onCompleted: {
         datamodelRepoModel.loadModules()
@@ -35,7 +35,7 @@ Rectangle {
         spacing: 0
 
         Rectangle {
-            color: rootWindow.isDarkMode ? Constants.darkHeaderBackground : Constants.lightHeaderBackground
+            color: Constants.headerBackgroundColor(rootWindow.isDarkMode)
             Layout.fillWidth: true
             Layout.preferredHeight: importBtnId.height
 
@@ -73,7 +73,7 @@ Rectangle {
                         anchors.centerIn: parent
                         z: 1
                         expanded: searchField.visible
-                        iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                        iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                     }
                     onClicked: {
                         if (searchField.visible) {
@@ -121,7 +121,7 @@ Rectangle {
                 Rectangle {
                     height: parent.height
                     width: parent.width - 10
-                    color: (dataModelItemMouseArea.hovered || contextMenu.visible)? rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground : "transparent"
+                    color: (dataModelItemMouseArea.hovered || contextMenu.visible)? Constants.selectionBackgroundColor(rootWindow.isDarkMode) : "transparent"
                     opacity: 0.3
                     radius: 5
                 }

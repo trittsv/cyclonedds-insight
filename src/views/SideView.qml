@@ -69,7 +69,7 @@ ColumnLayout {
                                  ? "#484848" : "#ffffff"
                                : optionMouseArea.containsMouse
                                  ? rootWindow.isDarkMode
-                                   ? "#363636" : "#dddddd"
+                                   ? "#363636" : Constants.lightDesignBorder
                                  : rootWindow.isDarkMode
                                    ? "#242424" : "transparent"
                         border.width: 1
@@ -86,7 +86,7 @@ ColumnLayout {
                             width: 2
                             height: parent.height - 8
                             radius: 1
-                            color: "#274ff6"
+                            color: Constants.accentColor
                         }
 
                         Label {
@@ -131,12 +131,8 @@ ColumnLayout {
                             background: Rectangle {
                                 radius: 5
                                 border.width: 1
-                                border.color: rootWindow.isDarkMode
-                                              ? Constants.darkBorderColor
-                                              : Constants.lightBorderColor
-                                color: rootWindow.isDarkMode
-                                       ? Constants.darkCardBackgroundColor
-                                       : Constants.lightCardBackgroundColor
+                                border.color: Constants.borderColor(rootWindow.isDarkMode)
+                                color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
                             }
                         }
                     }
@@ -178,9 +174,9 @@ ColumnLayout {
                     text: addDomainTooltip.text
                 }
                 background: Rectangle {
-                    border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                    border.color: Constants.borderColor(rootWindow.isDarkMode)
                     border.width: 1
-                    color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+                    color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
                 }
             }
         }
@@ -221,9 +217,9 @@ ColumnLayout {
                     text: removeDomainTooltip.text
                 }
                 background: Rectangle {
-                    border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                    border.color: Constants.borderColor(rootWindow.isDarkMode)
                     border.width: 1
-                    color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+                    color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
                 }
             }
         }
@@ -237,7 +233,7 @@ ColumnLayout {
                 anchors.centerIn: parent
                 z: 1
                 expanded: searchField.visible
-                iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
             }
             onClicked: {
                 if (viewSelector.currentIndex === 0) {

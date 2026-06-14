@@ -25,16 +25,14 @@ import "qrc:/src/views/selection_details"
 Rectangle {
     id: statisticsMainViewId
     anchors.fill: parent
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
     property bool statsRunning: false
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2"
-                                                : "#4f4f4f"
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     ColumnLayout {
         anchors.fill: parent
         spacing: 14
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -50,7 +48,7 @@ Rectangle {
 
                 Label {
                     text: qsTrId("statistics")
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
                 }
 
@@ -63,8 +61,8 @@ Rectangle {
                     Layout.preferredHeight: 8
                     radius: 4
                     color: statisticsMainViewId.statsRunning
-                           ? "#36a269"
-                           : "#d04a4a"
+                           ? Constants.successColor
+                           : Constants.errorColor
                 }
 
                 Label {
@@ -203,7 +201,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 z: 1
                                 direction: "left"
-                                iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                                iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                             }
                             onClicked: {
                                 if (statisticsView.itemChartWidth >= 400) {
@@ -216,7 +214,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 z: 1
                                 direction: "right"
-                                iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                                iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                             }
                             onClicked: {
                                 statisticsView.itemChartWidth += 50
@@ -227,7 +225,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 z: 1
                                 direction: "up"
-                                iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                                iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                             }
                             onClicked: {
                                 if (statisticsView.itemCellHeight >= 300) {
@@ -240,7 +238,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 z: 1
                                 direction: "down"
-                                iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                                iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                             }
                             onClicked: {
                                 statisticsView.itemCellHeight += 50

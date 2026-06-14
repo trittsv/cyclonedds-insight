@@ -22,25 +22,20 @@ import "qrc:/src/views/selection_details"
 Window {
     id: checkForUpdatesWindow
 
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646" : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2" : "#505050"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
     readonly property color statusColor: updateError
-                                         ? "#d04a4a"
+                                         ? Constants.errorColor
                                          : updateAvailable
                                            ? Constants.warningColor
-                                           : "#36a269"
+                                           : Constants.successColor
 
     title: "Check for Updates"
     visible: false
     flags: Qt.Dialog
     modality: Qt.ApplicationModal
-    color: rootWindow.isDarkMode
-           ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
 
     property int updateCheckWidth: 400
@@ -113,7 +108,7 @@ Window {
 
             Label {
                 text: "Software Update"
-                font.pixelSize: 20
+                font.pixelSize: Constants.pageTitleFontSize
                 font.bold: true
             }
 
@@ -199,7 +194,7 @@ Window {
                                  && !updateError
                         text: "Open build artifacts"
                         font.bold: true
-                        color: "#274ff6"
+                        color: Constants.accentColor
 
                         MouseArea {
                             anchors.fill: parent

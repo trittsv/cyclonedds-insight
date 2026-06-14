@@ -20,24 +20,16 @@ import "qrc:/src/views"
 
 Rectangle {
     id: participantViewId
-    color: rootWindow.isDarkMode
-           ? Constants.darkMainContent
-           : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
     property int domainId
     property string participantKey
     property string vendorName
     property bool qosLoaded: false
 
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646"
-                                         : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2"
-                                                : "#4f4f4f"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     ParticipantDetailsModel {
         id: participantModel
@@ -60,7 +52,7 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
         spacing: 14
 
         ColumnLayout {
@@ -77,7 +69,7 @@ Rectangle {
 
                 Label {
                     text: qsTrId("participant.title")
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
                 }
 
@@ -143,7 +135,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumHeight: 140
-            radius: 8
+            radius: Constants.cardRadius
             color: participantViewId.surfaceColor
             border.width: 1
             border.color: participantViewId.borderColor
@@ -164,9 +156,7 @@ Rectangle {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 1
-                    color: rootWindow.isDarkMode
-                           ? Constants.darkSeparator
-                           : Constants.lightSeparator
+                    color: Constants.separatorColor(rootWindow.isDarkMode)
                 }
 
                 Item {

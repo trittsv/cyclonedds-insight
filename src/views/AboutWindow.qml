@@ -21,8 +21,7 @@ import "qrc:/src/views/selection_details"
 Window {
     id: aboutWindow
 
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2" : "#505050"
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
 
     property int aboutWidth: 570
@@ -39,8 +38,7 @@ Window {
     visible: false
     flags: Qt.Dialog
     modality: Qt.ApplicationModal
-    color: rootWindow.isDarkMode
-           ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
     component VersionRow: RowLayout {
         id: versionRow
@@ -87,7 +85,7 @@ Window {
 
             Label {
                 text: "About"
-                font.pixelSize: 20
+                font.pixelSize: Constants.pageTitleFontSize
                 font.bold: true
             }
 
@@ -126,7 +124,7 @@ Window {
 
                 Label {
                     text: "CycloneDDS Insight"
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
                 }
 

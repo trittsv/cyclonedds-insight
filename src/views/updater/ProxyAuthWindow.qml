@@ -24,7 +24,7 @@ Window {
     visible: false
     flags: Qt.Dialog
     modality: Qt.ApplicationModal
-    color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+    color: Constants.overviewBackgroundColor(rootWindow.isDarkMode)
 
     property int proxyAuthWidth: 300
     property int proxyAuthHeight: 150
