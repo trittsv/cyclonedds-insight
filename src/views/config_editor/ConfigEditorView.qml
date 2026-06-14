@@ -344,6 +344,10 @@ Rectangle {
                                 id: treeView
                                 anchors.fill: parent
                                 clip: true
+                                flickableDirection: Flickable.VerticalFlick
+                                ScrollBar.horizontal: ScrollBar {
+                                    policy: ScrollBar.AlwaysOff
+                                }
                                 ScrollBar.vertical: ScrollBar {}
                                 selectionModel: ItemSelectionModel {
                                     onCurrentIndexChanged: {

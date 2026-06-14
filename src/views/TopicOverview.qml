@@ -26,6 +26,10 @@ TreeView {
     Layout.fillHeight: true
     Layout.leftMargin: 10
     clip: true
+    flickableDirection: Flickable.VerticalFlick
+    ScrollBar.horizontal: ScrollBar {
+        policy: ScrollBar.AlwaysOff
+    }
     ScrollBar.vertical: ScrollBar {}
     selectionModel: ItemSelectionModel {
         id: treeSelection

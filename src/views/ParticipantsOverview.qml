@@ -22,6 +22,10 @@ import "qrc:/src/views/icons"
 TreeView {
     id: treeView
     clip: true
+    flickableDirection: Flickable.VerticalFlick
+    ScrollBar.horizontal: ScrollBar {
+        policy: ScrollBar.AlwaysOff
+    }
     ScrollBar.vertical: ScrollBar {}
     selectionModel: ItemSelectionModel {
         id: treeSelectionParticipant

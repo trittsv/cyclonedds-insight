@@ -914,6 +914,10 @@ Rectangle {
                 anchors.margins: 8
                 visible: dataTreeModel !== null && sequenceModel === null && librariesCombobox.count > 0
                 clip: true
+                flickableDirection: Flickable.VerticalFlick
+                ScrollBar.horizontal: ScrollBar {
+                    policy: ScrollBar.AlwaysOff
+                }
                 ScrollBar.vertical: ScrollBar {}
                 selectionModel: ItemSelectionModel {
                     id: treeSelectionParticipant
