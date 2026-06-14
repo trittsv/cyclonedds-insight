@@ -25,6 +25,7 @@ Rectangle {
     implicitHeight: parent.height
     implicitWidth: parent.width
     color: Constants.overviewBackgroundColor(rootWindow.isDarkMode)
+    property string contextMenuTopicName: ""
 
     Component.onCompleted: {
         datamodelRepoModel.loadModules()
@@ -121,7 +122,11 @@ Rectangle {
                 Rectangle {
                     height: parent.height
                     width: parent.width - 10
-                    color: (dataModelItemMouseArea.hovered || contextMenu.visible)? Constants.selectionBackgroundColor(rootWindow.isDarkMode) : "transparent"
+                    color: (dataModelItemMouseArea.hovered
+                            || (dataModelContextMenu.visible
+                                && dataModelOverviewId.contextMenuTopicName === name))
+                           ? Constants.selectionBackgroundColor(rootWindow.isDarkMode)
+                           : "transparent"
                     opacity: 0.3
                     radius: 5
                 }
@@ -138,7 +143,8 @@ Rectangle {
                     hoverEnabled: true
                     property bool hovered: false
                     onClicked: {
-                        contextMenu.popup()
+                        dataModelOverviewId.contextMenuTopicName = name
+                        dataModelContextMenu.popup()
                     }
                     onEntered: {
                         hovered = true
@@ -146,25 +152,28 @@ Rectangle {
                     onExited: {
                         hovered = false
                     }
-
-                    Menu {
-                        id: contextMenu
-                        MenuItem {
-                            text: "Create Reader (Listener)"
-                            onTriggered: {
-                                readerTesterDialogId.setType(name, 3)
-                                readerTesterDialogId.open()
-                            }
-                        }
-                        MenuItem {
-                            text: "Create Writer (Tester)"
-                            onTriggered: {
-                                readerTesterDialogId.setType(name, 4)
-                                readerTesterDialogId.open()
-                            }
-                        }
-                    }
                 }
+            }
+        }
+    }
+
+    Menu {
+        id: dataModelContextMenu
+
+        MenuItem {
+            text: "Create Reader (Listener)"
+            onTriggered: {
+                readerTesterDialogId.setType(
+                            dataModelOverviewId.contextMenuTopicName, 3)
+                readerTesterDialogId.open()
+            }
+        }
+        MenuItem {
+            text: "Create Writer (Tester)"
+            onTriggered: {
+                readerTesterDialogId.setType(
+                            dataModelOverviewId.contextMenuTopicName, 4)
+                readerTesterDialogId.open()
             }
         }
     }
