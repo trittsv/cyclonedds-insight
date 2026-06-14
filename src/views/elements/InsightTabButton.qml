@@ -21,6 +21,9 @@ TabButton {
     id: control
     property alias tabText: label.text
     property bool showLeftSeparator: false
+    property bool paneToggleMode: false
+    property bool paneIncluded: false
+    property string paneToggleToolTip: ""
 
     leftInset: 0
     rightInset: 0
@@ -126,6 +129,58 @@ TabButton {
 
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
             Layout.leftMargin: 16
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
+
+        Rectangle {
+            visible: control.paneToggleMode
+            Layout.alignment: Qt.AlignVCenter
+            Layout.rightMargin: 12
+            Layout.preferredWidth: 18
+            Layout.preferredHeight: 18
+            radius: Constants.controlRadius
+            color: control.paneIncluded
+                   ? rootWindow.isDarkMode ? "#26345f" : "#e7ebff"
+                   : rootWindow.isDarkMode ? "#424242" : "#eeeeee"
+            border.width: 1
+            border.color: control.paneIncluded
+                          ? Constants.accentColor
+                          : Constants.designBorderColor(
+                                rootWindow.isDarkMode)
+
+            Text {
+                anchors.centerIn: parent
+                text: control.paneIncluded ? "×" : "+"
+                color: control.paneIncluded
+                       ? Constants.accentColor
+                       : Constants.mutedForegroundColor(
+                             rootWindow.isDarkMode)
+                font.pixelSize: control.paneIncluded ? 15 : 16
+                font.bold: true
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+            }
+        }
+    }
+
+    ToolTip {
+        id: paneToggleTooltip
+        parent: control
+        visible: control.hovered
+                 && control.paneToggleMode
+                 && control.paneToggleToolTip.length > 0
+        delay: 500
+        text: control.paneToggleToolTip
+        contentItem: Label {
+            text: paneToggleTooltip.text
+        }
+        background: Rectangle {
+            border.width: 1
+            border.color: Constants.borderColor(rootWindow.isDarkMode)
+            color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
         }
     }
 }

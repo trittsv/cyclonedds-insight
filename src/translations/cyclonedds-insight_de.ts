@@ -115,6 +115,24 @@
     <message id="tab.listener">
         <translation>Listener</translation>
     </message>
+    <message id="tab.side-by-side.add">
+        <translation>Diese Ansicht zur geteilten Darstellung hinzufügen</translation>
+    </message>
+    <message id="tab.side-by-side.remove">
+        <translation>Diese Ansicht aus der geteilten Darstellung entfernen</translation>
+    </message>
+    <message id="tab.side-by-side.status">
+        <translation>Geteilt · %1</translation>
+    </message>
+    <message id="tab.side-by-side.last-pane">
+        <translation>Geteilte Darstellung beenden, um die letzte Ansicht zu schließen</translation>
+    </message>
+    <message id="tab.side-by-side.enable">
+        <translation>Geteilte Darstellung aktivieren</translation>
+    </message>
+    <message id="tab.side-by-side.disable">
+        <translation>Geteilte Darstellung deaktivieren</translation>
+    </message>
 
     <message id="listener.create.reader">
         <translation>Reader erstellen (Listener)</translation>

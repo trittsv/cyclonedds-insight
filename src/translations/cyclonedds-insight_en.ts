@@ -110,6 +110,24 @@
     <message id="tab.listener">
         <translation>Listener</translation>
     </message>
+    <message id="tab.side-by-side.add">
+        <translation>Add this view to the split</translation>
+    </message>
+    <message id="tab.side-by-side.remove">
+        <translation>Remove this view from the split</translation>
+    </message>
+    <message id="tab.side-by-side.status">
+        <translation>Split · %1</translation>
+    </message>
+    <message id="tab.side-by-side.last-pane">
+        <translation>Exit split view to close the final pane</translation>
+    </message>
+    <message id="tab.side-by-side.enable">
+        <translation>Enable split mode</translation>
+    </message>
+    <message id="tab.side-by-side.disable">
+        <translation>Disable split mode</translation>
+    </message>
 
     <message id="listener.create.reader">
         <translation>Create Reader (Listener)</translation>
