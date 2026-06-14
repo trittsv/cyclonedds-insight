@@ -20,6 +20,7 @@ import QtQuick.Dialogs
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/icons"
 import "qrc:/src/views/selection_details"
+import "qrc:/src/views/elements"
 
 
 Rectangle {
@@ -31,6 +32,7 @@ Rectangle {
     property var sequenceModel: null
     property bool isSequenceEditorVisible: false
     property bool isDescriptionExpanded: false
+    property bool isPresetNameEditorVisible: false
     property int currentDataIndex: 0
     property int testerRev: 0
     readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
@@ -278,12 +280,32 @@ Rectangle {
                                 currentIndex = 0
                         }
                     }
+
+                    IconActionButton {
+                        icon: "edit"
+                        tooltipText: listenerTabId.isPresetNameEditorVisible
+                                     ? "Hide preset name editor"
+                                     : "Rename preset"
+                        enabled: librariesCombobox.count > 0
+                        opacity: enabled ? 1 : 0.5
+                        onClicked: {
+                            listenerTabId.isPresetNameEditorVisible =
+                                !listenerTabId.isPresetNameEditorVisible
+                            if (listenerTabId.isPresetNameEditorVisible) {
+                                Qt.callLater(function() {
+                                    presetNameField.forceActiveFocus()
+                                    presetNameField.selectAll()
+                                })
+                            }
+                        }
+                    }
                 }
 
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
                     visible: testerModel.count > 0
+                             && listenerTabId.isPresetNameEditorVisible
 
                     Label {
                         text: "Name"
