@@ -39,13 +39,9 @@ Window {
     property bool hasQosMismatch: false
     property string qosMismatchText: ""
 
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646" : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2" : "#505050"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     visible: false
     width: 680
@@ -54,8 +50,7 @@ Window {
     minimumHeight: 380
     flags: Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.WindowTitleHint
            | Qt.WindowCloseButtonHint
-    color: rootWindow.isDarkMode
-           ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
     component DetailValue: ColumnLayout {
         property string label: ""
@@ -83,7 +78,7 @@ Window {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
         spacing: 12
 
         RowLayout {
@@ -101,7 +96,7 @@ Window {
                     text: detailWindow.structured
                           ? detailWindow.isWriter ? "Writer" : "Reader"
                           : qsTrId("Endpoint")
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
                 }
 
@@ -150,7 +145,7 @@ Window {
                     visible: detailWindow.structured
                     Layout.fillWidth: true
                     implicitHeight: identityGrid.implicitHeight + 20
-                    radius: 8
+                    radius: Constants.cardRadius
                     color: detailWindow.surfaceColor
                     border.width: 1
                     border.color: detailWindow.borderColor
@@ -196,7 +191,7 @@ Window {
                     visible: detailWindow.structured
                     Layout.fillWidth: true
                     implicitHeight: identifiersColumn.implicitHeight + 20
-                    radius: 8
+                    radius: Constants.cardRadius
                     color: detailWindow.surfaceColor
                     border.width: 1
                     border.color: detailWindow.borderColor
@@ -235,7 +230,7 @@ Window {
                 Rectangle {
                     Layout.fillWidth: true
                     implicitHeight: qosColumn.implicitHeight + 20
-                    radius: 8
+                    radius: Constants.cardRadius
                     color: detailWindow.surfaceColor
                     border.width: 1
                     border.color: detailWindow.hasQosMismatch

@@ -65,7 +65,7 @@ TreeView {
             height: parent.height
             width: parent.width - 10
             visible: row === treeView.currentRow
-            color: rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground
+            color: Constants.selectionBackgroundColor(rootWindow.isDarkMode)
             opacity: 0.3
             radius: 5
         }
@@ -77,7 +77,7 @@ TreeView {
             x: padding + (depth * indentation)
             anchors.verticalCenter: parent.verticalCenter
             visible: isTreeNode && hasChildren
-            iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+            iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
             direction: expanded ? "down" : "right"
 
             TapHandler {

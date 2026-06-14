@@ -22,13 +22,9 @@ import "qrc:/src/views/selection_details"
 Window {
     id: logWindowId
 
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646" : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2" : "#505050"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
     readonly property var logLevels: [
         "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"
     ]
@@ -41,8 +37,7 @@ Window {
     minimumWidth: 620
     flags: Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.WindowTitleHint
            | Qt.WindowCloseButtonHint
-    color: rootWindow.isDarkMode
-           ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
     property bool autoScrollEnabled: true
     property string logCache: ""
@@ -96,7 +91,7 @@ Window {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
         spacing: 12
 
         RowLayout {
@@ -110,7 +105,7 @@ Window {
 
             Label {
                 text: "Application Log"
-                font.pixelSize: 20
+                font.pixelSize: Constants.pageTitleFontSize
                 font.bold: true
             }
 
@@ -123,7 +118,7 @@ Window {
                 Layout.preferredHeight: 8
                 radius: 4
                 color: logWindowId.autoScrollEnabled
-                       ? "#36a269" : Constants.warningColor
+                       ? Constants.successColor : Constants.warningColor
             }
 
             Label {
@@ -167,7 +162,7 @@ Window {
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            radius: 8
+            radius: Constants.cardRadius
             clip: true
             color: logWindowId.surfaceColor
             border.width: 1
@@ -191,7 +186,7 @@ Window {
                     selectByMouse: true
                     selectByKeyboard: true
                     color: rootWindow.isDarkMode ? "#e4e4e4" : "#262626"
-                    selectionColor: "#274ff6"
+                    selectionColor: Constants.accentColor
                     selectedTextColor: "#ffffff"
                     padding: 4
 

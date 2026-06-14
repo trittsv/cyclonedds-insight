@@ -26,7 +26,7 @@ Window {
     title: "Shapes Demo"
     width: 800
     minimumWidth: 400
-    height: 480
+    height: 490
     minimumHeight: 400
     flags: Qt.Window
     property var shapesMap
@@ -34,12 +34,8 @@ Window {
     property var triangleScale: 0.7
     property bool paused: false
     property int currentControlTab: 0
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646"
-                                         : "#dddddd"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
 
     Component.onCompleted: {
         shapesMap = {};
@@ -146,11 +142,11 @@ Window {
     Rectangle {
         id: background
         anchors.fill: parent
-        color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+        color: Constants.mainContentColor(rootWindow.isDarkMode)
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 16
+            anchors.margins: Constants.pageMargin
             spacing: 14
 
             RowLayout {
@@ -163,7 +159,7 @@ Window {
 
                 Label {
                     text: qsTrId("general.shapedemo")
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
                 }
 
@@ -175,7 +171,7 @@ Window {
                     Layout.preferredWidth: 8
                     Layout.preferredHeight: 8
                     radius: 4
-                    color: shapeDemoViewId.paused ? "#d04a4a" : "#36a269"
+                    color: shapeDemoViewId.paused ? Constants.errorColor : Constants.successColor
                 }
 
                 Label {
@@ -221,7 +217,7 @@ Window {
                                 width: (leftColumnOverview.width - 3) / 2
                                 height: selected ? 30 : 27
                                 y: selected ? 0 : 3
-                                radius: 6
+                                radius: Constants.controlRadius
                                 color: selected
                                        ? shapeDemoViewId.surfaceColor
                                        : rootWindow.isDarkMode
@@ -230,9 +226,7 @@ Window {
                                 border.width: 1
                                 border.color: selected
                                               ? shapeDemoViewId.borderColor
-                                              : rootWindow.isDarkMode
-                                                ? Constants.darkSeparator
-                                                : Constants.lightSeparator
+                                              : Constants.separatorColor(rootWindow.isDarkMode)
                                 opacity: selected || tabMouseArea.containsMouse
                                          ? 1 : 0.78
 
@@ -270,7 +264,7 @@ Window {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        radius: 8
+                        radius: Constants.cardRadius
                         color: shapeDemoViewId.surfaceColor
                         border.width: 1
                         border.color: shapeDemoViewId.borderColor
@@ -298,7 +292,7 @@ Window {
                                             implicitHeight:
                                                 publishShapeLayout.implicitHeight
                                                 + 16
-                                            radius: 6
+                                            radius: Constants.controlRadius
                                             color: rootWindow.isDarkMode
                                                    ? "#292929"
                                                    : "#f8f8f8"
@@ -517,7 +511,7 @@ Window {
                                 Layout.fillWidth: true
                                 implicitHeight:
                                     subscribeShapeLayout.implicitHeight + 16
-                                radius: 6
+                                radius: Constants.controlRadius
                                 color: rootWindow.isDarkMode
                                        ? "#292929"
                                        : "#f8f8f8"
@@ -597,11 +591,11 @@ Window {
                                             ? "#eeeeee" : "#262626"
                                         readonly property color detailsColor:
                                             rootWindow.isDarkMode
-                                            ? "#d0d0d0" : "#555555"
+                                            ? Constants.darkMutedForeground : "#555555"
 
                                         width: ListView.view.width
                                         height: 44
-                                        radius: 6
+                                        radius: Constants.controlRadius
                                         color: rowMouseArea.containsMouse
                                                ? rootWindow.isDarkMode
                                                  ? "#3b3f49"
@@ -708,9 +702,9 @@ Window {
                                                     text: infoTooltip.text
                                                 }
                                                 background: Rectangle {
-                                                    border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                                                    border.color: Constants.borderColor(rootWindow.isDarkMode)
                                                     border.width: 1
-                                                    color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+                                                    color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
                                                 }
                                             }
                                         }
@@ -831,7 +825,7 @@ Window {
                     objectName: "shapesPlane"
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    radius: 8
+                    radius: Constants.cardRadius
                     color: rootWindow.isDarkMode ? "#111111" : "#ffffff"
                     border.width: 1
                     border.color: shapeDemoViewId.borderColor

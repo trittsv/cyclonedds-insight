@@ -21,7 +21,7 @@ import org.eclipse.cyclonedds.insight
 
 Rectangle {
     anchors.fill: parent
-    color: rootWindow.isDarkMode ? Constants.darkMainContentBackground : Constants.lightMainContentBackground
+    color: Constants.mainContentBackgroundColor(rootWindow.isDarkMode)
 
     AnimatedImage {
         id: animatedLoadingId

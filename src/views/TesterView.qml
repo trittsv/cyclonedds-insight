@@ -25,7 +25,7 @@ import "qrc:/src/views/selection_details"
 Rectangle {
     id: listenerTabId
     anchors.fill: parent
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
     property var component
     property var dataTreeModel: null
     property var sequenceModel: null
@@ -33,15 +33,9 @@ Rectangle {
     property bool isDescriptionExpanded: false
     property int currentDataIndex: 0
     property int testerRev: 0
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646"
-                                         : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2"
-                                                : "#4f4f4f"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     function refreshCurrentModels() {
         if (!testerModel || librariesCombobox.currentIndex < 0) {
@@ -70,7 +64,7 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
         spacing: 10
 
         RowLayout {
@@ -84,7 +78,7 @@ Rectangle {
 
             Label {
                 text: qsTrId("tab.tester")
-                font.pixelSize: 20
+                font.pixelSize: Constants.pageTitleFontSize
                 font.bold: true
             }
 
@@ -182,7 +176,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: presetConfigLayout.implicitHeight + 20
-            radius: 8
+            radius: Constants.cardRadius
             color: listenerTabId.surfaceColor
             border.width: 1
             border.color: listenerTabId.borderColor
@@ -324,8 +318,8 @@ Rectangle {
                             radius: 4
                             color: (testerRev, testerModel.getIsStarted(
                                         librariesCombobox.currentIndex))
-                                   ? "#36a269"
-                                   : "#d04a4a"
+                                   ? Constants.successColor
+                                   : Constants.errorColor
                         }
 
                         Label {
@@ -404,7 +398,7 @@ Rectangle {
                                 anchors.right: parent.right
                                 anchors.bottom: parent.bottom
                                 height: 1
-                                color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
+                                color: Constants.separatorColor(rootWindow.isDarkMode)
                                 opacity: descriptionMouseArea.containsMouse ? 1 : 0.6
                             }
 
@@ -478,7 +472,7 @@ Rectangle {
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
                     height: 1
-                    color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
+                    color: Constants.separatorColor(rootWindow.isDarkMode)
                 }
 
                 ListView {
@@ -500,13 +494,11 @@ Rectangle {
                         radius: 5
                         color: selected
                                ? listenerTabId.surfaceColor
-                               : (rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor)
+                               : (Constants.cardBackgroundColor(rootWindow.isDarkMode))
                         border.width: 1
                         border.color: selected
                                       ? listenerTabId.borderColor
-                                      : (rootWindow.isDarkMode
-                                         ? Constants.darkSeparator
-                                         : Constants.lightSeparator)
+                                      : (Constants.separatorColor(rootWindow.isDarkMode))
                         opacity: selected || dataItemTabMouseArea.containsMouse ? 1 : 0.75
 
                         Rectangle {
@@ -589,9 +581,9 @@ Rectangle {
                                 text: dataItemTabTooltip.text
                             }
                             background: Rectangle {
-                                border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                                border.color: Constants.borderColor(rootWindow.isDarkMode)
                                 border.width: 1
-                                color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+                                color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
                             }
                         }
                     }
@@ -622,7 +614,7 @@ Rectangle {
                         width: parent.width
                         height: 2
                         radius: 1
-                        color: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                        color: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                     }
 
                     Rectangle {
@@ -630,7 +622,7 @@ Rectangle {
                         width: 2
                         height: parent.height
                         radius: 1
-                        color: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                        color: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                     }
                 }
             }
@@ -675,7 +667,7 @@ Rectangle {
                         radius: 1
                         color: duplicateDataItemButton.palette.button
                         border.width: 1.5
-                        border.color: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                        border.color: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                     }
                 }
 
@@ -689,9 +681,9 @@ Rectangle {
                         text: duplicateDataItemTooltip.text
                     }
                     background: Rectangle {
-                        border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+                        border.color: Constants.borderColor(rootWindow.isDarkMode)
                         border.width: 1
-                        color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+                        color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
                     }
                 }
             }
@@ -714,7 +706,7 @@ Rectangle {
                     radius: 1
                     z: 1
                     color: parent.enabled
-                           ? (rootWindow.isDarkMode ? "#d0d0d0" : "#505050")
+                           ? (Constants.mutedForegroundColor(rootWindow.isDarkMode))
                            : (rootWindow.isDarkMode ? "#606060" : "#a0a0a0")
                 }
             }
@@ -725,7 +717,7 @@ Rectangle {
             color: listenerTabId.surfaceColor
             Layout.fillWidth: true
             Layout.fillHeight: true
-            radius: 8
+            radius: Constants.cardRadius
             border.width: 1
             border.color: listenerTabId.borderColor
             clip: true
@@ -928,7 +920,7 @@ Rectangle {
                         id: background
                         anchors.fill: parent
                         visible: row === treeView.currentRow
-                        color: rootWindow.isDarkMode ? Constants.darkSelectionBackground : Constants.lightSelectionBackground
+                        color: Constants.selectionBackgroundColor(rootWindow.isDarkMode)
                         opacity: 0.3
                         radius: 5
                     }
@@ -940,7 +932,7 @@ Rectangle {
                         x: padding + (depth * indentation)
                         anchors.verticalCenter: parent.verticalCenter
                         visible: isTreeNode && hasChildren
-                        iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                        iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                         direction: expanded ? "down" : "right"
 
                         TapHandler {
@@ -1087,7 +1079,7 @@ Rectangle {
             Layout.preferredHeight: 46
             visible: testerModel.count > 0
             enabled: (testerRev, testerModel.getIsStarted(librariesCombobox.currentIndex))
-            radius: 8
+            radius: Constants.cardRadius
             color: listenerTabId.surfaceColor
             border.width: 1
             border.color: listenerTabId.borderColor

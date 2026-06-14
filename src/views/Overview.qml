@@ -35,7 +35,7 @@ SplitView {
         
         Rectangle {
             id: domainSplit
-            color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+            color: Constants.overviewBackgroundColor(rootWindow.isDarkMode)
 
             SplitView.minimumHeight: 50
             SplitView.fillHeight: true
@@ -45,7 +45,7 @@ SplitView {
 
         Rectangle {
             id: datamodelSplit
-            color: rootWindow.isDarkMode ? Constants.darkOverviewBackground : Constants.lightOverviewBackground
+            color: Constants.overviewBackgroundColor(rootWindow.isDarkMode)
 
             SplitView.minimumHeight: 50
             SplitView.preferredHeight: parent.height / 3
@@ -58,7 +58,7 @@ SplitView {
         id: centerItem
         SplitView.minimumWidth: 50
         SplitView.fillWidth: true
-        color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+        color: Constants.mainContentColor(rootWindow.isDarkMode)
 
         Column {
             anchors.fill: parent
@@ -72,7 +72,7 @@ SplitView {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: rootWindow.isDarkMode ? Constants.darkHeaderBackground : Constants.lightHeaderBackground
+                    color: Constants.headerBackgroundColor(rootWindow.isDarkMode)
                 }
 
                 Row {
@@ -145,7 +145,7 @@ SplitView {
                             Layout.topMargin: 4
                             text: qsTrId("general.nothing.selected")
                             horizontalAlignment: Text.AlignHCenter
-                            font.pixelSize: 20
+                            font.pixelSize: Constants.pageTitleFontSize
                             font.bold: true
                         }
 

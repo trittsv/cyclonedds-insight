@@ -25,15 +25,11 @@ import "qrc:/src/views/elements"
 Rectangle {
     id: listenerTabId
     anchors.fill: parent
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
     property bool started: true
     property bool autoScrollEnabled: true
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646"
-                                         : "#dddddd"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
 
     Connections {
         target: receiverProxyModel
@@ -52,7 +48,7 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
         spacing: 10
 
         RowLayout {
@@ -66,7 +62,7 @@ Rectangle {
 
             Label {
                 text: qsTrId("tab.listener")
-                font.pixelSize: 20
+                font.pixelSize: Constants.pageTitleFontSize
                 font.bold: true
             }
 
@@ -78,7 +74,7 @@ Rectangle {
                 Layout.preferredWidth: 8
                 Layout.preferredHeight: 8
                 radius: 4
-                color: listenerTabId.started ? "#36a269" : "#d04a4a"
+                color: listenerTabId.started ? Constants.successColor : Constants.errorColor
             }
 
             Label {
@@ -161,7 +157,7 @@ Rectangle {
             color: listenerTabId.surfaceColor
             Layout.fillWidth: true
             Layout.fillHeight: true
-            radius: 8
+            radius: Constants.cardRadius
             border.width: 1
             border.color: listenerTabId.borderColor
 
@@ -183,7 +179,7 @@ Rectangle {
                         visible: index > 0
                         width: parent.width
                         height: 1
-                        color: rootWindow.isDarkMode ? Constants.darkSeparator : Constants.lightSeparator
+                        color: Constants.separatorColor(rootWindow.isDarkMode)
                     }
                     Item {
                         height: index > 0 ? 4 : 0
@@ -290,10 +286,10 @@ Rectangle {
         parent: Overlay.overlay
 
         background: Rectangle {
-            radius: 8
+            radius: Constants.cardRadius
             border.width: 1
             border.color: "#999"
-            color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+            color: Constants.mainContentColor(rootWindow.isDarkMode)
         }
 
         onClosed: {

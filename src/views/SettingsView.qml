@@ -22,17 +22,11 @@ import "qrc:/src/views/selection_details"
 
 Rectangle {
     id: settingsViewId
-    color: rootWindow.isDarkMode ? Constants.darkMainContent : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
     property int port: 8080
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646"
-                                         : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2"
-                                                : "#4f4f4f"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     Settings {
         id: proxySettings
@@ -70,7 +64,7 @@ Rectangle {
 
                 Label {
                     text: qsTrId("general.settings")
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
                 }
 
@@ -82,7 +76,7 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: configurationLayout.implicitHeight + 24
-                radius: 8
+                radius: Constants.cardRadius
                 color: settingsViewId.surfaceColor
                 border.width: 1
                 border.color: settingsViewId.borderColor
@@ -97,15 +91,14 @@ Rectangle {
 
                     Label {
                         text: "Configuration"
+                        font.pixelSize: Constants.sectionTitleFontSize
                         font.bold: true
                     }
 
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 1
-                        color: rootWindow.isDarkMode
-                               ? Constants.darkSeparator
-                               : Constants.lightSeparator
+                        color: Constants.separatorColor(rootWindow.isDarkMode)
                     }
 
                     RowLayout {
@@ -171,7 +164,7 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: appearanceLayout.implicitHeight + 24
-                radius: 8
+                radius: Constants.cardRadius
                 color: settingsViewId.surfaceColor
                 border.width: 1
                 border.color: settingsViewId.borderColor
@@ -186,6 +179,7 @@ Rectangle {
 
                     Label {
                         text: qsTrId("settings.appearance")
+                        font.pixelSize: Constants.sectionTitleFontSize
                         font.bold: true
                     }
 
@@ -224,7 +218,7 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: proxyLayout.implicitHeight + 24
-                radius: 8
+                radius: Constants.cardRadius
                 color: settingsViewId.surfaceColor
                 border.width: 1
                 border.color: settingsViewId.borderColor
@@ -242,6 +236,7 @@ Rectangle {
 
                         Label {
                             text: qsTrId("settings.proxy.settings")
+                            font.pixelSize: Constants.sectionTitleFontSize
                             font.bold: true
                         }
 
@@ -308,7 +303,7 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: domainsLayout.implicitHeight + 24
-                radius: 8
+                radius: Constants.cardRadius
                 color: settingsViewId.surfaceColor
                 border.width: 1
                 border.color: settingsViewId.borderColor
@@ -323,6 +318,7 @@ Rectangle {
 
                     Label {
                         text: qsTrId("settings.default_domains.label")
+                        font.pixelSize: Constants.sectionTitleFontSize
                         font.bold: true
                     }
 

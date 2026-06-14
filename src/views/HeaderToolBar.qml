@@ -37,7 +37,7 @@ ToolBar {
 
     background: Rectangle {
         anchors.fill: parent
-        color: rootWindow.isDarkMode ? Constants.darkHeaderBackground : Constants.lightHeaderBackground
+        color: Constants.headerBackgroundColor(rootWindow.isDarkMode)
     }
 
     Connections {
@@ -114,7 +114,7 @@ ToolBar {
                 width: 18
                 height: 18
                 z: 1
-                iconColor: rootWindow.isDarkMode ? "#d0d0d0" : "#505050"
+                iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
             }
 
             Menu {

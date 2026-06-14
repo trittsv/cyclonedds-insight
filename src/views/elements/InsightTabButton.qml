@@ -35,8 +35,7 @@ TabButton {
         id: tabBackground
         radius: 7
         color: control.checked
-               ? rootWindow.isDarkMode
-                 ? Constants.darkMainContent : Constants.lightMainContent
+               ? Constants.mainContentColor(rootWindow.isDarkMode)
                : control.hovered
                  ? rootWindow.isDarkMode ? "#454545" : "#c9c7c7"
                  : rootWindow.isDarkMode ? "#383838" : "#dcdcdc"
@@ -109,7 +108,7 @@ TabButton {
             anchors.topMargin: 1
             height: 3
             radius: 1
-            color: "#274ff6"
+            color: Constants.accentColor
             visible: control.checked
         }
     }

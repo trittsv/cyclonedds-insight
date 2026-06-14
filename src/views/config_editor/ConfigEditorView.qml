@@ -24,28 +24,20 @@ import "qrc:/src/views/selection_details"
 Rectangle {
     id: configEditorView
 
-    color: rootWindow.isDarkMode
-           ? Constants.darkMainContent
-           : Constants.lightMainContent
+    color: Constants.mainContentColor(rootWindow.isDarkMode)
 
     property string fileContent: ""
     property string lastSavedTime: ""
     property bool configFileAvailable: false
     property int currentTab: 0
 
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
-    readonly property color borderColor: rootWindow.isDarkMode
-                                         ? "#464646"
-                                         : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2"
-                                                : "#4f4f4f"
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
+    readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
+    readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
+        anchors.margins: Constants.pageMargin
         spacing: 0
 
         RowLayout {
@@ -59,7 +51,7 @@ Rectangle {
 
             Label {
                 text: qsTrId("general.configeditor")
-                font.pixelSize: 20
+                font.pixelSize: Constants.pageTitleFontSize
                 font.bold: true
             }
 
@@ -91,7 +83,7 @@ Rectangle {
                     width: Math.max(150, tabLabel.implicitWidth + 32)
                     height: selected ? 30 : 27
                     y: selected ? 0 : 3
-                    radius: 6
+                    radius: Constants.controlRadius
                     color: selected
                            ? configEditorView.surfaceColor
                            : rootWindow.isDarkMode
@@ -100,9 +92,7 @@ Rectangle {
                     border.width: 1
                     border.color: selected
                                   ? configEditorView.borderColor
-                                  : rootWindow.isDarkMode
-                                    ? Constants.darkSeparator
-                                    : Constants.lightSeparator
+                                  : Constants.separatorColor(rootWindow.isDarkMode)
                     opacity: selected || tabMouseArea.containsMouse ? 1 : 0.78
 
                     Rectangle {
@@ -137,7 +127,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            radius: 8
+            radius: Constants.cardRadius
             color: configEditorView.surfaceColor
             border.width: 1
             border.color: configEditorView.borderColor
@@ -192,7 +182,7 @@ Rectangle {
                         Rectangle {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            radius: 6
+                            radius: Constants.controlRadius
                             color: rootWindow.isDarkMode ? "#191919" : "#ffffff"
                             border.width: 1
                             border.color: configEditorView.borderColor
@@ -382,9 +372,7 @@ Rectangle {
                                     Rectangle {
                                         anchors.fill: parent
                                         visible: row === treeView.currentRow
-                                        color: rootWindow.isDarkMode
-                                               ? Constants.darkSelectionBackground
-                                               : Constants.lightSelectionBackground
+                                        color: Constants.selectionBackgroundColor(rootWindow.isDarkMode)
                                         opacity: 0.3
                                         radius: 5
                                     }
@@ -395,9 +383,7 @@ Rectangle {
                                         x: padding + depth * indentation
                                         anchors.verticalCenter: parent.verticalCenter
                                         visible: isTreeNode && hasChildren
-                                        iconColor: rootWindow.isDarkMode
-                                                   ? "#d0d0d0"
-                                                   : "#505050"
+                                        iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
                                         direction: expanded ? "down" : "right"
 
                                         TapHandler {
@@ -434,7 +420,7 @@ Rectangle {
                             color: rootWindow.isDarkMode ? "#191919" : "#ffffff"
                             border.width: 1
                             border.color: configEditorView.borderColor
-                            radius: 6
+                            radius: Constants.controlRadius
                             clip: true
 
                             ScrollView {

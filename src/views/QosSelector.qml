@@ -39,9 +39,7 @@ Popup {
     property int entityType
     property int qosSourceIndex: 0
     property int qosPolicyIndex: 0
-    readonly property color surfaceColor: rootWindow.isDarkMode
-                                          ? Constants.darkCardBackgroundColor
-                                          : Constants.lightCardBackgroundColor
+    readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
     readonly property color borderColor: rootWindow.isDarkMode
                                          ? "#505050" : "#d5d5d5"
     readonly property color secondaryTextColor: rootWindow.isDarkMode
@@ -49,9 +47,7 @@ Popup {
 
     background: Rectangle {
         radius: 10
-        color: rootWindow.isDarkMode
-               ? Constants.darkMainContent
-               : Constants.lightMainContent
+        color: Constants.mainContentColor(rootWindow.isDarkMode)
         border.width: 1
         border.color: readerTesterDiaId.borderColor
     }
@@ -131,14 +127,14 @@ Popup {
                     text: readerTesterDiaId.entityType === 3
                           ? "Create Reader" : "Create Writer"
                     font.bold: true
-                    font.pixelSize: 20
+                    font.pixelSize: Constants.pageTitleFontSize
                 }
             }
 
             Rectangle {
                 width: parent.width
                 implicitHeight: endpointBasics.implicitHeight + 20
-                radius: 8
+                radius: Constants.cardRadius
                 color: readerTesterDiaId.surfaceColor
                 border.width: 1
                 border.color: readerTesterDiaId.borderColor
@@ -313,7 +309,7 @@ Popup {
                             width: (parent.width - 6) / 3
                             height: selected ? 33 : 29
                             y: selected ? 0 : 3
-                            radius: 6
+                            radius: Constants.controlRadius
                             color: selected
                                    ? readerTesterDiaId.surfaceColor
                                    : policyTabMouseArea.containsMouse
@@ -360,7 +356,7 @@ Popup {
                 Rectangle {
                     width: parent.width
                     implicitHeight: mainLayoutId.height + 20
-                    radius: 8
+                    radius: Constants.cardRadius
                     color: readerTesterDiaId.surfaceColor
                     border.width: 1
                     border.color: readerTesterDiaId.borderColor
@@ -1497,7 +1493,7 @@ Popup {
                 visible: readerTesterDiaId.qosSourceIndex === 1
                 width: parent.width
                 implicitHeight: providerContent.implicitHeight + 20
-                radius: 8
+                radius: Constants.cardRadius
                 color: readerTesterDiaId.surfaceColor
                 border.width: 1
                 border.color: readerTesterDiaId.borderColor

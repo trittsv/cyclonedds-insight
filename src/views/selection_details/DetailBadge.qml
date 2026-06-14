@@ -13,17 +13,18 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "qrc:/src/views"
 
 Rectangle {
     id: badge
 
     property string kind: "participant"
     property real iconScale: 1.0
-    readonly property color iconColor: "#274ff6"
+    readonly property color iconColor: Constants.accentColor
 
     implicitWidth: 24
     implicitHeight: 24
-    radius: 7
+    radius: Constants.badgeRadius
     color: rootWindow.isDarkMode ? "#17254f" : "#e6ebff"
 
     Loader {

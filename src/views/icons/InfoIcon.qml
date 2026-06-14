@@ -53,9 +53,9 @@ Item {
             text: infoIconTooltip.text
         }
         background: Rectangle {
-            border.color: rootWindow.isDarkMode ? Constants.darkBorderColor : Constants.lightBorderColor
+            border.color: Constants.borderColor(rootWindow.isDarkMode)
             border.width: 1
-            color: rootWindow.isDarkMode ? Constants.darkCardBackgroundColor : Constants.lightCardBackgroundColor
+            color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
         }
     }
 
