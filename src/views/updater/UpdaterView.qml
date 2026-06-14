@@ -174,7 +174,6 @@ Window {
                     text: "Preparing update..."
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
-                    font.pixelSize: 12
                     font.bold: true
                 }
 

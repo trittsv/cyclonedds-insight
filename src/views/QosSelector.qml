@@ -131,7 +131,7 @@ Popup {
                     text: readerTesterDiaId.entityType === 3
                           ? "Create Reader" : "Create Writer"
                     font.bold: true
-                    font.pixelSize: 22
+                    font.pixelSize: 20
                 }
             }
 
@@ -158,7 +158,6 @@ Popup {
                         Layout.column: 0
                         text: "Domain"
                         color: readerTesterDiaId.secondaryTextColor
-                        font.pixelSize: 11
                     }
                     TextField {
                         id: domainIdTextField
@@ -183,7 +182,6 @@ Popup {
                         Layout.column: 0
                         text: "Topic Type"
                         color: readerTesterDiaId.secondaryTextColor
-                        font.pixelSize: 11
                     }
                     ComboBox {
                         id: typeComboBox
@@ -211,7 +209,6 @@ Popup {
                         Layout.column: 0
                         text: "Topic Name"
                         color: readerTesterDiaId.secondaryTextColor
-                        font.pixelSize: 11
                     }
                     TextField {
                         id: topicNameTextFieldId
@@ -226,7 +223,6 @@ Popup {
             Label {
                 text: "Quality of Service (QoS)"
                 font.bold: true
-                font.pixelSize: 13
             }
 
             Rectangle {
@@ -270,7 +266,6 @@ Popup {
                             Label {
                                 anchors.centerIn: parent
                                 text: sourceOption.modelData
-                                font.pixelSize: 11
                                 font.bold: sourceOption.selected
                             }
 
@@ -346,7 +341,6 @@ Popup {
                             Label {
                                 anchors.centerIn: parent
                                 text: policyTab.modelData
-                                font.pixelSize: 11
                                 font.bold: policyTab.selected
                             }
 
@@ -1519,7 +1513,6 @@ Popup {
                     Label {
                         text: qsTrId("qos.provider.file")
                         font.bold: true
-                        font.pixelSize: 11
                     }
 
                     RowLayout {
@@ -1542,7 +1535,6 @@ Popup {
                     Label {
                         text: qsTrId("qos.provider.profile-key")
                         font.bold: true
-                        font.pixelSize: 11
                     }
                     ComboBox {
                         id: qosProviderKeyComboBox
@@ -1586,7 +1578,6 @@ Popup {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         color: readerTesterDiaId.secondaryTextColor
-                        font.pixelSize: 11
                         text: qsTrId("qos.provider.description")
                         enabled:
                             readerTesterDiaId.qosProviderFilePath.length > 0

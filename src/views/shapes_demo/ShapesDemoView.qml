@@ -40,9 +40,6 @@ Window {
     readonly property color borderColor: rootWindow.isDarkMode
                                          ? "#464646"
                                          : "#dddddd"
-    readonly property color secondaryTextColor: rootWindow.isDarkMode
-                                                ? "#c2c2c2"
-                                                : "#4f4f4f"
 
     Component.onCompleted: {
         shapesMap = {};
@@ -183,7 +180,6 @@ Window {
 
                 Label {
                     text: shapeDemoViewId.paused ? "Paused" : "Running"
-                    font.pixelSize: 11
                     font.bold: true
                 }
             }
@@ -254,7 +250,6 @@ Window {
                                 Label {
                                     anchors.centerIn: parent
                                     text: controlTab.modelData
-                                    font.pixelSize: 12
                                     font.bold: controlTab.selected
                                 }
 
@@ -318,7 +313,6 @@ Window {
 
                                     Label {
                                         text: qsTrId("demo.shapes.publish.shape")
-                                        font.pixelSize: 12
                                         font.bold: true
                                     }
 
@@ -334,8 +328,6 @@ Window {
 
                                             Label {
                                                 text: qsTrId("demo.shapes.shape")
-                                                font.pixelSize: 10
-                                                color: shapeDemoViewId.secondaryTextColor
                                             }
 
                                             ComboBox {
@@ -355,8 +347,6 @@ Window {
 
                                             Label {
                                                 text: qsTrId("demo.shapes.color")
-                                                font.pixelSize: 10
-                                                color: shapeDemoViewId.secondaryTextColor
                                             }
 
                                             ComboBox {
@@ -377,10 +367,9 @@ Window {
                                             spacing: 5
 
                                             Label {
-                                                Layout.preferredWidth: 72
+                                                Layout.preferredWidth: 92
                                                 text: qsTrId(
                                                           "demo.shapes.size")
-                                                font.pixelSize: 10
                                                 elide: Text.ElideRight
                                             }
                                             Slider {
@@ -395,7 +384,6 @@ Window {
                                             Label {
                                                 Layout.preferredWidth: 22
                                                 text: sizeSlider.value
-                                                font.pixelSize: 10
                                                 horizontalAlignment:
                                                     Text.AlignRight
                                             }
@@ -406,10 +394,9 @@ Window {
                                             spacing: 5
 
                                             Label {
-                                                Layout.preferredWidth: 72
+                                                Layout.preferredWidth: 92
                                                 text: qsTrId(
                                                           "demo.shapes.speed")
-                                                font.pixelSize: 10
                                                 elide: Text.ElideRight
                                             }
                                             Slider {
@@ -424,7 +411,6 @@ Window {
                                             Label {
                                                 Layout.preferredWidth: 22
                                                 text: speedSlider.value
-                                                font.pixelSize: 10
                                                 horizontalAlignment:
                                                     Text.AlignRight
                                             }
@@ -436,10 +422,9 @@ Window {
                                             spacing: 5
 
                                             Label {
-                                                Layout.preferredWidth: 72
+                                                Layout.preferredWidth: 92
                                                 text: qsTrId(
                                                           "demo.shapes.angle")
-                                                font.pixelSize: 10
                                                 elide: Text.ElideRight
                                             }
                                             Slider {
@@ -455,7 +440,6 @@ Window {
                                                 Layout.preferredWidth: 22
                                                 text: rotationSlider.value
                                                       + "\u00B0"
-                                                font.pixelSize: 10
                                                 horizontalAlignment:
                                                     Text.AlignRight
                                             }
@@ -466,10 +450,9 @@ Window {
                                             spacing: 5
 
                                             Label {
-                                                Layout.preferredWidth: 72
+                                                Layout.preferredWidth: 92
                                                 text: qsTrId(
                                                           "demo.shapes.rotation.speed")
-                                                font.pixelSize: 10
                                                 elide: Text.ElideRight
                                             }
                                             Slider {
@@ -485,7 +468,6 @@ Window {
                                                 Layout.preferredWidth: 22
                                                 text:
                                                     rotationSpeedSlider.value
-                                                font.pixelSize: 10
                                                 horizontalAlignment:
                                                     Text.AlignRight
                                             }
@@ -497,7 +479,6 @@ Window {
 
                                         Label {
                                             text: qsTrId("demo.shapes.fill")
-                                            font.pixelSize: 10
                                         }
                                         ComboBox {
                                             id: fillKindSelector
@@ -551,7 +532,6 @@ Window {
 
                                     Label {
                                         text: qsTrId("demo.shapes.subscribe.shape")
-                                        font.pixelSize: 12
                                         font.bold: true
                                     }
 
@@ -560,7 +540,6 @@ Window {
 
                                         Label {
                                             text: qsTrId("demo.shapes.shape")
-                                            font.pixelSize: 10
                                         }
 
                                         ComboBox {
@@ -647,7 +626,6 @@ Window {
                                             anchors.rightMargin: 8
                                             color: manageDelegate.textColor
                                             elide: Text.ElideRight
-                                            font.pixelSize: 11
                                         }
 
                                         MouseArea {
@@ -688,7 +666,6 @@ Window {
                                                           "endpoint.details")
                                                 color:
                                                     manageDelegate.detailsColor
-                                                font.pixelSize: 10
                                                 font.bold: true
                                             }
 
@@ -874,7 +851,6 @@ Window {
                             id: pausedLabel
                             anchors.centerIn: parent
                             text: "Paused"
-                            font.pixelSize: 11
                             font.bold: true
                             color: rootWindow.isDarkMode
                                    ? "#ffaaaa"
@@ -901,7 +877,8 @@ Window {
     Rectangle {
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        anchors.margins: 10
+        anchors.rightMargin: 18
+        anchors.bottomMargin: 18
 
         color: "transparent"
 

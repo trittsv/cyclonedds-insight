@@ -128,7 +128,6 @@ Window {
 
             Label {
                 text: logWindowId.autoScrollEnabled ? "Live" : "Paused"
-                font.pixelSize: 11
                 font.bold: true
             }
         }
@@ -154,7 +153,6 @@ Window {
 
             Label {
                 text: "Log level"
-                font.pixelSize: 10
                 color: logWindowId.secondaryTextColor
             }
 
@@ -192,11 +190,6 @@ Window {
                     wrapMode: TextEdit.Wrap
                     selectByMouse: true
                     selectByKeyboard: true
-                    font.family: Qt.platform.os === "windows"
-                                 ? "Consolas"
-                                 : Qt.platform.os === "osx"
-                                   ? "Menlo" : "DejaVu Sans Mono"
-                    font.pixelSize: 11
                     color: rootWindow.isDarkMode ? "#e4e4e4" : "#262626"
                     selectionColor: "#274ff6"
                     selectedTextColor: "#ffffff"

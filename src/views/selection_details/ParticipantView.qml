@@ -93,19 +93,16 @@ Rectangle {
 
                 Label {
                     text: qsTrId("participant.domain") + ":"
-                    font.pixelSize: 10
                     color: participantViewId.secondaryTextColor
                 }
 
                 Label {
                     text: participantViewId.domainId
-                    font.pixelSize: 11
                     font.bold: true
                 }
 
                 Label {
                     text: qsTrId("participant.vendor") + ":"
-                    font.pixelSize: 10
                     color: participantViewId.secondaryTextColor
                     Layout.leftMargin: 12
                 }
@@ -115,7 +112,6 @@ Rectangle {
                     text: participantViewId.vendorName.length > 0
                           ? participantViewId.vendorName
                           : qsTrId("participant.unknown")
-                    font.pixelSize: 11
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -128,7 +124,6 @@ Rectangle {
 
                 Label {
                     text: qsTrId("participant.key") + ":"
-                    font.pixelSize: 10
                     color: participantViewId.secondaryTextColor
                 }
 
@@ -137,7 +132,6 @@ Rectangle {
                     Layout.preferredHeight: 17
                     text: participantViewId.participantKey
                     color: rootWindow.isDarkMode ? "#e0e0e0" : "#303030"
-                    font.pixelSize: 11
                     minimumPixelSize: 8
                     fontSizeMode: Text.HorizontalFit
                     verticalAlignment: Text.AlignVCenter
@@ -163,7 +157,6 @@ Rectangle {
                     Layout.preferredHeight: 36
                     Layout.leftMargin: 12
                     text: qsTrId("participant.qos")
-                    font.pixelSize: 13
                     font.bold: true
                     verticalAlignment: Text.AlignVCenter
                 }
@@ -185,7 +178,6 @@ Rectangle {
                         visible: !participantViewId.qosLoaded
                         text: qsTrId("participant.loading")
                         color: participantViewId.secondaryTextColor
-                        font.pixelSize: 11
                     }
 
                     ScrollView {
@@ -208,7 +200,6 @@ Rectangle {
                             color: rootWindow.isDarkMode
                                    ? "#e0e0e0"
                                    : "#303030"
-                            font.pixelSize: 11
                         }
                     }
                 }

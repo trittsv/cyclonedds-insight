@@ -120,7 +120,6 @@ Rectangle {
                         id: tabLabel
                         anchors.centerIn: parent
                         text: tab.modelData
-                        font.pixelSize: 13
                         font.bold: tab.selected
                     }
 
@@ -165,7 +164,6 @@ Rectangle {
 
                                 Label {
                                     text: "CYCLONEDDS_URI"
-                                    font.pixelSize: 10
                                     color: configEditorView.secondaryTextColor
                                 }
 
@@ -236,7 +234,6 @@ Rectangle {
                                     width: parent.width
                                     horizontalAlignment: Text.AlignHCenter
                                     text: "No configuration file was found in CYCLONEDDS_URI."
-                                    font.pixelSize: 13
                                     font.bold: true
                                     wrapMode: Text.Wrap
                                 }
@@ -245,7 +242,6 @@ Rectangle {
                                     width: parent.width
                                     horizontalAlignment: Text.AlignHCenter
                                     text: "Create a new XML file and configure the environment variable to use it."
-                                    font.pixelSize: 10
                                     color: configEditorView.secondaryTextColor
                                     wrapMode: Text.Wrap
                                 }
@@ -278,7 +274,6 @@ Rectangle {
 
                             Label {
                                 text: "Changes take effect after restarting the application."
-                                font.pixelSize: 10
                                 color: configEditorView.secondaryTextColor
                             }
 
@@ -291,7 +286,6 @@ Rectangle {
                                       ? "Automatically saved: "
                                         + configEditorView.lastSavedTime
                                       : "Automatically saved"
-                                font.pixelSize: 10
                                 color: configEditorView.secondaryTextColor
                             }
                         }

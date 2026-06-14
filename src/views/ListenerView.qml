@@ -19,6 +19,7 @@ import QtQuick.Dialogs
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/selection_details"
+import "qrc:/src/views/elements"
 
 
 Rectangle {
@@ -84,7 +85,6 @@ Rectangle {
                 text: listenerTabId.started
                       ? qsTrId("statistic.status.running")
                       : qsTrId("statistic.status.stopped")
-                font.pixelSize: 11
                 font.bold: true
             }
         }
@@ -371,14 +371,15 @@ Rectangle {
                             Label {
                                 text: model.topicType
                                 color: "#666"
-                                font.pixelSize: 12
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
                         }
 
-                        Button {
-                            text: model.stoppedReader ? "Start" : "Stop"
+                        IconActionButton {
+                            icon: model.stoppedReader ? "play" : "stop"
+                            tooltipText: model.stoppedReader
+                                         ? "Start reader" : "Stop reader"
                             onClicked: {
                                 if (model.stoppedReader) {
                                     listenerModel.startReader(model.readerId)
@@ -387,8 +388,11 @@ Rectangle {
                                 }
                             }
                         }
-                        Button {
-                            text: "Delete"
+
+                        IconActionButton {
+                            icon: "delete"
+                            tooltipText: "Delete reader"
+                            destructive: true
                             onClicked: {
                                 listenerModel.deleteReader(model.readerId)
                             }

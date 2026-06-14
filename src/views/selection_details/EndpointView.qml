@@ -65,13 +65,11 @@ Rectangle {
 
                 Label {
                     text: qsTrId("Domain ID: ")
-                    font.pixelSize: 10
                     color: endpointViewId.secondaryTextColor
                 }
 
                 Label {
                     text: endpointViewId.domainId
-                    font.pixelSize: 11
                     font.bold: true
                 }
             }
@@ -83,7 +81,6 @@ Rectangle {
 
                 Label {
                     text: qsTrId("Endpoint-Key: ")
-                    font.pixelSize: 10
                     color: endpointViewId.secondaryTextColor
                 }
 
@@ -92,7 +89,6 @@ Rectangle {
                     Layout.preferredHeight: 17
                     text: endpointViewId.endpointKey
                     color: rootWindow.isDarkMode ? "#e0e0e0" : "#303030"
-                    font.pixelSize: 11
                     minimumPixelSize: 8
                     fontSizeMode: Text.HorizontalFit
                     verticalAlignment: Text.AlignVCenter

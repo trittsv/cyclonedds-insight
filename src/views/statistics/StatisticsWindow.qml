@@ -71,7 +71,6 @@ Rectangle {
                     text: statisticsMainViewId.statsRunning
                           ? qsTrId("statistic.status.running")
                           : qsTrId("statistic.status.stopped")
-                    font.pixelSize: 11
                     font.bold: true
                 }
             }
@@ -80,7 +79,6 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.leftMargin: 14
                 text: qsTrId("statistic.monitor.usage.hint")
-                font.pixelSize: 10
                 color: statisticsMainViewId.secondaryTextColor
                 elide: Text.ElideRight
             }
