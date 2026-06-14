@@ -37,7 +37,7 @@ Rectangle {
         Rectangle {
             color: Constants.headerBackgroundColor(rootWindow.isDarkMode)
             Layout.fillWidth: true
-            Layout.preferredHeight: importBtnId.height
+            Layout.preferredHeight: 30
 
             RowLayout {
                 anchors.fill: parent
