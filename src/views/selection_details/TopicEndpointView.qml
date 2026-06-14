@@ -162,19 +162,16 @@ Rectangle {
 
                 Label {
                     text: "Domain ID:"
-                    font.pixelSize: 10
                     color: topicEndpointView.secondaryTextColor
                 }
 
                 Label {
                     text: domainId
-                    font.pixelSize: 11
                     font.bold: true
                 }
 
                 Label {
                     text: "Topic Name:"
-                    font.pixelSize: 10
                     color: topicEndpointView.secondaryTextColor
                     Layout.leftMargin: 12
                 }
@@ -182,7 +179,6 @@ Rectangle {
                 Label {
                     Layout.fillWidth: true
                     text: topicName
-                    font.pixelSize: 11
                     font.bold: true
                     elide: Text.ElideRight
                 }
@@ -215,7 +211,6 @@ Rectangle {
                                 id: writerCountLabel
                                 anchors.centerIn: parent
                                 text: writerCount
-                                font.pixelSize: 10
                                 font.bold: true
                                 color: rootWindow.isDarkMode ? "#8cc8ff" : "#145c9e"
                             }
@@ -268,7 +263,6 @@ Rectangle {
                                 id: readerCountLabel
                                 anchors.centerIn: parent
                                 text: readerCount
-                                font.pixelSize: 10
                                 font.bold: true
                                 color: "#274ff6"
                             }

@@ -145,7 +145,7 @@ SplitView {
                             Layout.topMargin: 4
                             text: qsTrId("general.nothing.selected")
                             horizontalAlignment: Text.AlignHCenter
-                            font.pixelSize: 17
+                            font.pixelSize: 20
                             font.bold: true
                         }
 
@@ -154,7 +154,6 @@ SplitView {
                             text: qsTrId("details.selection.hint")
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.Wrap
-                            font.pixelSize: 11
                             color: rootWindow.isDarkMode
                                    ? "#b8b8b8" : "#5c5c5c"
                         }

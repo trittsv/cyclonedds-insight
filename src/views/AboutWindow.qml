@@ -55,13 +55,11 @@ Window {
 
         Label {
             text: versionRow.label
-            font.pixelSize: 10
             color: aboutWindow.secondaryTextColor
         }
 
         Label {
             text: versionRow.value
-            font.pixelSize: 10
             font.underline: versionRow.url.length > 0
             color: aboutWindow.secondaryTextColor
 
@@ -123,13 +121,12 @@ Window {
 
                 Label {
                     text: "Eclipse Cyclone DDS™"
-                    font.pixelSize: 11
                     color: aboutWindow.secondaryTextColor
                 }
 
                 Label {
                     text: "CycloneDDS Insight"
-                    font.pixelSize: 24
+                    font.pixelSize: 20
                     font.bold: true
                 }
 
@@ -189,7 +186,6 @@ Window {
                 Layout.fillWidth: true
                 text: "Thanks to all contributors of the Eclipse Cyclone DDS project ❤️"
                 wrapMode: Text.Wrap
-                font.pixelSize: 12
                 color: aboutWindow.secondaryTextColor
             }
 

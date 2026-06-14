@@ -190,7 +190,6 @@ Window {
                               : lastUpdateTime.length > 0
                                 ? "Last checked: " + lastUpdateTime
                                 : "Checks the configured release channel."
-                        font.pixelSize: 10
                         color: checkForUpdatesWindow.secondaryTextColor
                         wrapMode: Text.Wrap
                     }
@@ -199,7 +198,6 @@ Window {
                         visible: updateAvailable && !updateCheckRunning
                                  && !updateError
                         text: "Open build artifacts"
-                        font.pixelSize: 10
                         font.bold: true
                         color: "#274ff6"
 

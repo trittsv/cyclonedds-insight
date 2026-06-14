@@ -201,7 +201,6 @@ Rectangle {
 
                     Label {
                         text: "Preset"
-                        font.pixelSize: 10
                         font.bold: true
                         color: listenerTabId.secondaryTextColor
                     }
@@ -294,7 +293,6 @@ Rectangle {
 
                     Label {
                         text: "Name"
-                        font.pixelSize: 10
                         color: listenerTabId.secondaryTextColor
                     }
 
@@ -334,7 +332,6 @@ Rectangle {
                             Layout.fillWidth: true
                             text: testerModel.getDescriptionName(librariesCombobox.currentIndex)
                             wrapMode: Text.Wrap
-                            font.pixelSize: 11
                             font.bold: true
                         }
 
@@ -361,7 +358,6 @@ Rectangle {
 
                         Label {
                             text: qsTrId("tester.description")
-                            font.pixelSize: 10
                             color: listenerTabId.secondaryTextColor
                         }
 
@@ -750,7 +746,6 @@ Rectangle {
 
                         Label {
                             text: "Sequence"
-                            font.pixelSize: 13
                             font.bold: true
                         }
 

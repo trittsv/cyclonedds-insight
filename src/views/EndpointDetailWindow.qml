@@ -66,7 +66,6 @@ Window {
 
         Label {
             text: parent.label
-            font.pixelSize: 10
             color: detailWindow.secondaryTextColor
         }
 
@@ -75,7 +74,6 @@ Window {
             Layout.preferredHeight: contentHeight
             text: parent.value.length > 0 ? parent.value : "-"
             color: rootWindow.isDarkMode ? "#eeeeee" : "#262626"
-            font.pixelSize: 11
             readOnly: true
             wrapMode: TextEdit.WrapAnywhere
             selectByMouse: true
@@ -110,7 +108,6 @@ Window {
                 Label {
                     visible: detailWindow.structured
                     text: detailWindow.topicName
-                    font.pixelSize: 10
                     color: detailWindow.secondaryTextColor
                     elide: Text.ElideRight
                 }
@@ -133,7 +130,6 @@ Window {
                     id: mismatchLabel
                     anchors.centerIn: parent
                     text: "QoS mismatch"
-                    font.pixelSize: 10
                     font.bold: true
                 }
             }
@@ -215,7 +211,6 @@ Window {
 
                         Label {
                             text: "Identifiers"
-                            font.pixelSize: 12
                             font.bold: true
                         }
                         DetailValue {
@@ -258,7 +253,6 @@ Window {
                         Label {
                             text: detailWindow.structured
                                   ? "Quality of Service" : "Details"
-                            font.pixelSize: 12
                             font.bold: true
                         }
 
@@ -269,7 +263,6 @@ Window {
                             text: detailWindow.qosMismatchText
                             wrapMode: Text.Wrap
                             color: Constants.warningColor
-                            font.pixelSize: 10
                         }
 
                         TextEdit {
@@ -282,7 +275,6 @@ Window {
                             selectByMouse: true
                             color: rootWindow.isDarkMode
                                    ? "#e5e5e5" : "#303030"
-                            font.pixelSize: 11
                         }
                     }
                 }

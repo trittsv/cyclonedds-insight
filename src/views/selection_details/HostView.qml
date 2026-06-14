@@ -64,13 +64,11 @@ Rectangle {
 
                 Label {
                     text: qsTrId("Domain ID: ")
-                    font.pixelSize: 10
                     color: hostViewId.secondaryTextColor
                 }
 
                 Label {
                     text: hostViewId.domainId
-                    font.pixelSize: 11
                     font.bold: true
                 }
             }

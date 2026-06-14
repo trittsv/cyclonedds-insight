@@ -97,7 +97,6 @@ Rectangle {
 
                     Label {
                         text: "Configuration"
-                        font.pixelSize: 13
                         font.bold: true
                     }
 
@@ -119,7 +118,6 @@ Rectangle {
 
                             Label {
                                 text: "CYCLONEDDS_URI"
-                                font.pixelSize: 10
                                 color: settingsViewId.secondaryTextColor
                             }
 
@@ -149,14 +147,12 @@ Rectangle {
 
                             Label {
                                 text: qsTrId("settings.appdata.location")
-                                font.pixelSize: 11
                                 font.bold: true
                             }
 
                             Label {
                                 Layout.fillWidth: true
                                 text: StandardPaths.writableLocation(StandardPaths.AppDataLocation)
-                                font.pixelSize: 10
                                 color: settingsViewId.secondaryTextColor
                                 elide: Text.ElideMiddle
                             }
@@ -190,13 +186,11 @@ Rectangle {
 
                     Label {
                         text: qsTrId("settings.appearance")
-                        font.pixelSize: 13
                         font.bold: true
                     }
 
                     Label {
                         text: "Choose how the application follows the system color scheme."
-                        font.pixelSize: 10
                         color: settingsViewId.secondaryTextColor
                     }
 
@@ -248,7 +242,6 @@ Rectangle {
 
                         Label {
                             text: qsTrId("settings.proxy.settings")
-                            font.pixelSize: 13
                             font.bold: true
                         }
 
@@ -266,7 +259,6 @@ Rectangle {
 
                     Label {
                         text: "The proxy is used for update checks and downloading updates."
-                        font.pixelSize: 10
                         color: settingsViewId.secondaryTextColor
                     }
 
@@ -278,7 +270,6 @@ Rectangle {
 
                         Label {
                             text: "HTTP proxy"
-                            font.pixelSize: 10
                             color: settingsViewId.secondaryTextColor
                         }
 
@@ -291,7 +282,6 @@ Rectangle {
 
                         Label {
                             text: "Port"
-                            font.pixelSize: 10
                             color: settingsViewId.secondaryTextColor
                         }
 
@@ -333,14 +323,12 @@ Rectangle {
 
                     Label {
                         text: qsTrId("settings.default_domains.label")
-                        font.pixelSize: 13
                         font.bold: true
                     }
 
                     Label {
                         Layout.fillWidth: true
                         text: qsTrId("settings.default_domains.description")
-                        font.pixelSize: 10
                         color: settingsViewId.secondaryTextColor
                         wrapMode: Text.Wrap
                     }
