@@ -19,13 +19,26 @@ import QtQuick.Dialogs
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/statistics"
 import "qrc:/src/views/elements"
+import "qrc:/src/views/icons"
 import "qrc:/src/views/selection_details"
 
 
 SplitView {
+    id: overviewRoot
     orientation: Qt.Horizontal
 
     property var childView
+    property bool splitDetails: false
+    property bool splitStatistics: false
+    property bool splitTester: false
+    property bool splitListener: false
+    property bool splitModeActive: false
+    readonly property int splitViewCount:
+        (splitDetails ? 1 : 0)
+        + (splitStatistics ? 1 : 0)
+        + (splitTester ? 1 : 0)
+        + (splitListener ? 1 : 0)
+    readonly property bool multiViewEnabled: splitModeActive
 
     SplitView {
         orientation: Qt.Vertical
@@ -84,47 +97,169 @@ SplitView {
 
                     InsightTabButton {
                         tabText: qsTrId("tab.details")
-                        checked: bar.currentIndex === 0
-                        onClicked: bar.currentIndex = 0
+                        checked: overviewRoot.multiViewEnabled
+                                 ? overviewRoot.splitDetails
+                                 : bar.currentIndex === 0
+                        paneToggleMode: overviewRoot.multiViewEnabled
+                        paneIncluded: overviewRoot.splitDetails
+                        paneToggleToolTip:
+                            overviewRoot.tabToggleToolTip(0)
+                        onClicked: overviewRoot.activateView(0)
                         height: parent.height
                         width: 150
                     }
                     InsightTabButton {
                         tabText: qsTrId("tab.statistics")
-                        checked: bar.currentIndex === 1
-                        showLeftSeparator: bar.currentIndex !== 0
-                                           && bar.currentIndex !== 1
-                        onClicked: bar.currentIndex = 1
+                        checked: overviewRoot.multiViewEnabled
+                                 ? overviewRoot.splitStatistics
+                                 : bar.currentIndex === 1
+                        paneToggleMode: overviewRoot.multiViewEnabled
+                        paneIncluded: overviewRoot.splitStatistics
+                        paneToggleToolTip:
+                            overviewRoot.tabToggleToolTip(1)
+                        showLeftSeparator: overviewRoot.multiViewEnabled
+                                           ? !overviewRoot.splitDetails
+                                             && !overviewRoot.splitStatistics
+                                           : bar.currentIndex !== 0
+                                             && bar.currentIndex !== 1
+                        onClicked: overviewRoot.activateView(1)
                         height: parent.height
                         width: 150
                     }
                     InsightTabButton {
                         tabText: qsTrId("tab.tester")
-                        checked: bar.currentIndex === 2
-                        showLeftSeparator: bar.currentIndex !== 1
-                                           && bar.currentIndex !== 2
-                        onClicked: bar.currentIndex = 2
+                        checked: overviewRoot.multiViewEnabled
+                                 ? overviewRoot.splitTester
+                                 : bar.currentIndex === 2
+                        paneToggleMode: overviewRoot.multiViewEnabled
+                        paneIncluded: overviewRoot.splitTester
+                        paneToggleToolTip:
+                            overviewRoot.tabToggleToolTip(2)
+                        showLeftSeparator: overviewRoot.multiViewEnabled
+                                           ? !overviewRoot.splitStatistics
+                                             && !overviewRoot.splitTester
+                                           : bar.currentIndex !== 1
+                                             && bar.currentIndex !== 2
+                        onClicked: overviewRoot.activateView(2)
                         height: parent.height
                         width: 150
                     }
                     InsightTabButton {
                         tabText: qsTrId("tab.listener")
-                        checked: bar.currentIndex === 3
-                        showLeftSeparator: bar.currentIndex !== 2
-                                           && bar.currentIndex !== 3
-                        onClicked: bar.currentIndex = 3
+                        checked: overviewRoot.multiViewEnabled
+                                 ? overviewRoot.splitListener
+                                 : bar.currentIndex === 3
+                        paneToggleMode: overviewRoot.multiViewEnabled
+                        paneIncluded: overviewRoot.splitListener
+                        paneToggleToolTip:
+                            overviewRoot.tabToggleToolTip(3)
+                        showLeftSeparator: overviewRoot.multiViewEnabled
+                                           ? !overviewRoot.splitTester
+                                             && !overviewRoot.splitListener
+                                           : bar.currentIndex !== 2
+                                             && bar.currentIndex !== 3
+                        onClicked: overviewRoot.activateView(3)
                         height: parent.height
                         width: 150
                     }
                 }
+
+                Rectangle {
+                    visible: overviewRoot.multiViewEnabled
+                    anchors.right: sideBySideButton.left
+                    anchors.rightMargin: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: splitViewStatusLabel.implicitWidth + 16
+                    height: 22
+                    radius: 11
+                    color: rootWindow.isDarkMode ? "#26345f" : "#e7ebff"
+                    border.width: 1
+                    border.color: Constants.accentColor
+
+                    Label {
+                        id: splitViewStatusLabel
+                        anchors.centerIn: parent
+                        text: qsTrId("tab.side-by-side.status").arg(
+                                  overviewRoot.splitViewCount)
+                        color: rootWindow.isDarkMode ? "#dce3ff" : "#17338f"
+                        font.pixelSize: Constants.captionFontSize
+                        font.bold: true
+                    }
+                }
+
+                Rectangle {
+                    id: sideBySideButton
+                    anchors.right: parent.right
+                    anchors.rightMargin: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 32
+                    height: 28
+                    radius: Constants.controlRadius
+                    color: overviewRoot.splitModeActive
+                           ? Constants.mainContentColor(rootWindow.isDarkMode)
+                           : sideBySideMouseArea.containsMouse
+                             ? rootWindow.isDarkMode ? "#454545" : "#c9c7c7"
+                             : "transparent"
+                    border.width: 1
+                    border.color: overviewRoot.splitModeActive
+                                  ? Constants.accentColor
+                                  : sideBySideMouseArea.containsMouse
+                                    ? Constants.designBorderColor(
+                                          rootWindow.isDarkMode)
+                                    : "transparent"
+
+                    SplitViewIcon {
+                        anchors.centerIn: parent
+                        width: 18
+                        height: 16
+                        iconColor: overviewRoot.splitModeActive
+                                   ? Constants.accentColor
+                                   : Constants.mutedForegroundColor(
+                                         rootWindow.isDarkMode)
+                    }
+
+                    MouseArea {
+                        id: sideBySideMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: overviewRoot.toggleSplitMode()
+                    }
+
+                    ToolTip {
+                        id: sideBySideTooltip
+                        parent: sideBySideButton
+                        visible: sideBySideMouseArea.containsMouse
+                        delay: 500
+                        text: overviewRoot.splitModeActive
+                              ? qsTrId("tab.side-by-side.disable")
+                              : qsTrId("tab.side-by-side.enable")
+                        contentItem: Label {
+                            text: sideBySideTooltip.text
+                        }
+                        background: Rectangle {
+                            border.width: 1
+                            border.color: Constants.borderColor(
+                                              rootWindow.isDarkMode)
+                            color: Constants.cardBackgroundColor(
+                                       rootWindow.isDarkMode)
+                        }
+                    }
+
+                }
             }
-            StackLayout {
+            SplitView {
                 id: mainLayoutId
                 width: parent.width
                 height: parent.height - bar.height
-                currentIndex: bar.currentIndex
+                orientation: Qt.Horizontal
+
                 Item {
                     id: inspectTab
+                    visible: overviewRoot.isViewVisible(0)
+                    SplitView.minimumWidth: 160
+                    SplitView.preferredWidth:
+                        mainLayoutId.width / overviewRoot.visibleViewCount()
 
                     ColumnLayout {
                         anchors.centerIn: parent
@@ -166,6 +301,10 @@ SplitView {
                 }
                 Item {
                     id: statisticsTab
+                    visible: overviewRoot.isViewVisible(1)
+                    SplitView.minimumWidth: 160
+                    SplitView.preferredWidth:
+                        mainLayoutId.width / overviewRoot.visibleViewCount()
 
                     StatisticsWindow {
                         id: statisticsWindow
@@ -173,13 +312,26 @@ SplitView {
                 }
                 Item {
                     id: testerTab
+                    visible: overviewRoot.isViewVisible(2)
+                    SplitView.minimumWidth: 160
+                    SplitView.preferredWidth:
+                        mainLayoutId.width / overviewRoot.visibleViewCount()
 
-                    TesterView {}
+                    TesterView {
+                        id: testerView
+                    }
                 }
                 Item {
                     id: listenerTab
+                    visible: overviewRoot.isViewVisible(3)
+                    SplitView.minimumWidth: 160
+                    SplitView.preferredWidth:
+                        mainLayoutId.width / overviewRoot.visibleViewCount()
+                    SplitView.fillWidth: true
 
-                    ListenerView {}
+                    ListenerView {
+                        id: listenerView
+                    }
                 }
             }
         }
@@ -290,9 +442,120 @@ SplitView {
         }
     }
 
+    Shortcut {
+        sequence: "Ctrl+5"
+        onActivated: {
+            console.debug("Ctrl+5 pressed!")
+            overviewRoot.toggleSplitMode()
+        }
+    }
+
+    function isSplitViewSelected(index) {
+        if (index === 0)
+            return splitDetails
+        if (index === 1)
+            return splitStatistics
+        if (index === 2)
+            return splitTester
+        return splitListener
+    }
+
+    function setSplitViewSelected(index, selected) {
+        if (index === 0)
+            splitDetails = selected
+        else if (index === 1)
+            splitStatistics = selected
+        else if (index === 2)
+            splitTester = selected
+        else
+            splitListener = selected
+    }
+
+    function toggleSplitView(index) {
+        if (splitModeActive
+                && isSplitViewSelected(index)
+                && splitViewCount === 1) {
+            return
+        }
+        setSplitViewSelected(index, !isSplitViewSelected(index))
+        resetSplitViewWidths()
+    }
+
+    function toggleSplitMode() {
+        if (splitModeActive) {
+            exitSplitMode()
+            return
+        }
+
+        clearSplitViews()
+        setSplitViewSelected(bar.currentIndex, true)
+        splitModeActive = true
+        resetSplitViewWidths()
+    }
+
+    function exitSplitMode() {
+        for (let i = 0; i < 4; ++i) {
+            if (isSplitViewSelected(i)) {
+                bar.currentIndex = i
+                break
+            }
+        }
+        splitModeActive = false
+        splitDetails = false
+        splitStatistics = false
+        splitTester = false
+        splitListener = false
+    }
+
+    function clearSplitViews() {
+        splitDetails = false
+        splitStatistics = false
+        splitTester = false
+        splitListener = false
+        resetSplitViewWidths()
+    }
+
+    function isViewVisible(index) {
+        return multiViewEnabled
+                ? isSplitViewSelected(index)
+                : bar.currentIndex === index
+    }
+
+    function visibleViewCount() {
+        return multiViewEnabled ? Math.max(1, splitViewCount) : 1
+    }
+
+    function resetSplitViewWidths() {
+        Qt.callLater(function() {
+            const paneWidth = mainLayoutId.width / visibleViewCount()
+            inspectTab.SplitView.preferredWidth = paneWidth
+            statisticsTab.SplitView.preferredWidth = paneWidth
+            testerTab.SplitView.preferredWidth = paneWidth
+            listenerTab.SplitView.preferredWidth = paneWidth
+        })
+    }
+
+    function activateView(index) {
+        if (multiViewEnabled) {
+            toggleSplitView(index)
+        } else {
+            bar.currentIndex = index
+        }
+    }
+
+    function tabToggleToolTip(index) {
+        if (splitModeActive
+                && isSplitViewSelected(index)
+                && splitViewCount === 1) {
+            return qsTrId("tab.side-by-side.last-pane")
+        }
+        return isSplitViewSelected(index)
+                ? qsTrId("tab.side-by-side.remove")
+                : qsTrId("tab.side-by-side.add")
+    }
+
     function switchToTab(targetIndex) {
-        mainLayoutId.currentIndex = targetIndex
-        bar.currentIndex = targetIndex
+        activateView(targetIndex)
     }
 
 }
