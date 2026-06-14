@@ -72,7 +72,7 @@ Rectangle {
                 context.fill()
             } else if (iconActionButton.icon === "stop") {
                 context.fillRect(3, 3, 8, 8)
-            } else {
+            } else if (iconActionButton.icon === "delete") {
                 context.beginPath()
                 context.moveTo(3.5, 4.5)
                 context.lineTo(4.3, 12)
@@ -92,6 +92,23 @@ Rectangle {
                 context.lineTo(6, 10)
                 context.moveTo(8, 6)
                 context.lineTo(8, 10)
+                context.stroke()
+            } else if (iconActionButton.icon === "edit") {
+                context.beginPath()
+                context.moveTo(3, 10.5)
+                context.lineTo(4, 7.5)
+                context.lineTo(9.5, 2)
+                context.lineTo(12, 4.5)
+                context.lineTo(6.5, 10)
+                context.closePath()
+                context.stroke()
+
+                context.beginPath()
+                context.moveTo(8.5, 3)
+                context.lineTo(11, 5.5)
+                context.moveTo(3, 10.5)
+                context.lineTo(2.5, 12)
+                context.lineTo(4, 11.5)
                 context.stroke()
             }
         }
