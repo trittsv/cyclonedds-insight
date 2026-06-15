@@ -775,7 +775,13 @@ class TesterModel(QAbstractListModel):
             return
         with open(filePath, "r", encoding="utf-8") as f:
             content = f.read()
-            j = json.loads(content)
+            logging.debug(f"Load file content as json from file: {filePath}")
+            j = None
+            try:
+                j = json.loads(content)
+            except Exception as e:
+                logging.error(f"Failed to parse JSON: {e} from file {filePath}")
+                return
 
             presets = j.get("presets", [])
             for preset in presets:
