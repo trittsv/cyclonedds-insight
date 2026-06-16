@@ -108,6 +108,11 @@ def get_qos_provider_keys(file_path, entity_type=None):
 
     return list(dict.fromkeys(keys))
 
+def _load_qos_or_default(loader, profile_key):
+    try:
+        return loader(profile_key)
+    except Exception:
+        return Qos()
 
 def load_qos_from_provider(file_path, profile_key, entity_type):
     profile_key = profile_key.strip()
@@ -116,14 +121,14 @@ def load_qos_from_provider(file_path, profile_key, entity_type):
 
     provider = QosProvider(file_path)
     participant_qos = Qos()
-    topic_qos = provider.get_topic_qos(profile_key)
+    topic_qos = _load_qos_or_default(provider.get_topic_qos, profile_key)
 
     if entity_type == EntityType.READER:
-        pub_sub_qos = provider.get_subscriber_qos(profile_key)
-        endpoint_qos = provider.get_datareader_qos(profile_key)
+        pub_sub_qos = _load_qos_or_default(provider.get_subscriber_qos, profile_key)
+        endpoint_qos = _load_qos_or_default(provider.get_datareader_qos, profile_key)
     elif entity_type == EntityType.WRITER:
-        pub_sub_qos = provider.get_publisher_qos(profile_key)
-        endpoint_qos = provider.get_datawriter_qos(profile_key)
+        pub_sub_qos = _load_qos_or_default(provider.get_publisher_qos, profile_key)
+        endpoint_qos = _load_qos_or_default(provider.get_datawriter_qos, profile_key)
     else:
         raise ValueError(f"Unsupported endpoint type: {entity_type}")
 
