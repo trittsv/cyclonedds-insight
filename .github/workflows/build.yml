@@ -1,0 +1,194 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BUILD_PIPELINE_ID: github-actions
+  BUILD_ID: ${{ github.run_id }}
+  CYCLONE_CLONE_BRANCH: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'master' }}
+
+jobs:
+  build-insight:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu 22.04 x64
+            os: ubuntu-22.04
+          - name: macOS 15 Intel x64
+            os: macos-15-intel
+          - name: Windows Server 2022 x64
+            os: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Clone CycloneDDS
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p deps
+          git clone https://github.com/eclipse-cyclonedds/cyclonedds.git --branch "${CYCLONE_CLONE_BRANCH}" deps/cyclonedds
+
+      - name: Build CycloneDDS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S deps/cyclonedds -B deps/cyclonedds/build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=./install \
+            -DENABLE_SSL=off \
+            -DENABLE_SECURITY=off
+          cmake --build deps/cyclonedds/build --config Release --target install --parallel
+
+      - name: Clone CycloneDDS-Python
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone https://github.com/eclipse-cyclonedds/cyclonedds-python.git --branch "${CYCLONE_CLONE_BRANCH}" deps/cyclonedds-python
+
+      - name: Build CycloneDDS-Python
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CYCLONEDDS_HOME="${PWD}/deps/cyclonedds/build/install"
+          python -m pip install -e deps/cyclonedds-python
+
+      - name: Generate build_info.py
+        shell: bash
+        env:
+          GIT_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          set -euo pipefail
+          GIT_HASH_SHORT="$(git rev-parse --short HEAD)"
+          GIT_HASH="$(git rev-parse HEAD)"
+          CYCLONEDDS_GIT_HASH_SHORT="$(git -C deps/cyclonedds rev-parse --short HEAD)"
+          CYCLONEDDS_GIT_HASH="$(git -C deps/cyclonedds rev-parse HEAD)"
+          CYCLONEDDS_PYTHON_GIT_HASH_SHORT="$(git -C deps/cyclonedds-python rev-parse --short HEAD)"
+          CYCLONEDDS_PYTHON_GIT_HASH="$(git -C deps/cyclonedds-python rev-parse HEAD)"
+
+          {
+            echo "CYCLONEDDS_INSIGHT_GIT_HASH_SHORT = \"${GIT_HASH_SHORT}\""
+            echo "CYCLONEDDS_INSIGHT_GIT_HASH = \"${GIT_HASH}\""
+            echo "CYCLONEDDS_INSIGHT_GIT_BRANCH = \"${GIT_BRANCH}\""
+            echo "CYCLONEDDS_INSIGHT_BUILD_ID = \"${BUILD_ID}\""
+            echo "CYCLONEDDS_INSIGHT_BUILD_PIPELINE_ID = \"${BUILD_PIPELINE_ID}\""
+            echo "CYCLONEDDS_GIT_HASH_SHORT = \"${CYCLONEDDS_GIT_HASH_SHORT}\""
+            echo "CYCLONEDDS_GIT_HASH = \"${CYCLONEDDS_GIT_HASH}\""
+            echo "CYCLONEDDS_PYTHON_GIT_HASH_SHORT = \"${CYCLONEDDS_PYTHON_GIT_HASH_SHORT}\""
+            echo "CYCLONEDDS_PYTHON_GIT_HASH = \"${CYCLONEDDS_PYTHON_GIT_HASH}\""
+          } > src/build_info.py
+
+      - name: Capture version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(python src/version.py)"
+          echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build CycloneDDS Insight
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CYCLONEDDS_HOME="${PWD}/deps/cyclonedds/build/install"
+          export CYCLONEDDS_PYTHON_HOME="${PWD}/deps/cyclonedds-python"
+          export DYLD_LIBRARY_PATH="${CYCLONEDDS_HOME}/lib"
+          export LD_LIBRARY_PATH="${CYCLONEDDS_HOME}/lib:${LD_LIBRARY_PATH:-}"
+          export PATH="${PATH}:${CYCLONEDDS_HOME}/bin"
+          python -m pip install -r requirements.txt
+          cp -f deps/cyclonedds/etc/cyclonedds.xsd .
+          pyside6-lrelease src/translations/cyclonedds-insight_en.ts
+          pyside6-lrelease src/translations/cyclonedds-insight_de.ts
+          pyside6-rcc resources.qrc -o src/qrc_file.py
+          pyinstaller main.spec --noconfirm --clean
+          if [ "$(uname)" = "Linux" ]; then
+            pyinstaller src/updater.py --onefile --name Updater -i "NONE" --distpath "./dist/CycloneDDS Insight" --noconsole --noconfirm --clean
+          fi
+
+      - name: Install Inno Setup
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install innosetup --yes
+
+      - name: Build Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (!(Test-Path $iscc)) {
+            $iscc = "iscc.exe"
+          }
+          & $iscc setup.iss "/DTheAppVersion=${env:VERSION}"
+
+      - name: Package Linux tarball
+        if: runner.os == 'Linux'
+        shell: bash
+        run: tar -czf "dist/cyclonedds-insight-${VERSION}-linux-x64.tar.gz" -C dist "CycloneDDS Insight"
+
+      - name: Package Debian package
+        if: runner.os == 'Linux'
+        shell: bash
+        run: ./create_debian_pkg.sh "${VERSION}" amd64
+
+      - name: Package macOS app bundle
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          mkdir -p dist/bundle
+          tar -czf "dist/bundle/cyclonedds-insight-${VERSION}-macos-x64.tar.gz" -C dist "CycloneDDS Insight.app"
+
+      - name: Upload Linux tarball
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: cyclonedds-insight-${{ steps.version.outputs.version }}-linux-x64
+          path: dist/cyclonedds-insight-${{ steps.version.outputs.version }}-linux-x64.tar.gz
+          if-no-files-found: error
+
+      - name: Upload Debian package
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: cyclonedds-insight-${{ steps.version.outputs.version }}-debian-x64
+          path: dist/cyclonedds-insight_${{ steps.version.outputs.version }}_amd64.deb
+          if-no-files-found: error
+
+      - name: Upload macOS bundle
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          name: cyclonedds-insight-${{ steps.version.outputs.version }}-macos-x64
+          path: dist/bundle/cyclonedds-insight-${{ steps.version.outputs.version }}-macos-x64.tar.gz
+          if-no-files-found: error
+
+      - name: Upload Windows installer
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v7
+        with:
+          name: cyclonedds-insight-${{ steps.version.outputs.version }}-windows-x64
+          path: dist/cyclonedds-insight-${{ steps.version.outputs.version }}-windows-x64.exe
+          if-no-files-found: error
