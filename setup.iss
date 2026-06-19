@@ -2,6 +2,9 @@
 #ifndef TheAppVersion
 #define TheAppVersion "unknown"
 #endif
+#ifndef TheAppArchitecture
+#define TheAppArchitecture "x64"
+#endif
 
 #define TheAppName "CycloneDDS Insight"
 #define TheAppPublisher "Eclipse Cyclone DDS"
@@ -28,7 +31,7 @@ LicenseFile=LICENSE
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=dist
-OutputBaseFilename=cyclonedds-insight-{#TheAppVersion}-windows-x64
+OutputBaseFilename=cyclonedds-insight-{#TheAppVersion}-windows-{#TheAppArchitecture}
 SetupIconFile=res\images\cyclonedds.ico
 Compression=lzma
 SolidCompression=yes

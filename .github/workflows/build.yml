@@ -31,8 +31,12 @@ jobs:
             os: ubuntu-22.04
           - name: macOS 15 Intel x64
             os: macos-15-intel
+          - name: macOS 15 ARMv8
+            os: macos-15
           - name: Windows Server 2022 x64
             os: windows-2022
+          - name: Windows 11 ARMv8
+            os: windows-11-arm
 
     steps:
       - name: Checkout
@@ -115,6 +119,19 @@ jobs:
           echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
           echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
 
+      - name: Capture architecture
+        id: architecture
+        shell: bash
+        run: |
+          ARCHITECTURE="$(python -c 'import platform; print(platform.machine().lower())')"
+          case "${ARCHITECTURE,,}" in
+            amd64|x86_64)
+              ARCHITECTURE="x64"
+              ;;
+          esac
+          echo "ARCHITECTURE=${ARCHITECTURE}" >> "${GITHUB_ENV}"
+          echo "architecture=${ARCHITECTURE}" >> "${GITHUB_OUTPUT}"
+
       - name: Build CycloneDDS Insight
         shell: bash
         run: |
@@ -147,7 +164,7 @@ jobs:
           if (!(Test-Path $iscc)) {
             $iscc = "iscc.exe"
           }
-          & $iscc setup.iss "/DTheAppVersion=${env:VERSION}"
+          & $iscc setup.iss "/DTheAppVersion=${env:VERSION}" "/DTheAppArchitecture=${env:ARCHITECTURE}"
 
       - name: Package Linux tarball
         if: runner.os == 'Linux'
@@ -164,7 +181,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist/bundle
-          tar -czf "dist/bundle/cyclonedds-insight-${VERSION}-macos-x64.tar.gz" -C dist "CycloneDDS Insight.app"
+          tar -czf "dist/bundle/cyclonedds-insight-${VERSION}-macos-${ARCHITECTURE}.tar.gz" -C dist "CycloneDDS Insight.app"
 
       - name: Upload Linux tarball
         if: runner.os == 'Linux'
@@ -186,14 +203,14 @@ jobs:
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v7
         with:
-          name: cyclonedds-insight-${{ steps.version.outputs.version }}-macos-x64
-          path: dist/bundle/cyclonedds-insight-${{ steps.version.outputs.version }}-macos-x64.tar.gz
+          name: cyclonedds-insight-${{ steps.version.outputs.version }}-macos-${{ steps.architecture.outputs.architecture }}
+          path: dist/bundle/cyclonedds-insight-${{ steps.version.outputs.version }}-macos-${{ steps.architecture.outputs.architecture }}.tar.gz
           if-no-files-found: error
 
       - name: Upload Windows installer
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v7
         with:
-          name: cyclonedds-insight-${{ steps.version.outputs.version }}-windows-x64
-          path: dist/cyclonedds-insight-${{ steps.version.outputs.version }}-windows-x64.exe
+          name: cyclonedds-insight-${{ steps.version.outputs.version }}-windows-${{ steps.architecture.outputs.architecture }}
+          path: dist/cyclonedds-insight-${{ steps.version.outputs.version }}-windows-${{ steps.architecture.outputs.architecture }}.exe
           if-no-files-found: error
