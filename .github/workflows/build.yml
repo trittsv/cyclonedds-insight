@@ -29,8 +29,8 @@ jobs:
         include:
           - name: Ubuntu 22.04 x64
             os: ubuntu-22.04
-          - name: Ubuntu 22.04 arm64
-            os: ubuntu-22.04-arm
+          - name: Ubuntu 24.04 arm64
+            os: ubuntu-24.04-arm
           - name: macOS 15 Intel x64
             os: macos-15-intel
           - name: macOS 15 arm64
