@@ -29,13 +29,15 @@ jobs:
         include:
           - name: Ubuntu 22.04 x64
             os: ubuntu-22.04
+          - name: Ubuntu 22.04 arm64
+            os: ubuntu-22.04-arm
           - name: macOS 15 Intel x64
             os: macos-15-intel
-          - name: macOS 15 ARMv8
+          - name: macOS 15 arm64
             os: macos-15
           - name: Windows Server 2022 x64
             os: windows-2022
-          - name: Windows 11 ARMv8
+          - name: Windows 11 arm64
             os: windows-11-arm
 
     steps:
@@ -129,8 +131,19 @@ jobs:
               ARCHITECTURE="x64"
               ;;
           esac
+          DEBIAN_ARCHITECTURE="${ARCHITECTURE}"
+          case "${DEBIAN_ARCHITECTURE}" in
+            x64)
+              DEBIAN_ARCHITECTURE="amd64"
+              ;;
+            aarch64)
+              DEBIAN_ARCHITECTURE="arm64"
+              ;;
+          esac
           echo "ARCHITECTURE=${ARCHITECTURE}" >> "${GITHUB_ENV}"
+          echo "DEBIAN_ARCHITECTURE=${DEBIAN_ARCHITECTURE}" >> "${GITHUB_ENV}"
           echo "architecture=${ARCHITECTURE}" >> "${GITHUB_OUTPUT}"
+          echo "debian_architecture=${DEBIAN_ARCHITECTURE}" >> "${GITHUB_OUTPUT}"
 
       - name: Build CycloneDDS Insight
         shell: bash
@@ -169,12 +182,12 @@ jobs:
       - name: Package Linux tarball
         if: runner.os == 'Linux'
         shell: bash
-        run: tar -czf "dist/cyclonedds-insight-${VERSION}-linux-x64.tar.gz" -C dist "CycloneDDS Insight"
+        run: tar -czf "dist/cyclonedds-insight-${VERSION}-linux-${ARCHITECTURE}.tar.gz" -C dist "CycloneDDS Insight"
 
       - name: Package Debian package
         if: runner.os == 'Linux'
         shell: bash
-        run: ./create_debian_pkg.sh "${VERSION}" amd64
+        run: ./create_debian_pkg.sh "${VERSION}" "${DEBIAN_ARCHITECTURE}"
 
       - name: Package macOS app bundle
         if: runner.os == 'macOS'
@@ -187,16 +200,16 @@ jobs:
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v7
         with:
-          name: cyclonedds-insight-${{ steps.version.outputs.version }}-linux-x64
-          path: dist/cyclonedds-insight-${{ steps.version.outputs.version }}-linux-x64.tar.gz
+          name: cyclonedds-insight-${{ steps.version.outputs.version }}-linux-${{ steps.architecture.outputs.architecture }}
+          path: dist/cyclonedds-insight-${{ steps.version.outputs.version }}-linux-${{ steps.architecture.outputs.architecture }}.tar.gz
           if-no-files-found: error
 
       - name: Upload Debian package
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v7
         with:
-          name: cyclonedds-insight-${{ steps.version.outputs.version }}-debian-x64
-          path: dist/cyclonedds-insight_${{ steps.version.outputs.version }}_amd64.deb
+          name: cyclonedds-insight-${{ steps.version.outputs.version }}-debian-${{ steps.architecture.outputs.debian_architecture }}
+          path: dist/cyclonedds-insight_${{ steps.version.outputs.version }}_${{ steps.architecture.outputs.debian_architecture }}.deb
           if-no-files-found: error
 
       - name: Upload macOS bundle
