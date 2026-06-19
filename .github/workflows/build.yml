@@ -124,7 +124,7 @@ jobs:
         shell: bash
         run: |
           ARCHITECTURE="$(python -c 'import platform; print(platform.machine().lower())')"
-          case "${ARCHITECTURE,,}" in
+          case "${ARCHITECTURE}" in
             amd64|x86_64)
               ARCHITECTURE="x64"
               ;;
