@@ -57,25 +57,30 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cmake -S deps/cyclonedds -B deps/cyclonedds/build \
+          cd deps/cyclonedds
+          mkdir -p build
+          cd build
+          cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=./install \
             -DENABLE_SSL=off \
-            -DENABLE_SECURITY=off
-          cmake --build deps/cyclonedds/build --config Release --target install --parallel
+            -DENABLE_SECURITY=off ..
+          cmake --build . --config Release --target install --parallel
 
       - name: Clone CycloneDDS-Python
         shell: bash
         run: |
           set -euo pipefail
-          git clone https://github.com/eclipse-cyclonedds/cyclonedds-python.git --branch "${CYCLONE_CLONE_BRANCH}" deps/cyclonedds-python
+          cd deps
+          git clone https://github.com/eclipse-cyclonedds/cyclonedds-python.git --branch "${CYCLONE_CLONE_BRANCH}"
 
       - name: Build CycloneDDS-Python
         shell: bash
         run: |
           set -euo pipefail
           export CYCLONEDDS_HOME="${PWD}/deps/cyclonedds/build/install"
-          python -m pip install -e deps/cyclonedds-python
+          cd deps/cyclonedds-python
+          python -m pip install -e .
 
       - name: Generate build_info.py
         shell: bash
