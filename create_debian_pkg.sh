@@ -11,6 +11,16 @@ fi
 set -e
 set -o pipefail
 
+architecture="$2"
+case "$architecture" in
+    x64|x86_64|amd64)
+        architecture="amd64"
+        ;;
+    aarch64|arm64)
+        architecture="arm64"
+        ;;
+esac
+
 echo "BUILDING DEBIAN PKG $1 $2"
 mkdir -p build
 echo "PREPARE ARTIFACTS"
