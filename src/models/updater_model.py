@@ -29,6 +29,15 @@ import urllib.parse
 import platform
 
 
+def normalized_architecture() -> str:
+    arch = platform.machine().lower()
+    if arch == "amd64" or arch == "x86_64":
+        return "x64"
+    if arch == "aarch64":
+        return "arm64"
+    return arch
+
+
 class WorkerThread(QThread):
 
     downloadedBytes = Signal(int)
@@ -143,9 +152,7 @@ class WorkerThread(QThread):
                     if "name" in artifact:
                         artifactName = artifact["name"]
 
-                        arch = platform.machine().lower()
-                        if arch == "amd64" or arch == "x86_64":
-                            arch = "x64"
+                        arch = normalized_architecture()
 
                         if sys.platform.startswith("linux"):
                             logging.info("Running on Linux")

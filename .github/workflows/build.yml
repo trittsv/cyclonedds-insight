@@ -130,14 +130,14 @@ jobs:
             amd64|x86_64)
               ARCHITECTURE="x64"
               ;;
+            aarch64)
+              ARCHITECTURE="arm64"
+              ;;
           esac
           DEBIAN_ARCHITECTURE="${ARCHITECTURE}"
           case "${DEBIAN_ARCHITECTURE}" in
             x64)
               DEBIAN_ARCHITECTURE="amd64"
-              ;;
-            aarch64)
-              DEBIAN_ARCHITECTURE="arm64"
               ;;
           esac
           echo "ARCHITECTURE=${ARCHITECTURE}" >> "${GITHUB_ENV}"
