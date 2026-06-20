@@ -29,16 +29,16 @@ jobs:
         include:
           - name: Ubuntu 22.04 x64
             os: ubuntu-22.04
-          - name: Ubuntu 24.04 arm64
-            os: ubuntu-24.04-arm
-          - name: macOS 15 Intel x64
-            os: macos-15-intel
-          - name: macOS 15 arm64
-            os: macos-15
-          - name: Windows Server 2022 x64
-            os: windows-2022
-          - name: Windows 11 arm64
-            os: windows-11-arm
+          # - name: Ubuntu 24.04 arm64
+          #   os: ubuntu-24.04-arm
+          # - name: macOS 15 Intel x64
+          #   os: macos-15-intel
+          # - name: macOS 15 arm64
+          #   os: macos-15
+          # - name: Windows Server 2022 x64
+          #   os: windows-2022
+          # - name: Windows 11 arm64
+          #   os: windows-11-arm
 
     steps:
       - name: Checkout
@@ -112,6 +112,7 @@ jobs:
             echo "CYCLONEDDS_PYTHON_GIT_HASH_SHORT = \"${CYCLONEDDS_PYTHON_GIT_HASH_SHORT}\""
             echo "CYCLONEDDS_PYTHON_GIT_HASH = \"${CYCLONEDDS_PYTHON_GIT_HASH}\""
           } > src/build_info.py
+          cat src/build_info.py
 
       - name: Capture version
         id: version

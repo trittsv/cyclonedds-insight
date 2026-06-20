@@ -31,5 +31,5 @@ echo -e "\nVersion: $1\nArchitecture: $architecture" >> build/debian-pkg/cyclone
 echo "BUILD PKG"
 dpkg-deb --build --root-owner-group ./build/debian-pkg/cyclonedds-insight
 echo "RENAME"
-mv ./build/debian-pkg/cyclonedds-insight.deb "./dist/cyclonedds-insight_$1_$2.deb"
+mv ./build/debian-pkg/cyclonedds-insight.deb "./dist/cyclonedds-insight_$1_$architecture.deb"
 echo "DONE"
