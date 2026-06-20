@@ -27,7 +27,7 @@ echo "PREPARE ARTIFACTS"
 cp -r ./res/debian-pkg build/
 cp -r ./dist/CycloneDDS\ Insight/* ./build/debian-pkg/cyclonedds-insight/usr/share/CycloneDDS\ Insight
 cp ./res/images/cyclonedds.png ./build/debian-pkg/cyclonedds-insight/usr/share/CycloneDDS\ Insight/cyclonedds.png 
-echo -e "\nVersion: $1\nArchitecture: $2" >> build/debian-pkg/cyclonedds-insight/DEBIAN/control
+echo -e "\nVersion: $1\nArchitecture: $architecture" >> build/debian-pkg/cyclonedds-insight/DEBIAN/control
 echo "BUILD PKG"
 dpkg-deb --build --root-owner-group ./build/debian-pkg/cyclonedds-insight
 echo "RENAME"
