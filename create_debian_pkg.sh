@@ -18,7 +18,7 @@ cp -r ./res/debian-pkg build/
 cp -r ./dist/CycloneDDS\ Insight/* ./build/debian-pkg/cyclonedds-insight/usr/share/CycloneDDS\ Insight
 cp ./res/images/cyclonedds.png ./build/debian-pkg/cyclonedds-insight/usr/share/CycloneDDS\ Insight/cyclonedds.png 
 echo -e "\nVersion: $1" >> build/debian-pkg/cyclonedds-insight/DEBIAN/control
-echo "Architecture: $2" >> build/debian-pkg/cyclonedds-insight/DEBIAN/control
+echo -e "\nArchitecture: $2" >> build/debian-pkg/cyclonedds-insight/DEBIAN/control
 echo "BUILD PKG"
 dpkg-deb --build --root-owner-group ./build/debian-pkg/cyclonedds-insight
 echo "RENAME"
