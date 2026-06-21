@@ -37,7 +37,7 @@ def getBuildPipelineId() -> str:
         from build_info import CYCLONEDDS_INSIGHT_BUILD_PIPELINE_ID
         return CYCLONEDDS_INSIGHT_BUILD_PIPELINE_ID
     except Exception:
-        return "19"
+        return "build.yml"
 
 def getBuildId() -> str:
     try:

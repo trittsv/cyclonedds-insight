@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 env:
-  BUILD_PIPELINE_ID: github-actions
+  BUILD_PIPELINE_ID: "build.yml"
   BUILD_ID: ${{ github.run_id }}
   CYCLONE_CLONE_BRANCH: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'master' }}
 
@@ -91,7 +91,7 @@ jobs:
       - name: Generate build_info.py
         shell: bash
         env:
-          GIT_BRANCH: ${{ github.head_ref || github.ref_name }}
+          GIT_BRANCH: ${{ github.ref }}
         run: |
           set -euo pipefail
           GIT_HASH_SHORT="$(git rev-parse --short HEAD)"

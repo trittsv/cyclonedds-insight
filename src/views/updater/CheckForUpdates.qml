@@ -50,7 +50,6 @@ Window {
 
     property string organization: "eclipse-cyclonedds"
     property string project: "cyclonedds-insight"
-    property string branch: "refs/heads/master" // only master branch for now!
     property bool checkedForUpdate: false
     property bool updateCheckRunning: false
     property string lastUpdateTime: ""
@@ -200,10 +199,9 @@ Window {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: Qt.openUrlExternally(
-                                "https://dev.azure.com/" + organization + "/"
-                                + project + "/_build/results?buildId="
-                                + newBuildId
-                                + "&view=artifacts&type=publishedArtifacts")
+                                "https://github.com/" + organization + "/"
+                                + project + "/actions/runs/"
+                                + newBuildId)
                         }
                     }
                 }

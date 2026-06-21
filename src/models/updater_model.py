@@ -288,8 +288,10 @@ class UpdaterModel(QObject):
         self.pipelineId = pipelineId
         self.currentBuildId = buildId
         self.currentBranch = currentBranch
-        self.latestBuildUrl = QUrl(f"https://dev.azure.com/{self.organization}/{self.project}/_apis/build/builds" +
-                        f"?definitions={self.pipelineId}&branchName={self.masterBranch}&statusFilter=succeeded&$top=1&api-version=7.0")
+        self.latestBuildUrl = QUrl(
+            f"https://api.github.com/repos/{self.organization}/{self.project}/actions/workflows/{self.pipelineId}/runs"
+            f"?branch={self.masterBranch}&status=success&per_page=1"
+        )
 
     def requiresRoot(self, appDir):
         return not os.access(appDir, os.R_OK | os.W_OK)
@@ -440,11 +442,13 @@ class UpdaterModel(QObject):
             body = bytes(reply.readAll()).decode(errors="ignore")
             data = json.loads(body)
             logging.debug(f"Fetched builds: {json.dumps(data)}")
-            if "value" in data and len(data["value"]) > 0:
-                latestBuild = data["value"][0]
+
+            latestBuildId = None
+            if "workflow_runs" in data and len(data["workflow_runs"]) > 0:
+                latestBuild = data["workflow_runs"][0]
                 latestBuildId = str(latestBuild.get("id", ""))
 
-            if (int(latestBuildId) > int(self.currentBuildId)) or (self.currentBranch != self.masterBranch):
+            if latestBuildId and (int(latestBuildId) > int(self.currentBuildId)) or (self.currentBranch != self.masterBranch):
                 logging.info(f"New update available, build id: {latestBuildId}")
                 self.newBuildFound.emit(latestBuildId)
             else:

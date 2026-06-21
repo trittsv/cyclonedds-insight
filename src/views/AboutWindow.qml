@@ -25,7 +25,7 @@ Window {
 
 
     property int aboutWidth: 570
-    property int aboutHeight: 260
+    property int aboutHeight: 280
 
     width: aboutWidth
     height: aboutHeight
@@ -152,6 +152,10 @@ Window {
                                 + CYCLONEDDS_INSIGHT_GIT_HASH)
                         }
                     }
+                }
+                VersionRow {
+                    label: "Source ref:"
+                    value: CYCLONEDDS_INSIGHT_GIT_BRANCH
                 }
 
                 Item {
