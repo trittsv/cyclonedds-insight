@@ -38,6 +38,8 @@ For windows use the `.bat` alternatives.
 
 ## How to build
 
+For the experimental Android port, see [Android setup and porting status](mobile/android/README.md).
+
 ### MacOS / Linux
 
 ```bash

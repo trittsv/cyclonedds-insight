@@ -1,0 +1,8 @@
+.buildozer/
+.pyside6_android_deploy/
+deployment/
+bin/
+*.apk
+*.aab
+buildozer.spec
+pysidedeploy.spec
