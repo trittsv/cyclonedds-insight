@@ -164,6 +164,7 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: appearanceLayout.implicitHeight + 24
+                visible: !IS_ANDROID
                 radius: Constants.cardRadius
                 color: settingsViewId.surfaceColor
                 border.width: 1

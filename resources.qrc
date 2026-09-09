@@ -13,6 +13,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="">
+        <file>src/views/SecondaryWindow.qml</file>
         <!-- images -->
         <file>res/images/cyclonedds.png</file>
         <file>res/images/cyclonedds@2x.png</file>

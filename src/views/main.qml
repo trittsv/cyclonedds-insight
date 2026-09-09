@@ -29,6 +29,7 @@ ApplicationWindow {
     width: 1100
     height: 650
     visible: true
+    visibility: IS_ANDROID ? Window.Maximized : Window.AutomaticVisibility
     title: "CycloneDDS Insight"
 
     property bool isDarkMode: false
@@ -160,6 +161,8 @@ ApplicationWindow {
     }
 
     function getDarkMode() {
+        if (IS_ANDROID)
+            return false
         var isDarkModeVal = (mySysPalette.windowText.hsvValue > mySysPalette.window.hsvValue)
         console.log("darkmode:", isDarkModeVal)
         return isDarkModeVal

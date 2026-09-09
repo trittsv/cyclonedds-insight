@@ -21,13 +21,13 @@ import "qrc:/src/views"
 import "qrc:/src/views/selection_details"
 
 
-Window {
+SecondaryWindow {
     id: shapeDemoViewId
     title: qsTrId("shapes.title")
     width: 800
-    minimumWidth: 400
+    minimumWidth: mobileWindow ? 0 : 400
     height: 490
-    minimumHeight: 400
+    minimumHeight: mobileWindow ? 0 : 400
     flags: Qt.Window
     property var shapesMap
     property var pendingWriterMap

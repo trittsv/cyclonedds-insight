@@ -19,7 +19,7 @@ import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/selection_details"
 
 
-Window {
+SecondaryWindow {
     id: detailWindow
 
     property string endpointText: ""
@@ -45,10 +45,10 @@ Window {
 
     visible: false
     width: 680
-    minimumWidth: 500
+    minimumWidth: mobileWindow ? 0 : 500
     height: 520
-    minimumHeight: 380
-    flags: Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.WindowTitleHint
+    minimumHeight: mobileWindow ? 0 : 380
+    flags: mobileWindow ? Qt.Window : (Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.WindowTitleHint)
            | Qt.WindowCloseButtonHint
     color: Constants.mainContentColor(rootWindow.isDarkMode)
 

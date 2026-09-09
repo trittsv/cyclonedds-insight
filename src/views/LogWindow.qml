@@ -19,7 +19,7 @@ import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/selection_details"
 
 
-Window {
+SecondaryWindow {
     id: logWindowId
 
     readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
@@ -33,9 +33,9 @@ Window {
     visible: false
     width: 860
     height: 520
-    minimumHeight: 300
-    minimumWidth: 620
-    flags: Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.WindowTitleHint
+    minimumHeight: mobileWindow ? 0 : 300
+    minimumWidth: mobileWindow ? 0 : 620
+    flags: mobileWindow ? Qt.Window : (Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.WindowTitleHint)
            | Qt.WindowCloseButtonHint
     color: Constants.mainContentColor(rootWindow.isDarkMode)
 

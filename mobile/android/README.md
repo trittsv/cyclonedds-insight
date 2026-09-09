@@ -1,4 +1,54 @@
-# Android port: first milestone
+# Android builds
+
+## Build the full Insight application
+
+From the repository root:
+
+```sh
+# Only needed to provision/recreate the Android Python build environment:
+sh mobile/android/setup.sh
+
+# Stage src/, compile translations/resources, build native DDS and package:
+sh mobile/android/build-insight.sh
+```
+
+The build uses the local `deps/cyclonedds` and `deps/cyclonedds-python` checkouts
+from the desktop development setup. It stages the real application in
+`build/android-insight` and writes the debug APK to
+`dist/android/insight-0.1-arm64-v8a-debug.apk`. It has a separate
+application ID (`org.eclipse.cyclonedds.insight`) and can coexist with the probe.
+The launcher label is `CycloneDDS Insight`. Builds using the former ID
+`trittsv.app.cycloneddsinsight` remain a separate installation; the new ID does
+not update or migrate that installation's settings.
+
+Prerequisites: Python 3.11, CMake, the existing p4a build prerequisites, JDK 17,
+Android SDK platform 36, NDK 27.2.12479018, and the two PySide6/Shiboken6 6.11.0
+Android ARM64 wheels. The script defaults to this Mac's SDK and Downloads paths;
+override `ANDROID_SDK_ROOT`, `ANDROID_NDK_HOME`, `PYSIDE_ANDROID_WHEEL`,
+`SHIBOKEN_ANDROID_WHEEL`, and `JAVA_HOME` for another machine.
+
+```sh
+"$HOME/Library/Android/sdk/platform-tools/adb" install -r \
+  dist/android/insight-0.1-arm64-v8a-debug.apk
+```
+
+The full-app port retains the existing QML interface and allows sensor-based
+rotation between portrait and landscape. Secondary windows have an Android
+title bar with a close button and a Back shortcut. They open maximized on
+Android, with system bars visible. Toolbars respect Qt's safe-area margins for
+the status bar and display cutouts; window content uses Qt's automatic padding.
+Discovery, endpoint details, dynamic network types and the DDS Python backend
+are packaged. Local IDL compilation and the desktop self-updater are disabled
+on Android. Updates are installed as APKs. Desktop startup is preserved.
+Phone layout refinement, background discovery and all secondary windows still
+need device validation; an APK build does not establish full feature parity.
+
+Validation: the full APK builds and passes archive checks for the app modules,
+Qt resources, native DDS library and Python binding. The staged UI loads in a
+desktop Android-mode smoke check, starts discovery, and exits cleanly. The full
+application has also been confirmed working on the phone by the user; the
+earlier probe was verified on-device for discovery and Python-package message
+exchange. The close controls and rotation changes still need device validation.
 
 Status: the original Qt packaging probe built and ran on an Android device.
 The DDS extension is experimental and still needs device verification.
@@ -170,3 +220,38 @@ build or change the installed SDK, NDK, or Java version.
 The local initial check found no `adb` on PATH and the existing deployment tool
 reported missing `jinja2`, `pkginfo`, and `tqdm`. Android SDK/NDK and target wheels
 still need to be provisioned before an APK build can be validated.
+
+## Release bundle and upload signing
+
+Build an AAB using the same staging and native-library steps as the debug APK:
+
+```sh
+sh mobile/android/build-insight.sh aab
+```
+
+Output: `dist/android/insight-0.1-arm64-v8a-release.aab`.
+Without P4A release-signing environment variables, this bundle is unsigned.
+Create an upload key once, outside the repository (keep a secure backup):
+
+```sh
+export JAVA_HOME="$HOME/Library/Java/JavaVirtualMachines/jdk-17.0.2+8/Contents/Home"
+mkdir -p "$HOME/.android-keys"
+"$JAVA_HOME/bin/keytool" -genkeypair -v -storetype JKS \
+  -keystore "$HOME/.android-keys/insight-upload.jks" \
+  -alias upload -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Sign the bundle interactively; the script also runs signature verification:
+
+```sh
+sh mobile/android/sign-aab.sh \
+  dist/android/insight-0.1-arm64-v8a-release.aab \
+  "$HOME/.android-keys/insight-upload.jks" upload
+```
+
+Upload the signed AAB to Play Console with Play App Signing. An AAB cannot be
+installed directly with `adb install`; use the debug APK for local testing.
+Reuse your upload key for later releases and increase the Android version code
+for each new Play upload. Rebuilding the unsigned bundle requires signing again.
+
+Reference: https://developer.android.com/studio/publish/app-signing

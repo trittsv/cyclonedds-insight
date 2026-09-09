@@ -18,7 +18,7 @@ import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/selection_details"
 
 
-Window {
+SecondaryWindow {
     id: aboutWindow
 
     readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
@@ -29,14 +29,14 @@ Window {
 
     width: aboutWidth
     height: aboutHeight
-    minimumWidth: aboutWidth
-    minimumHeight: aboutHeight
-    maximumWidth: aboutWidth
-    maximumHeight: aboutHeight
+    minimumWidth: mobileWindow ? 0 : aboutWidth
+    minimumHeight: mobileWindow ? 0 : aboutHeight
+    maximumWidth: mobileWindow ? 16777215 : aboutWidth
+    maximumHeight: mobileWindow ? 16777215 : aboutHeight
 
     title: qsTrId("about.window.title")
     visible: false
-    flags: Qt.Dialog
+    flags: mobileWindow ? Qt.Window : (Qt.Dialog)
     modality: Qt.ApplicationModal
     color: Constants.mainContentColor(rootWindow.isDarkMode)
 

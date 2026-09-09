@@ -13,6 +13,7 @@
 import sys
 import os
 import platform
+from utils.platform_utils import IS_ANDROID
 
 # Execution before first import of cyclonedds
 if getattr(sys, 'frozen', False):
@@ -31,15 +32,15 @@ else:
     IS_FROZEN = False
     # In non-bundle mode we need the path to idlc executable
     cyclonedds_home = os.getenv('CYCLONEDDS_HOME')
-    if not cyclonedds_home:
+    if not cyclonedds_home and not IS_ANDROID:
         raise Exception('CYCLONEDDS_HOME environment variable is not set.')
-    else:
+    elif cyclonedds_home:
         print('cyclonedds_home: ' + cyclonedds_home)
 
 import argparse
 from PySide6.QtWidgets import QApplication
 from PySide6.QtQml import QQmlApplicationEngine, qmlRegisterType
-from PySide6.QtCore import qInstallMessageHandler, QUrl, QThread, qVersion, Qt, QSettings
+from PySide6.QtCore import qInstallMessageHandler, QUrl, QThread, qVersion, Qt, QSettings, QTimer
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtQuickControls2 import QQuickStyle
 from loguru import logger as logging
@@ -78,7 +79,11 @@ import qrc_file
 
 
 if __name__ == "__main__":
+    if IS_ANDROID:
+        os.environ["QT_QUICK_CONTROLS_MATERIAL_THEME"] = "Light"
     app = QApplication(sys.argv)
+    if IS_ANDROID:
+        app.styleHints().setColorScheme(Qt.ColorScheme.Light)
     app.setWindowIcon(QIcon(QPixmap(":/res/images/cyclonedds.png")))
     app.setApplicationName("CycloneDDS Insight")
     app.setApplicationDisplayName("CycloneDDS Insight")
@@ -88,6 +93,7 @@ if __name__ == "__main__":
     # Setup the logger
     parser = argparse.ArgumentParser(description="CycloneDDS Insight")
     parser.add_argument("--loglevel", type=str, help="Set logging level (TRACE, DEBUG, INFO, WARNING, ERROR, CRITICAL)", default="INFO")
+    parser.add_argument("--smoke-test", action="store_true", help="Load the UI and exit after two seconds")
     args = parser.parse_args()
     loglevel = args.loglevel.upper()
     loggerConfig = LoggerConfig()
@@ -185,6 +191,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("CYCLONEDDS_INSIGHT_BUILD_ID", build_info_helper.getBuildId())
     engine.rootContext().setContextProperty("CYCLONEDDS_INSIGHT_BUILD_PIPELINE_ID", build_info_helper.getBuildPipelineId())
     engine.rootContext().setContextProperty("IS_FROZEN", IS_FROZEN)
+    engine.rootContext().setContextProperty("IS_ANDROID", IS_ANDROID)
 
     qmlRegisterType(EndpointModel, "org.eclipse.cyclonedds.insight", 1, 0, "EndpointModel")
     qmlRegisterType(StatisticsModel, "org.eclipse.cyclonedds.insight", 1, 0, "StatisticsModel")
@@ -222,6 +229,8 @@ if __name__ == "__main__":
         data.add_domain(domainId)
 
     logging.info("qt ...")
+    if args.smoke_test:
+        QTimer.singleShot(2000, app.quit)
     ret_code = app.exec()
     logging.info("qt ... DONE")
 

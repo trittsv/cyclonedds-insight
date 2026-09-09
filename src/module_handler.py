@@ -27,6 +27,7 @@ import typing
 from models.data_tree_model import DataTreeModel, DataTreeNode
 import cyclonedds
 import re
+from utils.platform_utils import IS_ANDROID
 
 @dataclass
 class DataModelItem:
@@ -72,6 +73,9 @@ class DataModelHandler(QObject):
         return None
 
     def addUrls(self, urls):
+        if IS_ANDROID:
+            logging.warning("IDL file compilation is unavailable on Android; use types discovered from the network.")
+            return
         if self.idlcWorker:
             return
         

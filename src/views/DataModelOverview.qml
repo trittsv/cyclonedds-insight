@@ -54,6 +54,9 @@ Rectangle {
 
                 Button {
                     id: importBtnId
+                    enabled: !IS_ANDROID
+                    ToolTip.visible: hovered && IS_ANDROID
+                    ToolTip.text: "Android uses types discovered from the network; IDL file compilation is unavailable."
                     text: qsTrId("general.import")
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     onClicked: {

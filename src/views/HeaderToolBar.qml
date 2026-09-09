@@ -20,11 +20,12 @@ import "qrc:/src/views/icons"
 
 ToolBar {
     id: headerToolBar
-    topPadding: 10
+    topPadding: 10 + (Qt.platform.os === "android" ? SafeArea.margins.top : 0)
     bottomPadding: 10
-    leftPadding: 10
-    rightPadding: 10
+    leftPadding: 10 + (Qt.platform.os === "android" ? SafeArea.margins.left : 0)
+    rightPadding: 10 + (Qt.platform.os === "android" ? SafeArea.margins.right : 0)
     property bool isStartupSpinning: true
+    readonly property bool androidToolbar: Qt.platform.os === "android"
     property int startupSpinLoops: 0
     property bool isActivitySpinning: false
     readonly property bool isHeaderSpinning: isStartupSpinning || isActivitySpinning
@@ -47,24 +48,33 @@ ToolBar {
         }
     }
 
-    RowLayout {
-        anchors.fill: parent
+    contentItem: RowLayout {
 
         Item {
             Layout.preferredWidth: 30
+            Layout.minimumWidth: 30
             Layout.preferredHeight: 30
 
             Image {
-                visible: !isHeaderSpinning
+                id: cycloneLogo
+                visible: headerToolBar.androidToolbar || !isHeaderSpinning
                 source: "qrc:/res/images/cyclonedds.png"
                 sourceSize.width: 30
                 sourceSize.height: 30
+                NumberAnimation on rotation {
+                    from: 0
+                    to: 360
+                    duration: 1000
+                    running: headerToolBar.androidToolbar && headerToolBar.isHeaderSpinning
+                    loops: headerToolBar.isActivitySpinning ? Animation.Infinite : 2
+                    onFinished: headerToolBar.isStartupSpinning = false
+                }
             }
             AnimatedImage {
                 id: headerLoadingId
-                source: "qrc:/res/images/spinning.gif"
-                visible: isHeaderSpinning
-                playing: isHeaderSpinning
+                source: headerToolBar.androidToolbar ? "" : "qrc:/res/images/spinning.gif"
+                visible: !headerToolBar.androidToolbar && isHeaderSpinning
+                playing: !headerToolBar.androidToolbar && isHeaderSpinning
                 paused: !isHeaderSpinning
                 sourceSize.height: 30
                 sourceSize.width: 30
@@ -91,8 +101,12 @@ ToolBar {
 
         Label {
             text: rootWindow.title
+            Layout.fillWidth: headerToolBar.androidToolbar
+            Layout.minimumWidth: 0
+            elide: Text.ElideRight
         }
         Item {
+            visible: !headerToolBar.androidToolbar
             Layout.fillWidth: true
         }
         ComboBox {
@@ -148,6 +162,7 @@ ToolBar {
                 }
                 MenuItem {
                     text: qsTrId("general.checkupdates")
+                    enabled: !IS_ANDROID
                     onTriggered: checkForUpdatesWindow.showAndCheckForUpdates()
                 }
                 MenuItem {

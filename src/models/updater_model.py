@@ -11,6 +11,7 @@
 """
 
 from PySide6.QtCore import QThread, Signal, Slot, QProcess, QObject, QTemporaryDir
+from utils.platform_utils import IS_ANDROID
 from PySide6.QtCore import QUrl, QSettings
 from PySide6.QtNetwork import (
     QNetworkProxy, QNetworkAccessManager, QNetworkRequest, QNetworkReply
@@ -289,6 +290,9 @@ class UpdaterModel(QObject):
 
     @Slot(str, str, str, str)
     def downloadFile(self, organization, project, buildId, appDir):
+        if IS_ANDROID:
+            self.error.emit("Install an updated APK to update Insight on Android.")
+            return
 
         if sys.platform == "darwin" or appDir != "" or sys.platform.startswith("win"):
             # MacOS and Windows (via installer) can run directly
@@ -407,6 +411,8 @@ class UpdaterModel(QObject):
 
     @Slot()
     def checkForUpdate(self):
+        if IS_ANDROID:
+            return
         logging.info(f"Check for updates: {self.latestBuildUrl.toString()}")
 
         self.setProxy()
