@@ -3,6 +3,13 @@
 <TS version="2.1" language="fr">
 <context>
     <name></name>
+    <message id="listener.view.log">
+        <translation>Journal des messages</translation>
+    </message>
+    <message id="listener.view.instances">
+        <translation>Dernier message par instance</translation>
+    </message>
+
     <!-- about -->
     <message id="about.contributors">
         <translation>Merci à toutes les personnes ayant contribué au projet Eclipse Cyclone DDS ❤️</translation>
@@ -1021,6 +1028,67 @@
         <translation>Writers</translation>
     </message>
 
+    <!-- errors -->
+    <message id="errors.unknown">
+        <translation>Erreur inconnue</translation>
+    </message>
+    <message id="idl.import.invalid-files">
+        <translation>L’import IDL accepte uniquement les fichiers .idl. %1 fichier(s) ont été refusés.</translation>
+    </message>
+    <message id="errors.title">
+        <translation>Erreurs</translation>
+    </message>
+    <message id="errors.count">
+        <translation>Erreurs (%1)</translation>
+    </message>
+    <message id="errors.window.title">
+        <translation>Erreurs de l’application</translation>
+    </message>
+    <message id="errors.active.count">
+        <translation>%1 active(s)</translation>
+    </message>
+    <message id="errors.all.acknowledged">
+        <translation>Toutes acquittées</translation>
+    </message>
+    <message id="errors.none.reported">
+        <translation>Aucune signalée</translation>
+    </message>
+    <message id="errors.acknowledge.all">
+        <translation>Tout acquitter</translation>
+    </message>
+    <message id="errors.recorded.one">
+        <translation>1 erreur enregistrée pendant cette session</translation>
+    </message>
+    <message id="errors.recorded.count">
+        <translation>%1 erreurs enregistrées pendant cette session</translation>
+    </message>
+    <message id="errors.acknowledged">
+        <translation>Acquittée</translation>
+    </message>
+    <message id="errors.active">
+        <translation>Active</translation>
+    </message>
+    <message id="errors.acknowledged.with-icon">
+        <translation>✓ Acquittée</translation>
+    </message>
+    <message id="errors.acknowledge">
+        <translation>Acquitter</translation>
+    </message>
+    <message id="errors.empty.title">
+        <translation>Aucune erreur signalée</translation>
+    </message>
+    <message id="errors.empty.description">
+        <translation>Les erreurs de cette session apparaîtront ici.</translation>
+    </message>
+    <message id="errors.view.details">
+        <translation>Afficher les détails</translation>
+    </message>
+    <message id="errors.view.count">
+        <translation>Afficher %1 erreurs</translation>
+    </message>
+    <message id="errors.notification.dismiss">
+        <translation>Fermer la notification</translation>
+    </message>
     <!-- update -->
     <message id="update.artifacts.open">
         <translation>Ouvrir les artefacts de build</translation>

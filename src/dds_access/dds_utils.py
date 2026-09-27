@@ -75,16 +75,20 @@ def getProperty(p: Optional[DcpsParticipant], names: List[str]):
                 break
     return propName
 
+def formatProcessName(name: str) -> str:
+    # Strip directories while preserving the full executable or application ID.
+    return Path(name.replace("\\", os.path.sep)).name
+
+def getProcessName(p: Optional[DcpsParticipant]) -> str:
+    return formatProcessName(getProperty(p, PROCESS_NAMES))
+
 def getAppName(p: Optional[DcpsParticipant]):
-    appNameWithPath = getProperty(p, PROCESS_NAMES)
-    pid = getProperty(p, PIDS)
-    appNameStem = Path(appNameWithPath.replace("\\", f"{os.path.sep}")).stem
-    return  appNameStem + ":" + pid
+    return getProcessName(p) + ":" + getProperty(p, PIDS)
 
 def looksLikeHostname(s: str) -> bool:
     if not s or len(s) > 255:
         return False
-    if " " in s:
+    if " " in s or "<" in s or ">" in s:
         return False
     return True
 
@@ -430,4 +434,3 @@ def toQos(
             pass
 
         return dpQps, topicQos, pubSubQos, qos
-

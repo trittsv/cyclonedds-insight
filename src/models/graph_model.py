@@ -13,7 +13,6 @@
 from PySide6.QtCore import Qt, QAbstractItemModel, Qt, Slot, Signal, QThread
 from cyclonedds.builtin import DcpsParticipant
 from loguru import logger as logging
-from pathlib import Path
 from dds_access import dds_utils
 from threading import Lock
 import uuid
@@ -184,10 +183,10 @@ class GraphModel(QAbstractItemModel):
 
         hostName = socket.gethostname()
         if IS_MOBILE:
-            self.selfName = f"{hostName}:{Path(sys.executable).stem}:{os.getpid()}"
+            self.selfName = f"{hostName}:{dds_utils.formatProcessName(sys.executable)}:{os.getpid()}"
         else:
             proc = psutil.Process()
-            self.selfName = f"{hostName}:{Path(proc.exe()).stem}:{proc.pid}"
+            self.selfName = f"{hostName}:{dds_utils.formatProcessName(proc.exe())}:{proc.pid}"
 
         self.dds_data = dds_data.DdsData()
 

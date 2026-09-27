@@ -108,9 +108,17 @@ Rectangle {
                 onClicked: receiverModel.clear()
             }
 
-            Item {
-                implicitHeight: 1
+            ComboBox {
+                implicitContentWidthPolicy: ComboBox.WidestText
+                model: [qsTrId("listener.view.log"), qsTrId("listener.view.instances")]
+                currentIndex: receiverModel.instanceView ? 1 : 0
+                onActivated: receiverModel.instanceView = currentIndex === 1
+            }
+
+            TextField {
                 Layout.fillWidth: true
+                placeholderText: qsTrId("general.search.placeholder")
+                onAccepted: receiverProxyModel.searchText = text
             }
 
             Button {

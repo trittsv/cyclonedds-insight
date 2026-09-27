@@ -29,7 +29,6 @@ from dds_access.datatypes.entity_type import EntityType
 from module_handler import DataModelHandler
 from utils.qml_utils import QmlUtils
 import time
-from pathlib import Path
 
 
 class DatamodelModel(QAbstractListModel):
@@ -38,13 +37,14 @@ class DatamodelModel(QAbstractListModel):
 
     newDataArrived = Signal(
         str, str, str, bool, str, str, str, str, str, str, str, str, str, str,
-        str
+        str, str
     )
     isLoadingSignal = Signal(bool)
     requestDataType = Signal(str, int, str, str)
     newWriterSignal = Signal(str, int, str, str, object)
     newReaderSignal = Signal(str, int, str, str, object)
     qosProviderError = Signal(str)
+    operationError = Signal(str)
 
     def __init__(self, threads, dataModelHandler, parent=typing.Optional[QObject]) -> None:
         super().__init__()
@@ -52,6 +52,7 @@ class DatamodelModel(QAbstractListModel):
         self.dataModelHandler.isLoadingSignal.connect(self.moduleHanlderIsLoading)
         self.dataModelHandler.beginInsertModuleSignal.connect(self.beginInsertModule)
         self.dataModelHandler.endInsertModuleSignal.connect(self.endInsertModule)
+        self.dataModelHandler.operationError.connect(self.operationError.emit)
 
         self.ddsData = DdsData()
         self.requestDataType.connect(self.ddsData.requestDataType)
@@ -59,6 +60,7 @@ class DatamodelModel(QAbstractListModel):
 
         self.threads = threads
         self.readerRequests = {}
+        self.pendingEndpoints = {}
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> typing.Any:
         if not index.isValid():
@@ -102,21 +104,19 @@ class DatamodelModel(QAbstractListModel):
     def endInsertModule(self):
         self.endInsertRows()
 
-    @Slot(str, str, str, bool, str, str, str, str, str, int, str, str, str)
+    @Slot(str, str, str, bool, str, str, str, str, str, int, str, str, str, str)
     def onData(self, _id: str, data: str, sample_info: str, valid_data: bool,
                source_timestamp: str, transmission_time: str,
                received_timestamp: str, writer_id: str, reader_id: str,
                domain_id: int, writer_participant_id: str, topic_type: str,
-               topic_name: str):
+               topic_name: str, instance_handle: str):
         participant = None
         if domain_id in self.ddsData.the_domains:
             participant = self.ddsData.the_domains[domain_id].getParticipantByKey(
                 writer_participant_id
             )
 
-        process_name = dds_utils.getProperty(participant, dds_utils.PROCESS_NAMES)
-        if process_name != "Unknown":
-            process_name = Path(process_name.replace("\\", os.path.sep)).stem
+        process_name = dds_utils.getProcessName(participant)
         hostname = dds_utils.getHostname(participant)
         process_id = dds_utils.getProperty(participant, dds_utils.PIDS)
         addresses = dds_utils.getProperty(participant, dds_utils.ADDRESSES)
@@ -124,7 +124,8 @@ class DatamodelModel(QAbstractListModel):
         self.newDataArrived.emit(
             _id, data, sample_info, valid_data, source_timestamp,
             transmission_time, received_timestamp, writer_id, reader_id,
-            process_name, hostname, process_id, addresses, topic_type, topic_name
+            process_name, hostname, process_id, addresses, topic_type, topic_name,
+            instance_handle
         )
 
     @Slot()
@@ -198,30 +199,35 @@ class DatamodelModel(QAbstractListModel):
 
     @Slot(str, int, str, str, int, str, object, object)
     def createEndpointFromTester(self, _id, domainId, topic_name, topic_type, entityType, presetName, messageRoot, allQosDict):
-
-        logging.debug("add endpoint request" + str(domainId) + " " + str(topic_name) + " " + str(topic_type) + " with qos: " + str(allQosDict))
-
-        dpQos = Qos()
-
-        if "topic_qos" in allQosDict:
-            topicQos = Qos.fromdict(allQosDict["topic_qos"])
-
-        if "endpoint_qos" in allQosDict:
-            endpointQos = Qos.fromdict(allQosDict["endpoint_qos"])
-
-        if "publisher_qos" in allQosDict:
-            pubSubQos = Qos.fromdict(allQosDict["publisher_qos"])
-
-        if "subscriber_qos" in allQosDict:
-            pubSubQos = Qos.fromdict(allQosDict["subscriber_qos"])
-
-        self.handleEndpointCreation(_id, domainId, topic_name, topic_type, (dpQos, topicQos, pubSubQos, endpointQos), EntityType(entityType))
+        try:
+            logging.debug("add endpoint request" + str(domainId) + " " + str(topic_name) + " " + str(topic_type) + " with qos: " + str(allQosDict))
+            dpQos = Qos()
+            topicQos = Qos.fromdict(allQosDict.get("topic_qos", {}))
+            endpointQos = Qos.fromdict(allQosDict.get("endpoint_qos", {}))
+            pubSubQos = Qos.fromdict(allQosDict.get(
+                "publisher_qos", allQosDict.get("subscriber_qos", {})
+            ))
+            self.handleEndpointCreation(_id, domainId, topic_name, topic_type,
+                                        (dpQos, topicQos, pubSubQos, endpointQos),
+                                        EntityType(entityType))
+        except Exception as error:
+            message = f"Failed to create endpoint '{topic_name}': {error}"
+            logging.error(message)
+            self.operationError.emit(message)
 
     @Slot(str, int)
     def setQosSelectionFromFile(self, filePath: str, entityType: int):
+        try:
+            self._setQosSelectionFromFile(filePath, entityType)
+        except Exception as error:
+            message = f"Cannot import listener preset '{os.path.basename(filePath)}': {error}"
+            logging.error(message)
+            self.operationError.emit(message)
+
+    def _setQosSelectionFromFile(self, filePath: str, entityType: int):
         logging.info(f"Import preset from {filePath}")
         if not os.path.isfile(filePath):
-            logging.error(f"File does not exist: {filePath}")
+            raise FileNotFoundError(filePath)
             return
 
         with open(filePath, "r", encoding="utf-8") as f:
@@ -240,17 +246,11 @@ class DatamodelModel(QAbstractListModel):
 
                     dpQos = Qos()
 
-                    if "topic_qos" in allQosDict:
-                        topicQos = Qos.fromdict(allQosDict["topic_qos"])
-
-                    if "endpoint_qos" in allQosDict:
-                        endpointQos = Qos.fromdict(allQosDict["endpoint_qos"])
-
-                    if "publisher_qos" in allQosDict:
-                        pubSubQos = Qos.fromdict(allQosDict["publisher_qos"])
-
-                    if "subscriber_qos" in allQosDict:
-                        pubSubQos = Qos.fromdict(allQosDict["subscriber_qos"])
+                    topicQos = Qos.fromdict(allQosDict.get("topic_qos", {}))
+                    endpointQos = Qos.fromdict(allQosDict.get("endpoint_qos", {}))
+                    pubSubQos = Qos.fromdict(allQosDict.get(
+                        "publisher_qos", allQosDict.get("subscriber_qos", {})
+                    ))
 
                     self.handleEndpointCreation(_id, domainId, topic_name, topic_type, (dpQos, topicQos, pubSubQos, endpointQos), EntityType(entityType))
 
@@ -262,23 +262,36 @@ class DatamodelModel(QAbstractListModel):
                 self.dataModelHandler.addTypeFromNetwork(topic_type, dataType)
                 self.createEndpoint(_id, domain_id, topic_name, dataType, qos, entityType, topic_type)
             else:
-                logging.error("Failed to receive datatype from network.")
+                message = f"Failed to retrieve datatype '{self.readerRequests[requestId][2]}' from the network."
+                logging.error(message)
+                self.operationError.emit(message)
 
             del self.readerRequests[requestId]
 
     def createEndpoint(self, id, domainId: int, topicName: str, dataType, qos, entityType: EntityType, topic_type):
         logging.debug(f"add endpoint with qos: {str(qos)}")
 
+        self.pendingEndpoints[id] = (domainId, topicName, topic_type, qos, entityType)
         if domainId in self.threads:
             self.threads[domainId].addEndpoint(id, topicName, dataType, qos, entityType)
         else:
             self.threads[domainId] = DispatcherThread(id, domainId, topicName, dataType, qos, entityType)
             self.threads[domainId].onData.connect(self.onData, Qt.ConnectionType.QueuedConnection)
+            self.threads[domainId].endpointCreated.connect(self.endpointCreated)
+            self.threads[domainId].endpointCreationFailed.connect(self.endpointCreationFailed)
             self.threads[domainId].start()
             while not self.threads[domainId].isSetUpDone():
                 logging.debug("Waiting for worker thread to set up...")
                 time.sleep(0.01)
 
+        logging.debug("Endpoint creation requested")
+
+    @Slot(str)
+    def endpointCreated(self, id):
+        pending = self.pendingEndpoints.pop(id, None)
+        if pending is None:
+            return
+        (domainId, topicName, topic_type, qos, entityType) = pending
         (dpQos, topicQos, pubSubQos, endpointQos) = qos
         qosDict = {
             "domain_partition_qos": dpQos.asdict(),
@@ -294,7 +307,12 @@ class DatamodelModel(QAbstractListModel):
         if entityType == EntityType.READER:
             self.newReaderSignal.emit(id, domainId, topicName, topic_type, qosDict)
 
-        logging.debug("try add endpoint ... DONE")
+        logging.debug("add endpoint ... DONE")
+
+    @Slot(str, str)
+    def endpointCreationFailed(self, id, message):
+        self.pendingEndpoints.pop(id, None)
+        self.operationError.emit(message)
 
     @Slot(str)
     def exportListenerPresets(self, filePath: str):
@@ -315,4 +333,5 @@ class DatamodelModel(QAbstractListModel):
                 })
 
         qmlUtils = QmlUtils()
-        qmlUtils.saveFileContent(filePath, json.dumps(exportData, indent=4))
+        if not qmlUtils.saveFileContent(filePath, json.dumps(exportData, indent=4)):
+            self.operationError.emit(f"Could not export listener presets to '{filePath}'.")

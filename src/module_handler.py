@@ -39,6 +39,7 @@ class DataModelHandler(QObject):
     isLoadingSignal: Signal = Signal(bool)
     beginInsertModuleSignal: Signal = Signal(int)
     endInsertModuleSignal: Signal = Signal()
+    operationError: Signal = Signal(str)
 
     def __init__(self, parent=typing.Optional[QObject]):
         super().__init__()
@@ -88,9 +89,12 @@ class DataModelHandler(QObject):
         self.idlcWorker.doneSignale.connect(self.idlcWorkerDone)
         self.idlcWorker.start()
 
-    @Slot()
-    def idlcWorkerDone(self):
-        self.loadModules()
+    @Slot(bool, str)
+    def idlcWorkerDone(self, success, message):
+        if success:
+            self.loadModules()
+        else:
+            self.operationError.emit(f"IDL import failed:\n{message}")
         self.idlcWorker = None
         self.isLoadingSignal.emit(False)
 
@@ -120,7 +124,9 @@ class DataModelHandler(QObject):
                 module = importlib.import_module(module_name)
                 self.add_idl_without_module(module)
             except Exception as e:
-                logging.error(f"Error importing {module_name}")
+                message = f"Failed to load generated IDL module '{module_name}': {e}"
+                logging.error(message)
+                self.operationError.emit(message)
 
         submodules = [name for name in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, name))]
         for submodule in submodules:
@@ -216,9 +222,13 @@ class DataModelHandler(QObject):
 
 
                 except Exception as e:
-                    logging.error(f"Error importing {module_name} : {type_name} : {e}")
+                    message = f"Failed to load IDL type '{module_name}::{type_name}': {e}"
+                    logging.error(message)
+                    self.operationError.emit(message)
         except Exception as e:
-            logging.error(f"Error importing {module_name}: {e}")
+            message = f"Failed to load generated IDL module '{module_name}': {e}"
+            logging.error(message)
+            self.operationError.emit(message)
 
         logging.trace(f"allTypes {json.dumps(self.allTypes, indent=2, default=str)}")
         logging.trace(f"customTypes {json.dumps(self.customTypes, indent=2, default=str)}")
@@ -356,10 +366,10 @@ class DataModelHandler(QObject):
 
         return initializedObj
 
-    def getRootNode(self, topic_type):
+    def getRootNode(self, topic_type, unresolved_types=None):
         rootNode = DataTreeNode("root", topic_type, DataTreeModel.IsStructRole)
         rootNode.dataType = self.getInitializedDataObj(topic_type)
-        return self.toNode(topic_type, rootNode)
+        return self.toNode(topic_type, rootNode, unresolved_types)
 
     def isInt(self, theType):
         args = typing.get_args(theType)
@@ -523,7 +533,7 @@ class DataModelHandler(QObject):
         parts = [part for part in attr_string.split('.') if not part.startswith('_')]
         return '::'.join(parts)
 
-    def toNode(self, theType: str, rootNode):
+    def toNode(self, theType: str, rootNode, unresolved_types=None):
         logging.trace(f"toNode {str(theType)}")
 
         if theType.replace(".", "::") in self.structMembers:
@@ -573,7 +583,7 @@ class DataModelHandler(QObject):
 
                     for _ in range(arrayLength):
                         arrElem = DataTreeNode("", "", DataTreeModel.IsArrayElementRole, parent=arrayRootNode)
-                        itemNode = self.toNode(arrayRootNode.itemArrayTypeName, arrElem)
+                        itemNode = self.toNode(arrayRootNode.itemArrayTypeName, arrElem, unresolved_types)
                         arrayRootNode.appendChild(itemNode)
 
                     rootNode.appendChild(arrayRootNode)
@@ -620,12 +630,15 @@ class DataModelHandler(QObject):
                     if isinstance(realType, cyclonedds.idl.IdlMeta):
                         realType = realType.__idl_typename__
                     subRootNode.dataType = self.getInitializedDataObj(str(realType).replace(".", "::"))
-                    self.toNode(str(realType).replace(".", "::"), subRootNode)
+                    self.toNode(str(realType).replace(".", "::"), subRootNode, unresolved_types)
                     rootNode.appendChild(subRootNode)
 
                 # Unknown
                 else:
-                    logging.error(f"Unknown Datatype: {theType} {keyStructMem} {str(realType)}")
+                    if unresolved_types is not None:
+                        unresolved_types.add(str(realType))
+                    else:
+                        logging.error(f"Unknown Datatype: {theType} {keyStructMem} {str(realType)}")
         else:
             theType = self.resolveCustomType(str(theType))
             if self.isInt(theType):
@@ -672,11 +685,14 @@ class DataModelHandler(QObject):
             elif self.isStruct(theType):
                 subRootNode = DataTreeNode("", theType, DataTreeModel.IsStructRole, parent=rootNode)
                 subRootNode.dataType = self.getInitializedDataObj(str(theType).replace(".", "::"))
-                self.toNode(str(theType).replace(".", "::"), subRootNode)
+                self.toNode(str(theType).replace(".", "::"), subRootNode, unresolved_types)
                 rootNode.appendChild(subRootNode)
 
             else:
-                logging.error(f"Unknown Datatype: {theType}")
+                if unresolved_types is not None:
+                    unresolved_types.add(str(theType))
+                else:
+                    logging.error(f"Unknown Datatype: {theType}")
 
         return rootNode
 
