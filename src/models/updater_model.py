@@ -10,8 +10,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 """
 
-from PySide6.QtCore import QThread, Signal, Slot, QProcess, QObject, QTemporaryDir
-from utils.platform_utils import IS_ANDROID
+from PySide6.QtCore import QThread, Signal, Slot, QObject, QTemporaryDir
+from utils.platform_utils import IS_MOBILE
+
+if not IS_MOBILE:
+    from PySide6.QtCore import QProcess
 from PySide6.QtCore import QUrl, QSettings
 from PySide6.QtNetwork import (
     QNetworkProxy, QNetworkAccessManager, QNetworkRequest, QNetworkReply
@@ -290,8 +293,8 @@ class UpdaterModel(QObject):
 
     @Slot(str, str, str, str)
     def downloadFile(self, organization, project, buildId, appDir):
-        if IS_ANDROID:
-            self.error.emit("Install an updated APK to update Insight on Android.")
+        if IS_MOBILE:
+            self.error.emit("Install an updated app package to update Insight on mobile devices.")
             return
 
         if sys.platform == "darwin" or appDir != "" or sys.platform.startswith("win"):
@@ -411,7 +414,7 @@ class UpdaterModel(QObject):
 
     @Slot()
     def checkForUpdate(self):
-        if IS_ANDROID:
+        if IS_MOBILE:
             return
         logging.info(f"Check for updates: {self.latestBuildUrl.toString()}")
 

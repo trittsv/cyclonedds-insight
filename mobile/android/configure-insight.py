@@ -17,8 +17,8 @@ for key, value in {
     "android.numeric_version": "2",
     "android.release_artifact": "aab",
     # Buildozer joins domain and name to form the Android application ID.
-    "package.name": "insight",
-    "package.domain": "org.eclipse.cyclonedds",
+    "package.name": "cycloneddsinsight",
+    "package.domain": "trittsv.app",
     "requirements": "python3==3.11.11,hostpython3==3.11.11,shiboken6,PySide6,cyclonedds,loguru==0.7.3,requests==2.32.3",
     "orientation": "portrait,landscape,portrait-reverse,landscape-reverse",
     "android.manifest.orientation": "fullSensor",

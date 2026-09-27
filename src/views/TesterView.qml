@@ -51,8 +51,9 @@ Rectangle {
         currentDataIndex = dataItemCount > 0
                 ? Math.min(currentDataIndex, dataItemCount - 1)
                 : 0
-        dataTreeModel = testerModel.getTreeModel(librariesCombobox.currentIndex, currentDataIndex)
-        sequenceModel = testerModel.getSequenceModel(librariesCombobox.currentIndex)
+        // Empty QVariant returns become undefined in QML; keep model state nullable.
+        dataTreeModel = testerModel.getTreeModel(librariesCombobox.currentIndex, currentDataIndex) || null
+        sequenceModel = testerModel.getSequenceModel(librariesCombobox.currentIndex) || null
     }
 
     Connections {

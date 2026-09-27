@@ -21,7 +21,6 @@ import sys
 from enum import Enum
 from dds_access import dds_data
 import requests
-from utils.platform_utils import IS_ANDROID
 
 
 class QmlUtils(QObject):
@@ -39,8 +38,7 @@ class QmlUtils(QObject):
 
     @Slot(int)
     def setColorScheme(self, scheme):
-        QApplication.styleHints().setColorScheme(
-            Qt.ColorScheme.Light if IS_ANDROID else Qt.ColorScheme(scheme))
+        QApplication.styleHints().setColorScheme(Qt.ColorScheme(scheme))
 
     @Slot(str, result=str)
     def loadFileContent(self, file_path: str) -> str:

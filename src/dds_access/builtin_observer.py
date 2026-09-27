@@ -25,6 +25,7 @@ from dds_access.datatypes.ospl.utils import from_ospl
 from typing import Tuple
 from dds_access.domain_participant_factory import DomainParticipantFactory
 from dds_access.datatypes.entity_type import EntityType
+from utils.platform_utils import IS_IOS
 
 
 IGNORE_TOPICS = [
@@ -69,7 +70,25 @@ class BuiltInObserver(QThread):
         logging.info(f"builtin_observer({self.domain_id}) ...")
         self.running = True
 
-        with DomainParticipantFactory.get_participant(self.domain_id) as domain_participant:
+        # iOS can reject the first LAN operation while its permission dialog is
+        # still open. Retry participant creation, and keep Stop responsive.
+        for attempt in range(30 if IS_IOS else 1):
+            if not self.running:
+                return
+            try:
+                participant = DomainParticipantFactory.get_participant(self.domain_id)
+                break
+            except core.DDSException as error:
+                if not IS_IOS:
+                    raise
+                logging.warning(f"DDS domain {self.domain_id}: {error}. Allow Local Network access; retry {attempt + 1}/30.")
+                self.msleep(1000)
+        else:
+            self.running = False
+            logging.error("DDS startup failed. Check Local Network permission, interface and peer settings, then restart Insight.")
+            return
+
+        with participant as domain_participant:
 
             waitset = core.WaitSet(domain_participant)
 

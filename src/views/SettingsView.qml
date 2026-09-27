@@ -105,29 +105,43 @@ Rectangle {
                         Layout.fillWidth: true
                         spacing: 10
 
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 3
-
-                            Label {
-                                text: "CYCLONEDDS_URI"
-                                color: settingsViewId.secondaryTextColor
-                            }
-
-                            TextField {
-                                id: login
-                                Layout.fillWidth: true
-                                text: CYCLONEDDS_URI
-                                readOnly: true
-                                selectByMouse: true
+                        Label {
+                            text: "CYCLONEDDS_URI"
+                            color: settingsViewId.secondaryTextColor
+                        }
+                        Item { Layout.fillWidth: true }
+                        Switch {
+                            text: qsTrId("settings.config.use.insight")
+                            checked: ddsConfig.selectedSource === "xml"
+                            onClicked: {
+                                if (checked)
+                                    ddsConfig.useManagedConfiguration()
+                                else
+                                    ddsConfig.useStartupConfiguration()
                             }
                         }
-
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        TextField {
+                            Layout.fillWidth: true
+                            text: ddsConfig.selectedSource === "xml" ? ddsConfig.editorXml : ddsConfig.startupUri
+                            placeholderText: qsTr("Not set")
+                            readOnly: true
+                            selectByMouse: true
+                        }
                         Button {
-                            id: editConfigButton
                             text: qsTrId("settings.config.edit")
                             onClicked: layout.currentIndex = 2
                         }
+                    }
+                    Label {
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        visible: ddsConfig.restartRequired || ddsConfig.status.length > 0
+                        text: ddsConfig.status || (ddsConfig.restartRequired ? qsTr("Restart required") : "")
+                        color: settingsViewId.secondaryTextColor
                     }
 
                     RowLayout {
@@ -158,13 +172,36 @@ Rectangle {
                                                StandardPaths.AppDataLocation))
                         }
                     }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 3
+                            Label {
+                                text: qsTr("QSettings")
+                                font.bold: true
+                            }
+                            Label {
+                                Layout.fillWidth: true
+                                text: ddsConfig.settingsFile
+                                color: settingsViewId.secondaryTextColor
+                                elide: Text.ElideMiddle
+                            }
+                        }
+                        Button {
+                            text: qsTr("Open file")
+                            enabled: ddsConfig.settingsFileAvailable
+                            onClicked: ddsConfig.openSettingsFile()
+                        }
+                    }
                 }
             }
 
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: appearanceLayout.implicitHeight + 24
-                visible: !IS_ANDROID
                 radius: Constants.cardRadius
                 color: settingsViewId.surfaceColor
                 border.width: 1

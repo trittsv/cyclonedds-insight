@@ -15,11 +15,13 @@ sh mobile/android/build-insight.sh
 The build uses the local `deps/cyclonedds` and `deps/cyclonedds-python` checkouts
 from the desktop development setup. It stages the real application in
 `build/android-insight` and writes the debug APK to
-`dist/android/insight-0.1-arm64-v8a-debug.apk`. It has a separate
-application ID (`org.eclipse.cyclonedds.insight`) and can coexist with the probe.
+`dist/android/cycloneddsinsight-0.1-arm64-v8a-debug.apk`. It has a separate
+application ID (`trittsv.app.cycloneddsinsight`) and can coexist with the probe.
 The launcher label is `CycloneDDS Insight`. Builds using the former ID
-`trittsv.app.cycloneddsinsight` remain a separate installation; the new ID does
-not update or migrate that installation's settings.
+`org.eclipse.cyclonedds.insight` remain a separate installation; changing the ID
+does not migrate that installation's settings. Updating an existing installation
+of `trittsv.app.cycloneddsinsight` requires the same signing key.
+
 
 Prerequisites: Python 3.11, CMake, the existing p4a build prerequisites, JDK 17,
 Android SDK platform 36, NDK 27.2.12479018, and the two PySide6/Shiboken6 6.11.0
@@ -29,7 +31,7 @@ override `ANDROID_SDK_ROOT`, `ANDROID_NDK_HOME`, `PYSIDE_ANDROID_WHEEL`,
 
 ```sh
 "$HOME/Library/Android/sdk/platform-tools/adb" install -r \
-  dist/android/insight-0.1-arm64-v8a-debug.apk
+  dist/android/cycloneddsinsight-0.1-arm64-v8a-debug.apk
 ```
 
 The full-app port retains the existing QML interface and allows sensor-based
@@ -229,7 +231,7 @@ Build an AAB using the same staging and native-library steps as the debug APK:
 sh mobile/android/build-insight.sh aab
 ```
 
-Output: `dist/android/insight-0.1-arm64-v8a-release.aab`.
+Output: `dist/android/cycloneddsinsight-0.1-arm64-v8a-release.aab`.
 Without P4A release-signing environment variables, this bundle is unsigned.
 Create an upload key once, outside the repository (keep a secure backup):
 
@@ -245,7 +247,7 @@ Sign the bundle interactively; the script also runs signature verification:
 
 ```sh
 sh mobile/android/sign-aab.sh \
-  dist/android/insight-0.1-arm64-v8a-release.aab \
+  dist/android/cycloneddsinsight-0.1-arm64-v8a-release.aab \
   "$HOME/.android-keys/insight-upload.jks" upload
 ```
 

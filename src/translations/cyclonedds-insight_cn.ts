@@ -776,6 +776,9 @@
     <message id="settings.appearance.description">
         <translation>选择应用程序如何跟随系统配色方案。</translation>
     </message>
+    <message id="settings.config.use.insight">
+        <translation>使用 Insight 中的 DDS 配置</translation>
+    </message>
     <message id="settings.config.edit">
         <translation>编辑配置文件</translation>
     </message>

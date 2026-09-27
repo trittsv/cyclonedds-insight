@@ -776,6 +776,9 @@
     <message id="settings.appearance.description">
         <translation>アプリケーションがシステムのカラースキームに従う方法を選択します。</translation>
     </message>
+    <message id="settings.config.use.insight">
+        <translation>Insight の DDS 設定を使用</translation>
+    </message>
     <message id="settings.config.edit">
         <translation>構成ファイルを編集</translation>
     </message>

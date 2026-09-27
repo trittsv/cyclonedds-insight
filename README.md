@@ -39,6 +39,20 @@ For windows use the `.bat` alternatives.
 ## How to build
 
 For the experimental Android port, see [Android setup and porting status](mobile/android/README.md).
+For iPhone and iPad (ARM64), see [iOS build and installation](mobile/ios/README.md).
+
+### DDS configuration in Insight
+
+In **Settings**, use the **Managed by Insight** switch:
+- **Use CYCLONEDDS_URI environment variable** (default): uses the startup environment;
+  file references remain paths. Without a value, Cyclone DDS uses its defaults.
+- **Managed by CycloneDDS Insight**: edit XML and save it in Insight's QSettings.
+  Insight sets its own process environment before DDS starts; no shell setup is needed.
+
+Close and reopen the app after changing the source or XML. The text field shows the startup environment value or the saved XML, depending on the selected mode. XML strings are escaped by
+QSettings automatically. The editor autosaves to Insight settings in managed mode;
+in environment mode it edits the referenced XML file, as before.
+XML syntax is checked on save; DDS validates configuration options at startup.
 
 ### MacOS / Linux
 

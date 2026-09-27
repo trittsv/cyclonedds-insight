@@ -39,8 +39,8 @@ fi
 python "$android_dir/configure-insight.py"
 if [ "$build_mode" = aab ]; then
     python -m buildozer android release
-    python "$android_dir/verify-apk.py" "$repo_dir/dist/android/insight-0.1-arm64-v8a-release.aab"
+    python "$android_dir/verify-apk.py" "$repo_dir/dist/android/cycloneddsinsight-0.1-arm64-v8a-release.aab"
 else
     python -m buildozer android debug
-    python "$android_dir/verify-apk.py" "$repo_dir/dist/android/insight-0.1-arm64-v8a-debug.apk"
+    python "$android_dir/verify-apk.py" "$repo_dir/dist/android/cycloneddsinsight-0.1-arm64-v8a-debug.apk"
 fi

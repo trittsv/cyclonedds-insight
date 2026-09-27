@@ -13,7 +13,7 @@ with zipfile.ZipFile(apk) as archive:
     with tarfile.open(fileobj=io.BytesIO(archive.read(prefix + "lib/arm64-v8a/libpybundle.so"))) as bundle:
         bundle.getmember("_python_bundle/site-packages/cyclonedds/_clayer.so")
         bundle.getmember("_python_bundle/site-packages/cyclonedds/domain.pyc")
-    if apk.name.startswith("insight-"):
+    if apk.name.startswith(("insight-", "cycloneddsinsight-")):
         with tarfile.open(fileobj=io.BytesIO(archive.read(prefix + "assets/private.tar"))) as assets:
             for member in ("main.pyc", "qrc_file.pyc", "dds_access/dds_data.pyc", "models/graph_model.pyc"):
                 assets.getmember(member)

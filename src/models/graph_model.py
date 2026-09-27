@@ -22,9 +22,9 @@ import os
 import sys
 import requests
 import socket
-from utils.platform_utils import IS_ANDROID
+from utils.platform_utils import IS_MOBILE
 
-if not IS_ANDROID:
+if not IS_MOBILE:
     import psutil
 
 from dds_access import dds_data
@@ -183,7 +183,7 @@ class GraphModel(QAbstractItemModel):
         self.ignoreSelf = False
 
         hostName = socket.gethostname()
-        if IS_ANDROID:
+        if IS_MOBILE:
             self.selfName = f"{hostName}:{Path(sys.executable).stem}:{os.getpid()}"
         else:
             proc = psutil.Process()

@@ -28,8 +28,24 @@ Rectangle {
 
     property string fileContent: ""
     property string lastSavedTime: ""
-    property bool configFileAvailable: false
+    readonly property bool configFileAvailable: ddsConfig.editorWritable
+        || ddsConfig.startupUri.trim().startsWith("<")
     property bool configSaveEnabled: false
+
+    Connections {
+        target: qmlUtils
+        function onAboutToQuit() { configEditorView.configSaveEnabled = false }
+    }
+
+    onVisibleChanged: {
+        if (visible && configSaveEnabled) {
+            configSaveEnabled = false
+            fileContent = ddsConfig.reloadEditor()
+            configTextArea.text = fileContent
+            lastSavedTime = ""
+            configSaveEnabled = true
+        }
+    }
     property bool completionInsertionInProgress: false
     property int viewMode: 0
     readonly property bool editorVisible: viewMode !== 2
@@ -261,7 +277,7 @@ Rectangle {
                                 TextField {
                                     id: uriField
                                     Layout.fillWidth: true
-                                    text: CYCLONEDDS_URI
+                                    text: ddsConfig.selectedSource === "xml" ? ddsConfig.editorXml : ddsConfig.startupUri
                                     readOnly: true
                                     selectByMouse: true
                                 }
@@ -274,7 +290,7 @@ Rectangle {
                                 onClicked: {
                                     configEditorView.configSaveEnabled = false
                                     configEditorView.fileContent =
-                                            qmlUtils.loadFileContent(CYCLONEDDS_URI)
+                                            ddsConfig.reloadEditor()
                                     configTextArea.text =
                                         configEditorView.fileContent
                                     configEditorView.configSaveEnabled = true
@@ -286,7 +302,6 @@ Rectangle {
                             Layout.fillWidth: true
                             Layout.bottomMargin: 2
                             visible: configEditorView.configFileAvailable
-
                             Label {
                                 text: qsTrId("config.restart.notice")
                                 color: configEditorView.secondaryTextColor
@@ -294,11 +309,10 @@ Rectangle {
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
-
                             Label {
-                                text: configEditorView.lastSavedTime.length > 0
-                                      ? "Automatically saved: "
-                                        + configEditorView.lastSavedTime
+                                text: ddsConfig.status.startsWith("Not saved:") ? qsTr("Not saved — invalid XML or file error")
+                                      : configEditorView.lastSavedTime.length > 0
+                                      ? qsTr("Automatically saved: ") + configEditorView.lastSavedTime
                                       : qsTrId("config.automatically.saved")
                                 color: configEditorView.secondaryTextColor
                                 font.pixelSize: Constants.captionFontSize
@@ -391,6 +405,7 @@ Rectangle {
 
                                 TextArea {
                                     id: configTextArea
+                                    readOnly: !ddsConfig.editorWritable
                                     width: Math.max(configEditorScrollView.availableWidth,
                                                     contentWidth + leftPadding
                                                     + rightPadding)
@@ -405,10 +420,10 @@ Rectangle {
                                         if (!configEditorView.configSaveEnabled)
                                             return
 
-                                        qmlUtils.saveFileContent(
-                                            CYCLONEDDS_URI, text)
-                                        configEditorView.lastSavedTime =
-                                            new Date().toLocaleString()
+                                        if (ddsConfig.saveEditor(text))
+                                            configEditorView.lastSavedTime = new Date().toLocaleString()
+                                        else
+                                            configEditorView.lastSavedTime = ""
                                         configEditorView.updateCompletions()
                                     }
                                     onCursorPositionChanged:
@@ -697,18 +712,9 @@ Rectangle {
                     }
 
                     Component.onCompleted: {
-                        if (qmlUtils.isValidFile(CYCLONEDDS_URI)
-                                && CYCLONEDDS_URI !== "<not set>"
-                                && CYCLONEDDS_URI !== "") {
-                            configEditorView.configFileAvailable = true
-                            configEditorView.fileContent =
-                                qmlUtils.loadFileContent(CYCLONEDDS_URI)
-                            configTextArea.text =
-                                configEditorView.fileContent
-                            configEditorView.configSaveEnabled = true
-                        } else {
-                            configEditorView.configFileAvailable = false
-                        }
+                        configEditorView.fileContent = ddsConfig.reloadEditor()
+                        configTextArea.text = configEditorView.fileContent
+                        configEditorView.configSaveEnabled = true
                     }
                 }
 

@@ -776,6 +776,9 @@
     <message id="settings.appearance.description">
         <translation>Choose how the application follows the system color scheme.</translation>
     </message>
+    <message id="settings.config.use.insight">
+        <translation>Use DDS configuration from Insight</translation>
+    </message>
     <message id="settings.config.edit">
         <translation>Edit Configuration File</translation>
     </message>
