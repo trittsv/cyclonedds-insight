@@ -774,6 +774,9 @@
     </message>
 
     <!-- settings -->
+    <message id="settings.storage.location">
+        <translation>設定の保存場所</translation>
+    </message>
     <message id="settings.appdata.location">
         <translation>アプリデータの場所</translation>
     </message>
@@ -783,14 +786,14 @@
     <message id="settings.appearance.description">
         <translation>アプリケーションがシステムのカラースキームに従う方法を選択します。</translation>
     </message>
-    <message id="settings.config.use.insight">
-        <translation>Insight の DDS 設定を使用</translation>
+    <message id="settings.config.use.environment">
+        <translation>システム環境変数を使用</translation>
     </message>
     <message id="settings.config.edit">
         <translation>構成ファイルを編集</translation>
     </message>
     <message id="settings.configuration">
-        <translation>構成</translation>
+        <translation>Cyclone DDS 設定</translation>
     </message>
     <message id="settings.default_domains.description">
         <translation>起動時に参加するドメインをカンマ区切りで指定します。</translation>

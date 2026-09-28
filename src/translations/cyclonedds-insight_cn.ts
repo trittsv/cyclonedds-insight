@@ -774,6 +774,9 @@
     </message>
 
     <!-- settings -->
+    <message id="settings.storage.location">
+        <translation>设置存储位置</translation>
+    </message>
     <message id="settings.appdata.location">
         <translation>应用数据位置</translation>
     </message>
@@ -783,14 +786,14 @@
     <message id="settings.appearance.description">
         <translation>选择应用程序如何跟随系统配色方案。</translation>
     </message>
-    <message id="settings.config.use.insight">
-        <translation>使用 Insight 中的 DDS 配置</translation>
+    <message id="settings.config.use.environment">
+        <translation>使用系统环境变量</translation>
     </message>
     <message id="settings.config.edit">
         <translation>编辑配置文件</translation>
     </message>
     <message id="settings.configuration">
-        <translation>配置</translation>
+        <translation>Cyclone DDS 配置</translation>
     </message>
     <message id="settings.default_domains.description">
         <translation>启动时加入的 Domain 列表，以逗号分隔。</translation>

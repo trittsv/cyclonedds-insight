@@ -774,6 +774,9 @@
     </message>
 
     <!-- settings -->
+    <message id="settings.storage.location">
+        <translation>Settings storage</translation>
+    </message>
     <message id="settings.appdata.location">
         <translation>App Data Location</translation>
     </message>
@@ -783,14 +786,14 @@
     <message id="settings.appearance.description">
         <translation>Choose how the application follows the system color scheme.</translation>
     </message>
-    <message id="settings.config.use.insight">
-        <translation>Use DDS configuration from Insight</translation>
+    <message id="settings.config.use.environment">
+        <translation>Use system environment variable</translation>
     </message>
     <message id="settings.config.edit">
         <translation>Edit Configuration File</translation>
     </message>
     <message id="settings.configuration">
-        <translation>Configuration</translation>
+        <translation>Cyclone DDS Configuration</translation>
     </message>
     <message id="settings.default_domains.description">
         <translation>Comma-separated list of domains to join at startup.</translation>

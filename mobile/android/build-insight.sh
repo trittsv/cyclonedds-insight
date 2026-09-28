@@ -22,7 +22,17 @@ if [ -z "${JAVA_HOME:-}" ] && [ -d "$HOME/Library/Java/JavaVirtualMachines/jdk-1
 fi
 test -f "$pyside_wheel"
 test -f "$shiboken_wheel"
-cmake -S "$repo_dir/deps/cyclonedds" -B "$repo_dir/build/android-dds" \
+dds_source="$repo_dir/build/android-cyclonedds-upstream"
+dds_revision=552fb2e4cf180e4702c9aa52b99212ba47389588
+if [ ! -d "$dds_source" ]; then
+    git clone --branch fix/ios-hostname-raw-ethernet https://github.com/trittsv/cyclonedds.git "$dds_source"
+    git -C "$dds_source" checkout --detach "$dds_revision"
+fi
+if [ "$(git -C "$dds_source" rev-parse HEAD)" != "$dds_revision" ]; then
+    echo "Unexpected CycloneDDS revision in $dds_source; expected $dds_revision" >&2
+    exit 1
+fi
+cmake --fresh -S "$dds_source" -B "$repo_dir/build/android-dds" \
     -DCMAKE_TOOLCHAIN_FILE="$ndk_dir/build/cmake/android.toolchain.cmake" \
     -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-28 \
     -DCMAKE_BUILD_TYPE=Release -DBUILD_IDLC=OFF -DBUILD_DDSPERF=OFF \

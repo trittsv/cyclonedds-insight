@@ -257,3 +257,7 @@ Reuse your upload key for later releases and increase the Android version code
 for each new Play upload. Rebuilding the unsigned bundle requires signing again.
 
 Reference: https://developer.android.com/studio/publish/app-signing
+
+CycloneDDS verwendet den Branch `trittsv/cyclonedds:fix/ios-hostname-raw-ethernet`,
+fixiert auf `552fb2e4cf180e4702c9aa52b99212ba47389588` (Android-Hostname aus Hersteller und Modell).
+Der separate Checkout liegt in `build/android-cyclonedds-upstream`.

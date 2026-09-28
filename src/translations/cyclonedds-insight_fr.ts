@@ -774,6 +774,9 @@
     </message>
 
     <!-- settings -->
+    <message id="settings.storage.location">
+        <translation>Emplacement des paramètres</translation>
+    </message>
     <message id="settings.appdata.location">
         <translation>Emplacement des données de l’application</translation>
     </message>
@@ -783,14 +786,14 @@
     <message id="settings.appearance.description">
         <translation>Choisissez comment l’application suit le thème de couleurs du système.</translation>
     </message>
-    <message id="settings.config.use.insight">
-        <translation>Utiliser la configuration DDS d’Insight</translation>
+    <message id="settings.config.use.environment">
+        <translation>Utiliser la variable d’environnement système</translation>
     </message>
     <message id="settings.config.edit">
         <translation>Modifier le fichier de configuration</translation>
     </message>
     <message id="settings.configuration">
-        <translation>Configuration</translation>
+        <translation>Configuration Cyclone DDS</translation>
     </message>
     <message id="settings.default_domains.description">
         <translation>Liste de domaines séparés par des virgules à rejoindre au démarrage.</translation>

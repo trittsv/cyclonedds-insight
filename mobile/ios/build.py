@@ -16,7 +16,7 @@ STAGE = ROOT / "build/ios-insight"
 NATIVE = ROOT / "build/ios-native"
 CYCLONEDDS_REPOSITORY = "https://github.com/trittsv/cyclonedds.git"
 CYCLONEDDS_BRANCH = "fix/ios-hostname-raw-ethernet"
-CYCLONEDDS_REVISION = "e7a559443be3c4d4032339ab86fdccf932a7cd13"
+CYCLONEDDS_REVISION = "552fb2e4cf180e4702c9aa52b99212ba47389588"
 PYTHON = TOOLS / "Python.xcframework"
 BIN = Path(sys.executable).parent
 os.environ["PATH"] = str(BIN) + os.pathsep + os.environ["PATH"]
@@ -66,7 +66,7 @@ def native():
         "-DBUILD_TESTING=OFF", "-DENABLE_SSL=OFF", "-DENABLE_SECURITY=OFF",
         f"-DCMAKE_INSTALL_PREFIX={NATIVE / 'install'}")
     run("cmake", "--build", NATIVE, "--parallel", "8", "--target", "install")
-    hostname_object = NATIVE / "src/core/CMakeFiles/ddsc.dir/__/ddsrt/src/sockets/ios/gethostname.mm.o"
+    hostname_object = NATIVE / "src/core/CMakeFiles/ddsc.dir/__/ddsrt/src/sockets/ios/gethostname.m.o"
     symbols = subprocess.check_output(["xcrun", "nm", "-u", hostname_object], text=True)
     if "_OBJC_CLASS_$_UIDevice" not in symbols or " U _gethostname\n" in symbols:
         raise RuntimeError("Cyclone DDS must use UIDevice for the iOS hostname")

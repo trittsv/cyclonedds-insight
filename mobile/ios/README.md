@@ -72,7 +72,7 @@ Grundlage: [Qt/PySide6 für iOS](https://www.qt.io/blog/python-mobile-app-develo
 ## iOS-Gerätename in Cyclone DDS
 
 Der Build verwendet [trittsv/cyclonedds, Branch fix/ios-hostname-raw-ethernet](https://github.com/trittsv/cyclonedds/tree/fix/ios-hostname-raw-ethernet),
-fest auf Commit `e7a559443be3c4d4032339ab86fdccf932a7cd13` gesetzt.
+fest auf Commit `552fb2e4cf180e4702c9aa52b99212ba47389588` gesetzt.
 Der Checkout liegt in `build/ios-cyclonedds-upstream`; lokale Cyclone-DDS-Patches
 sind nicht mehr nötig. Die separate iOS-Implementierung verwendet UIKit.
 

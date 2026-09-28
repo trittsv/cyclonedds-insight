@@ -774,6 +774,9 @@
     </message>
 
     <!-- settings -->
+    <message id="settings.storage.location">
+        <translation>Opslaglocatie van instellingen</translation>
+    </message>
     <message id="settings.appdata.location">
         <translation>Locatie van appgegevens</translation>
     </message>
@@ -783,14 +786,14 @@
     <message id="settings.appearance.description">
         <translation>Kies hoe de toepassing het kleurenschema van het systeem volgt.</translation>
     </message>
-    <message id="settings.config.use.insight">
-        <translation>DDS-configuratie uit Insight gebruiken</translation>
+    <message id="settings.config.use.environment">
+        <translation>Systeemomgevingsvariabele gebruiken</translation>
     </message>
     <message id="settings.config.edit">
         <translation>Configuratiebestand bewerken</translation>
     </message>
     <message id="settings.configuration">
-        <translation>Configuratie</translation>
+        <translation>Cyclone DDS-configuratie</translation>
     </message>
     <message id="settings.default_domains.description">
         <translation>Door komma's gescheiden lijst met domeinen die bij het opstarten worden toegevoegd.</translation>
