@@ -176,7 +176,7 @@ ApplicationWindow {
     }
 
     function getDarkMode() {
-        var isDarkModeVal = (mySysPalette.windowText.hsvValue > mySysPalette.window.hsvValue)
+        var isDarkModeVal = (Application.styleHints.colorScheme === Qt.ColorScheme.Dark)
         console.log("darkmode:", isDarkModeVal)
         return isDarkModeVal
     }

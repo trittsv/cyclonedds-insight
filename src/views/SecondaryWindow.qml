@@ -19,7 +19,7 @@ ApplicationWindow {
         visible: secondaryWindow.mobileWindow
         readonly property real topInset: SafeArea.margins.top
         height: visible ? 56 + topInset : 0
-        color: secondaryWindow.palette.window
+        color: Constants.mainContentColor(rootWindow.isDarkMode)
         z: 100
 
         RowLayout {

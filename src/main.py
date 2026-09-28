@@ -13,7 +13,7 @@
 import sys
 import os
 import platform
-from utils.platform_utils import IS_IOS, IS_MOBILE
+from utils.platform_utils import IS_ANDROID, IS_IOS, IS_MOBILE
 
 # Execution before first import of cyclonedds
 if getattr(sys, 'frozen', False):
@@ -80,6 +80,11 @@ import qrc_file
 
 
 if __name__ == "__main__":
+
+    if IS_ANDROID:
+        os.environ["QT_QUICK_CONTROLS_STYLE"] = "Material"
+        os.environ["QT_QUICK_CONTROLS_MATERIAL_THEME"] = "System"
+
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(QPixmap(":/res/images/cyclonedds.png")))
     app.setApplicationName("CycloneDDS Insight")
@@ -113,7 +118,9 @@ if __name__ == "__main__":
     logging.info(f"Python version: {str(sys.version)}")
     logging.info(f"Qt version: {qVersion()}")
 
-    if IS_IOS:
+    if IS_ANDROID:
+        QQuickStyle.setStyle("Material")
+    elif IS_IOS:
         QQuickStyle.setStyle("iOS")
     elif sys.platform == "darwin":
         QQuickStyle.setStyle("macOS")
