@@ -21,16 +21,12 @@ import org.eclipse.cyclonedds.insight
 import "qrc:/src/views"
 import "qrc:/src/views/selection_details"
 import "qrc:/src/views/icons"
+import "qrc:/src/views/elements"
 
 
-SecondaryWindow {
+Item {
     id: shapeDemoViewId
-    title: qsTrId("shapes.title")
-    width: 800
-    minimumWidth: mobileWindow ? 0 : 400
-    height: 490
-    minimumHeight: mobileWindow ? 0 : 400
-    flags: Qt.Window
+    property var viewHost: null
     property var shapesMap
     property var pendingWriterMap
     property var triangleScale: 0.7
@@ -161,6 +157,9 @@ SecondaryWindow {
                 }
 
                 Label {
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    elide: Text.ElideRight
                     text: qsTrId("general.shapedemo")
                     font.pixelSize: Constants.pageTitleFontSize
                     font.bold: true
@@ -182,6 +181,11 @@ SecondaryWindow {
                           ? qsTrId("status.paused")
                           : qsTrId("status.running")
                     font.bold: true
+                }
+
+                DetachViewButton {
+                    viewHost: shapeDemoViewId.viewHost
+                    visible: viewHost !== null
                 }
             }
 
@@ -1034,8 +1038,16 @@ SecondaryWindow {
         return Qt.rgba(rgb.r / 255, rgb.g / 255, rgb.b / 255, opacity);
     }
 
+    Connections {
+        target: shapeDemoViewId.viewHost
+        function onAboutToMove() {
+            shapesDemoQosSelector.close()
+        }
+    }
+
     QosSelector {
         id: shapesDemoQosSelector
+        parent: shapeDemoViewId
         model: shapesDemoModel
     }
 }

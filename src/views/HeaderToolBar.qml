@@ -17,6 +17,7 @@ import QtQuick.Layouts
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/icons"
+import "qrc:/src/views/elements"
 
 ToolBar {
     id: headerToolBar
@@ -26,6 +27,7 @@ ToolBar {
     rightPadding: 10 + ((Qt.platform.os === "android" || Qt.platform.os === "ios") ? SafeArea.margins.right : 0)
     property bool isStartupSpinning: true
     readonly property bool mobileToolbar: (Qt.platform.os === "android" || Qt.platform.os === "ios")
+    readonly property int headerControlHeight: mobileToolbar ? 44 : 36
     property int startupSpinLoops: 0
     property bool isActivitySpinning: false
     readonly property bool isHeaderSpinning: isStartupSpinning || isActivitySpinning
@@ -49,6 +51,7 @@ ToolBar {
     }
 
     contentItem: RowLayout {
+        spacing: 8
 
         Item {
             Layout.preferredWidth: 30
@@ -57,24 +60,16 @@ ToolBar {
 
             Image {
                 id: cycloneLogo
-                visible: headerToolBar.mobileToolbar || !isHeaderSpinning
+                visible: !isHeaderSpinning
                 source: "qrc:/res/images/cyclonedds.png"
                 sourceSize.width: 30
                 sourceSize.height: 30
-                NumberAnimation on rotation {
-                    from: 0
-                    to: 360
-                    duration: 1000
-                    running: headerToolBar.mobileToolbar && headerToolBar.isHeaderSpinning
-                    loops: headerToolBar.isActivitySpinning ? Animation.Infinite : 2
-                    onFinished: headerToolBar.isStartupSpinning = false
-                }
             }
             AnimatedImage {
                 id: headerLoadingId
-                source: headerToolBar.mobileToolbar ? "" : "qrc:/res/images/spinning.gif"
-                visible: !headerToolBar.mobileToolbar && isHeaderSpinning
-                playing: !headerToolBar.mobileToolbar && isHeaderSpinning
+                source: "qrc:/res/images/spinning.gif"
+                visible: isHeaderSpinning
+                playing: isHeaderSpinning
                 paused: !isHeaderSpinning
                 sourceSize.height: 30
                 sourceSize.width: 30
@@ -101,6 +96,9 @@ ToolBar {
 
         Label {
             text: rootWindow.title
+            font.pixelSize: 18
+            font.weight: Font.DemiBold
+            Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: headerToolBar.mobileToolbar
             Layout.minimumWidth: 0
             elide: Text.ElideRight
@@ -113,7 +111,10 @@ ToolBar {
         Rectangle {
             id: problemsButton
             implicitWidth: problemsContent.implicitWidth + 18
-            implicitHeight: 30
+            Layout.minimumHeight: headerToolBar.headerControlHeight
+            Layout.preferredHeight: headerToolBar.headerControlHeight
+            Layout.maximumHeight: headerToolBar.headerControlHeight
+            Layout.alignment: Qt.AlignVCenter
             radius: Constants.controlRadius
             color: rootWindow.problemCount > 0
                    ? problemsMouse.containsMouse
@@ -180,6 +181,13 @@ ToolBar {
         }
 
         ComboBox {
+            id: languageCombo
+            Layout.minimumHeight: headerToolBar.headerControlHeight
+            Layout.preferredHeight: headerToolBar.headerControlHeight
+            Layout.maximumHeight: headerToolBar.headerControlHeight
+            Layout.alignment: Qt.AlignVCenter
+            topInset: 0
+            bottomInset: 0
             model: langModel
             textRole: "name"
             currentIndex: langModel.currentLanguageIndex
@@ -189,8 +197,19 @@ ToolBar {
                 langModel.loadLanguageByIndex(index)
             }
         }
-        ToolButton {
+        SidebarActionButton {
             id: menuButton
+            isDarkMode: rootWindow.isDarkMode
+            highlighted: menu.visible
+            Layout.minimumHeight: headerToolBar.headerControlHeight
+            Layout.preferredHeight: headerToolBar.headerControlHeight
+            Layout.maximumHeight: headerToolBar.headerControlHeight
+            Layout.minimumWidth: headerToolBar.headerControlHeight
+            Layout.preferredWidth: headerToolBar.headerControlHeight
+            Layout.maximumWidth: headerToolBar.headerControlHeight
+            Layout.alignment: Qt.AlignVCenter
+            topInset: 0
+            bottomInset: 0
             onClicked: menu.open()
             flat: true
 
@@ -212,7 +231,7 @@ ToolBar {
                 }
                 MenuItem {
                     text: qsTrId("general.shapedemo")
-                    onClicked: shapeDemoViewId.visible = true
+                    onClicked: rootWindow.openShapesDemo()
                 }
                 MenuItem {
                     text: qsTrId("general.settings")
@@ -224,7 +243,7 @@ ToolBar {
                 }
                 MenuItem {
                     text: qsTrId("log.show")
-                    onTriggered: logViewId.visible = true
+                    onTriggered: rootWindow.openLogs()
                 }
                 MenuItem {
                     text: qsTrId("general.export.ddsentities")
@@ -237,7 +256,7 @@ ToolBar {
                 }
                 MenuItem {
                     text: qsTrId("general.about")
-                    onClicked: aboutWindow.visible = true
+                    onClicked: rootWindow.openAbout()
                 }
             }
         }

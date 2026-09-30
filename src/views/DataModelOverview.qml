@@ -44,9 +44,15 @@ Rectangle {
                 anchors.fill: parent
                 spacing: 0
 
+                EntityIcon {
+                    symbol: "layers"
+                    iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 6
+                    Layout.alignment: Qt.AlignVCenter
+                }
                 Label {
                     text: qsTrId("datamodel.title")
-                    Layout.leftMargin: 10
                 }
                 Item {
                     Layout.fillWidth: true

@@ -221,6 +221,11 @@ Rectangle {
             }
         }
 
+        NetworkInterfacesPanel {
+            Layout.fillWidth: true
+            Layout.bottomMargin: 10
+        }
+
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true

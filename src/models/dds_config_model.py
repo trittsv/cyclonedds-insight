@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from xml.etree import ElementTree as ET
 from PySide6.QtCore import QObject, Property, QSettings, QUrl, Signal, Slot
+from PySide6.QtNetwork import QNetworkInterface
 
 DEFAULT_XML = """<CycloneDDS>
   <Domain Id="any">
@@ -35,6 +36,7 @@ def describe_uri(uri):
 
 class DdsConfigModel(QObject):
     changed = Signal()
+    networkInterfacesChanged = Signal()
     XML_KEY = "dds/configXml"
     ENABLED_KEY = "dds/useSavedConfiguration"
     SOURCE_NAMES = {"environment": "CYCLONEDDS_URI environment", "xml": "Configuration saved in Insight"}
@@ -43,6 +45,8 @@ class DdsConfigModel(QObject):
         super().__init__(parent)
         self.settings = settings if settings is not None else QSettings(self)
         self._shutting_down = False
+        self._network_interfaces_text = ""
+        self._network_interfaces = []
         self.environ = environ if environ is not None else os.environ
         self._startup_uri = self.environ.get("CYCLONEDDS_URI", "")
         self._source = "xml" if self.settings.value(self.ENABLED_KEY, False, type=bool) else "environment"
@@ -61,6 +65,38 @@ class DdsConfigModel(QObject):
             self._status = f"Configuration not applied or preview unavailable: {error}"
         self._active_uri = self.environ.get("CYCLONEDDS_URI", "")
         self._initial_choice = self._choice()
+
+    @Property(str, notify=networkInterfacesChanged)
+    def networkInterfacesText(self):
+        return self._network_interfaces_text
+
+    @Property("QVariantList", notify=networkInterfacesChanged)
+    def networkInterfaces(self):
+        return self._network_interfaces
+
+    @Slot()
+    def refreshNetworkInterfaces(self):
+        interfaces = sorted(QNetworkInterface.allInterfaces(), key=lambda interface: (
+            not bool(interface.flags() & QNetworkInterface.IsUp),
+            bool(interface.flags() & QNetworkInterface.IsLoopBack),
+            interface.name(),
+        ))
+        lines = []
+        rows = []
+        for interface in interfaces:
+            addresses = list(dict.fromkeys(
+                entry.ip().toString() for entry in interface.addressEntries()
+                if not entry.ip().isNull()))
+            if not addresses:
+                continue
+            name = interface.name()
+            display_name = interface.humanReadableName()
+            lines.append(f"{name} ({display_name})" if display_name and display_name != name else name)
+            rows.append({"name": name, "displayName": display_name, "addresses": addresses})
+            lines.extend(f"    {address}" for address in addresses)
+        self._network_interfaces = rows
+        self._network_interfaces_text = "\n".join(lines)
+        self.networkInterfacesChanged.emit()
 
     @Slot()
     def shutdown(self):

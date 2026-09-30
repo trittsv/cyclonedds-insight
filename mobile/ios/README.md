@@ -21,6 +21,23 @@ iPhone/iPad anschließen, Entwicklermodus aktivieren, Gerät auswählen und **Ru
 Alternativ bereits signiert bauen: `sh mobile/ios/build-insight.sh --team YL484LJV4J`.
 Eine unsignierte `.app` lässt sich nicht direkt auf einem iPhone installieren.
 
+## Nach Änderungen an QML-Imports
+
+Das Buildskript erneut ausführen, bevor das Projekt in Xcode gebaut wird.
+Es aktualisiert auch die statisch verlinkten QML-Plugins. Nur in Xcode auf
+**Run** zu klicken, aktualisiert diese Plugin-Liste nicht.
+
+Für einen Build direkt aus Xcode die tatsächlich gebaute App prüfen:
+
+```sh
+python3.13 mobile/ios/verify-app.py "/Pfad/zum/Xcode-Build/CycloneDDS Insight.app"
+```
+
+Ohne Pfad prüft das Skript nur die Kopie unter `dist/ios`; diese kann älter
+als der letzte Xcode-Build sein. Insight benötigt sowohl den zur Laufzeit
+ausgewählten iOS-Stil als auch den für einzelne Steuerelemente importierten
+Basic-Stil. Das Buildskript bindet beide ein.
+
 ## DDS-Netzwerk
 
 Der aktuelle signierte Build nutzt **Unicast zum Laptop 192.168.178.22**:

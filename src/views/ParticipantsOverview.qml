@@ -17,6 +17,7 @@ import QtQuick.Layouts
 
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views/icons"
+import "qrc:/src/views/selection_details"
 
 
 TreeView {
@@ -101,11 +102,27 @@ TreeView {
                 }
             }
         }
-        Label {
-            id: label
+        DetailBadge {
+            id: entityIcon
             x: padding + (isTreeNode ? (depth + 1) * indentation : 0)
             anchors.verticalCenter: parent.verticalCenter
-            width: parent.width - padding - x - 10
+            width: 18
+            height: 18
+            color: "transparent"
+            iconColor: row === treeView.currentRow
+                       ? Constants.accentColor : label.color
+            kind: model.is_domain ? "domain"
+                  : model.is_host ? "host"
+                  : model.is_process ? "process"
+                  : model.is_participant ? "participant"
+                  : model.is_topic ? "topic" : "endpoint"
+        }
+
+        Label {
+            id: label
+            x: entityIcon.x + entityIcon.width + 5
+            anchors.verticalCenter: parent.verticalCenter
+            width: Math.max(0, parent.width - padding - x - 10)
             clip: true
             text: model.is_domain
                   ? qsTrId("entity.domain.value").arg(model.display)
@@ -113,9 +130,7 @@ TreeView {
                     ? qsTrId("entity.reader.label.value").arg(model.display)
                     : model.is_writer
                       ? qsTrId("entity.writer.label.value").arg(model.display)
-                      : model.is_participant
-                        ? qsTrId("entity.participant.label.value").arg(model.display)
-                        : model.display
+                      : model.display
         }
     }
 

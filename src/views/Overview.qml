@@ -220,6 +220,7 @@ SplitView {
 
                         InsightTabButton {
                             tabText: qsTrId("tab.details")
+                            tabIcon: "details"
                             checked: overviewRoot.multiViewEnabled
                                      ? overviewRoot.splitDetails
                                      : bar.currentIndex === 0
@@ -230,10 +231,11 @@ SplitView {
                             onClicked: overviewRoot.activateView(0)
                             onActiveFocusChanged: if (activeFocus) tabFlickable.revealTab(0)
                             height: parent.height
-                            width: 150
+                            width: Math.max(150, minimumTabWidth)
                         }
                         InsightTabButton {
                             tabText: qsTrId("tab.statistics")
+                            tabIcon: "statistics"
                             checked: overviewRoot.multiViewEnabled
                                      ? overviewRoot.splitStatistics
                                      : bar.currentIndex === 1
@@ -249,10 +251,11 @@ SplitView {
                             onClicked: overviewRoot.activateView(1)
                             onActiveFocusChanged: if (activeFocus) tabFlickable.revealTab(1)
                             height: parent.height
-                            width: 150
+                            width: Math.max(150, minimumTabWidth)
                         }
                         InsightTabButton {
                             tabText: qsTrId("tab.tester")
+                            tabIcon: "tester"
                             checked: overviewRoot.multiViewEnabled
                                      ? overviewRoot.splitTester
                                      : bar.currentIndex === 2
@@ -268,10 +271,11 @@ SplitView {
                             onClicked: overviewRoot.activateView(2)
                             onActiveFocusChanged: if (activeFocus) tabFlickable.revealTab(2)
                             height: parent.height
-                            width: 150
+                            width: Math.max(150, minimumTabWidth)
                         }
                         InsightTabButton {
                             tabText: qsTrId("tab.listener")
+                            tabIcon: "listener"
                             checked: overviewRoot.multiViewEnabled
                                      ? overviewRoot.splitListener
                                      : bar.currentIndex === 3
@@ -287,7 +291,7 @@ SplitView {
                             onClicked: overviewRoot.activateView(3)
                             onActiveFocusChanged: if (activeFocus) tabFlickable.revealTab(3)
                             height: parent.height
-                            width: 150
+                            width: Math.max(150, minimumTabWidth)
                         }
                     }
 
@@ -387,6 +391,7 @@ SplitView {
 
                 Item {
                     id: inspectTab
+                    clip: true
                     visible: overviewRoot.isViewVisible(0)
                     SplitView.minimumWidth: 160
                     SplitView.preferredWidth:
@@ -394,7 +399,7 @@ SplitView {
 
                     ColumnLayout {
                         anchors.centerIn: parent
-                        width: Math.min(380, Math.max(220, parent.width - 48))
+                        width: Math.min(380, Math.max(0, parent.width - 32))
                         spacing: 8
 
                         DetailBadge {
@@ -409,6 +414,8 @@ SplitView {
                         Label {
                             Layout.fillWidth: true
                             Layout.topMargin: 4
+                            Layout.minimumWidth: 0
+                            wrapMode: Text.Wrap
                             text: qsTrId("general.nothing.selected")
                             horizontalAlignment: Text.AlignHCenter
                             font.pixelSize: Constants.pageTitleFontSize
@@ -417,6 +424,7 @@ SplitView {
 
                         Label {
                             Layout.fillWidth: true
+                            Layout.minimumWidth: 0
                             text: qsTrId("details.selection.hint")
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.Wrap

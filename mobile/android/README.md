@@ -34,6 +34,11 @@ override `ANDROID_SDK_ROOT`, `ANDROID_NDK_HOME`, `PYSIDE_ANDROID_WHEEL`,
   dist/android/cycloneddsinsight-0.1-arm64-v8a-debug.apk
 ```
 
+The `qtgif` recipe copies Qt's GIF decoder into the APK's native
+`lib/arm64-v8a/` directory. A copy inside the Python wheel bundle alone is
+not discoverable by Android's Qt plugin loader. `verify-apk.py` checks this
+native entry for both APK and AAB builds.
+
 The full-app port retains the existing QML interface and allows sensor-based
 rotation between portrait and landscape. Secondary windows have an Android
 title bar with a close button and a Back shortcut. They open maximized on

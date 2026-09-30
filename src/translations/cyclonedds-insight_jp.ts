@@ -3,6 +3,15 @@
 <TS version="2.1" language="ja_JP">
 <context>
     <name></name>
+    <message id="listener.view.log.short">
+        <translation>ログ</translation>
+    </message>
+    <message id="listener.view.instances.short">
+        <translation>インスタンス</translation>
+    </message>
+    <message id="listener.actions">
+        <translation>操作</translation>
+    </message>
     <message id="listener.view.log">
         <translation>メッセージログ</translation>
     </message>
@@ -125,9 +134,6 @@
     </message>
     <message id="domain.discover.automatically">
         <translation>ドメインを自動検出</translation>
-    </message>
-    <message id="domain.discover.automatically.hint">
-        <translation>ドメインを手動で追加するか自動検出します</translation>
     </message>
     <message id="domain.remove.selected">
         <translation>選択したドメインを削除</translation>
@@ -1158,6 +1164,27 @@
     </message>
     <message id="update.try.again">
         <translation>後でもう一度お試しください。</translation>
+    </message>
+    <message id="view.detach">
+        <translation>別ウィンドウで開く</translation>
+    </message>
+    <message id="view.dock">
+        <translation>メインウィンドウに戻す</translation>
+    </message>
+    <message id="view.detached.message">
+        <translation>%1 は別ウィンドウで開いています。</translation>
+    </message>
+    <message id="view.detached.show">
+        <translation>ウィンドウを表示</translation>
+    </message>
+    <message id="config.network.interfaces">
+        <translation>ネットワークアダプターと IP アドレス</translation>
+    </message>
+    <message id="config.network.empty">
+        <translation>ネットワークアダプターが見つかりません。</translation>
+    </message>
+    <message id="config.network.copy.address">
+        <translation>コピー</translation>
     </message>
 </context>
 </TS>

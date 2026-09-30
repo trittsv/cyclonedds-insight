@@ -141,7 +141,14 @@ def project(team, multicast, device_name=False):
     from ios_deploy import main as deploy
     # Scan only the application's QML, excluding Qt's unpacked examples/modules.
     scanner = deploy_config.run_qmlimportscanner
-    deploy_config.run_qmlimportscanner = lambda project_dir, dry_run: scanner(STAGE / "views", dry_run)
+    def scan_app_qml(project_dir, dry_run):
+        modules = set(scanner(STAGE / "views", dry_run))
+        # main.py selects iOS at runtime. An explicit Basic import elsewhere
+        # suppresses PySide's automatic iOS-style fallback, so include it here.
+        modules.add("QtQuick.Controls.iOS")
+        return sorted(modules)
+
+    deploy_config.run_qmlimportscanner = scan_app_qml
     package_script = pbxproj._pyside6_packages_script
     # Qt is statically linked. Do not ship its SDK frameworks or unused dynamic
     # QtQmlFeatures extension (Insight uses QtQml, not the new decorator API).
@@ -163,6 +170,8 @@ def project(team, multicast, device_name=False):
     out = STAGE / "deployment/ios_arm64"
     app_icon(out)
     main = out / "main.mm"
+    if "Q_IMPORT_PLUGIN(QtQuickControls2IOSStylePlugin)" not in main.read_text():
+        raise RuntimeError("Generated iOS project is missing the runtime-selected iOS style plugin")
     replace_once(main, "PyObject *PyInit_Shiboken(void);",
                  "PyObject *PyInit_Shiboken(void);\nPyObject *PyInit__clayer(void);")
     replace_once(main, "    // Register all PySide6 modules before Py_Initialize.",

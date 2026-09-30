@@ -61,11 +61,11 @@ ApplicationWindow {
             }
             MenuItem {
                 text: qsTrId("general.shapedemo")
-                onTriggered: shapeDemoViewId.visible = true
+                onTriggered: rootWindow.openShapesDemo()
             }
             MenuItem {
                 text: qsTrId("log.show")
-                onTriggered: logViewId.visible = true
+                onTriggered: rootWindow.openLogs()
             }
         }
         Menu {
@@ -73,7 +73,7 @@ ApplicationWindow {
 
             MenuItem {
                 text: qsTrId("general.about")
-                onTriggered: aboutWindow.visible = true
+                onTriggered: rootWindow.openAbout()
             }
             MenuItem {
                 text: qsTrId("general.settings")
@@ -102,10 +102,6 @@ ApplicationWindow {
             console.debug("Ctrl+0 pressed!")
             layout.currentIndex = 1
         }
-    }
-
-    AboutWindow {
-        id: aboutWindow
     }
 
     CheckForUpdates {
@@ -145,6 +141,52 @@ ApplicationWindow {
         ConfigEditorView {
             id: configEditorViewId
         }
+
+        DetachableView {
+            id: shapesDemoHost
+            title: qsTrId("shapes.title")
+            onDocked: {
+                if (!rootWindow.shutdownInitiated)
+                    layout.currentIndex = 3
+            }
+            viewComponent: Component {
+                ShapesDemoView {
+                    viewHost: shapesDemoHost
+                }
+            }
+        }
+
+        DetachableView {
+            id: aboutHost
+            title: qsTrId("about.window.title")
+            windowWidth: 640
+            windowHeight: 400
+            onDocked: {
+                if (!rootWindow.shutdownInitiated)
+                    layout.currentIndex = 4
+            }
+            viewComponent: Component {
+                AboutView {
+                    viewHost: aboutHost
+                }
+            }
+        }
+
+        DetachableView {
+            id: logHost
+            title: qsTrId("log.application")
+            windowWidth: 860
+            windowHeight: 520
+            onDocked: {
+                if (!rootWindow.shutdownInitiated)
+                    layout.currentIndex = 5
+            }
+            viewComponent: Component {
+                LogView {
+                    viewHost: logHost
+                }
+            }
+        }
     }
 
     AddDomainView {
@@ -172,6 +214,7 @@ ApplicationWindow {
 
     QosSelector {
         id: readerTesterDialogId
+        parent: rootWindow.contentItem
         model: datamodelRepoModel
     }
 
@@ -210,14 +253,12 @@ ApplicationWindow {
         visible: false
     }
 
-    LogWindow {
-        id: logViewId
-        visible: false
-    }
-
     function shutdown() {
         if (!shutdownInitiated) {
             shutdownInitiated = true
+            shapesDemoHost.shutdown()
+            aboutHost.shutdown()
+            logHost.shutdown()
             console.log("Shutdown QML ...")
             overviewId.aboutToClose()
             treeModel.aboutToClose()
@@ -239,9 +280,19 @@ ApplicationWindow {
         close.accepted = true
     }
 
-    ShapesDemoView {
-        id: shapeDemoViewId
-        visible: false
+    function openLogs() {
+        layout.currentIndex = 5
+        logHost.present()
+    }
+
+    function openAbout() {
+        layout.currentIndex = 4
+        aboutHost.present()
+    }
+
+    function openShapesDemo() {
+        layout.currentIndex = 3
+        shapesDemoHost.present()
     }
 
     FileDialog {

@@ -3,6 +3,15 @@
 <TS version="2.1" language="fr">
 <context>
     <name></name>
+    <message id="listener.view.log.short">
+        <translation>Journal</translation>
+    </message>
+    <message id="listener.view.instances.short">
+        <translation>Instances</translation>
+    </message>
+    <message id="listener.actions">
+        <translation>Actions</translation>
+    </message>
     <message id="listener.view.log">
         <translation>Journal des messages</translation>
     </message>
@@ -125,9 +134,6 @@
     </message>
     <message id="domain.discover.automatically">
         <translation>Détecter automatiquement les domaines</translation>
-    </message>
-    <message id="domain.discover.automatically.hint">
-        <translation>Ajouter un domaine manuellement ou le détecter automatiquement</translation>
     </message>
     <message id="domain.remove.selected">
         <translation>Retirer le domaine sélectionné</translation>
@@ -1158,6 +1164,27 @@
     </message>
     <message id="update.try.again">
         <translation>Veuillez réessayer plus tard.</translation>
+    </message>
+    <message id="view.detach">
+        <translation>Ouvrir dans une fenêtre séparée</translation>
+    </message>
+    <message id="view.dock">
+        <translation>Revenir à la fenêtre principale</translation>
+    </message>
+    <message id="view.detached.message">
+        <translation>%1 est ouvert dans une fenêtre séparée.</translation>
+    </message>
+    <message id="view.detached.show">
+        <translation>Afficher la fenêtre</translation>
+    </message>
+    <message id="config.network.interfaces">
+        <translation>Interfaces réseau et adresses IP</translation>
+    </message>
+    <message id="config.network.empty">
+        <translation>Aucune interface réseau signalée.</translation>
+    </message>
+    <message id="config.network.copy.address">
+        <translation>Copier</translation>
     </message>
 </context>
 </TS>

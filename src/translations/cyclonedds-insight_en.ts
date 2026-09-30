@@ -3,6 +3,15 @@
 <TS version="2.1" language="en">
 <context>
     <name></name>
+    <message id="listener.view.log.short">
+        <translation>Log</translation>
+    </message>
+    <message id="listener.view.instances.short">
+        <translation>Instances</translation>
+    </message>
+    <message id="listener.actions">
+        <translation>Actions</translation>
+    </message>
     <message id="listener.view.log">
         <translation>Message log</translation>
     </message>
@@ -125,9 +134,6 @@
     </message>
     <message id="domain.discover.automatically">
         <translation>Automatically discover domains</translation>
-    </message>
-    <message id="domain.discover.automatically.hint">
-        <translation>Add domain manually or discover automatically</translation>
     </message>
     <message id="domain.remove.selected">
         <translation>Remove the selected domain</translation>
@@ -1158,6 +1164,27 @@
     </message>
     <message id="update.try.again">
         <translation>Please try again later.</translation>
+    </message>
+    <message id="view.detach">
+        <translation>Open in separate window</translation>
+    </message>
+    <message id="view.dock">
+        <translation>Return to main window</translation>
+    </message>
+    <message id="view.detached.message">
+        <translation>%1 is open in a separate window.</translation>
+    </message>
+    <message id="view.detached.show">
+        <translation>Show window</translation>
+    </message>
+    <message id="config.network.interfaces">
+        <translation>Network adapters and IP addresses</translation>
+    </message>
+    <message id="config.network.empty">
+        <translation>No network adapters reported.</translation>
+    </message>
+    <message id="config.network.copy.address">
+        <translation>Copy</translation>
     </message>
 </context>
 </TS>

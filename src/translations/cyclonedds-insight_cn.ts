@@ -3,6 +3,15 @@
 <TS version="2.1" language="zh_CN">
 <context>
     <name></name>
+    <message id="listener.view.log.short">
+        <translation>日志</translation>
+    </message>
+    <message id="listener.view.instances.short">
+        <translation>实例</translation>
+    </message>
+    <message id="listener.actions">
+        <translation>操作</translation>
+    </message>
     <message id="listener.view.log">
         <translation>消息日志</translation>
     </message>
@@ -125,9 +134,6 @@
     </message>
     <message id="domain.discover.automatically">
         <translation>自动发现 Domain</translation>
-    </message>
-    <message id="domain.discover.automatically.hint">
-        <translation>手动添加 Domain 或自动发现</translation>
     </message>
     <message id="domain.remove.selected">
         <translation>移除所选 Domain</translation>
@@ -1158,6 +1164,27 @@
     </message>
     <message id="update.try.again">
         <translation>请稍后重试。</translation>
+    </message>
+    <message id="view.detach">
+        <translation>在独立窗口中打开</translation>
+    </message>
+    <message id="view.dock">
+        <translation>返回主窗口</translation>
+    </message>
+    <message id="view.detached.message">
+        <translation>%1 已在独立窗口中打开。</translation>
+    </message>
+    <message id="view.detached.show">
+        <translation>显示窗口</translation>
+    </message>
+    <message id="config.network.interfaces">
+        <translation>网络适配器和 IP 地址</translation>
+    </message>
+    <message id="config.network.empty">
+        <translation>未发现网络适配器。</translation>
+    </message>
+    <message id="config.network.copy.address">
+        <translation>复制</translation>
     </message>
 </context>
 </TS>

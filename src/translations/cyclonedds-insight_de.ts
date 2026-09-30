@@ -3,6 +3,15 @@
 <TS version="2.1" language="de">
 <context>
     <name></name>
+    <message id="listener.view.log.short">
+        <translation>Log</translation>
+    </message>
+    <message id="listener.view.instances.short">
+        <translation>Instanzen</translation>
+    </message>
+    <message id="listener.actions">
+        <translation>Aktionen</translation>
+    </message>
     <message id="listener.view.log">
         <translation>Nachrichtenprotokoll</translation>
     </message>
@@ -125,9 +134,6 @@
     </message>
     <message id="domain.discover.automatically">
         <translation>Domains automatisch erkennen</translation>
-    </message>
-    <message id="domain.discover.automatically.hint">
-        <translation>Domain manuell hinzufügen oder automatisch erkennen</translation>
     </message>
     <message id="domain.remove.selected">
         <translation>Ausgewählte Domain entfernen</translation>
@@ -1158,6 +1164,27 @@
     </message>
     <message id="update.try.again">
         <translation>Bitte versuchen Sie es später erneut.</translation>
+    </message>
+    <message id="view.detach">
+        <translation>In eigenem Fenster öffnen</translation>
+    </message>
+    <message id="view.dock">
+        <translation>Zurück ins Hauptfenster</translation>
+    </message>
+    <message id="view.detached.message">
+        <translation>%1 ist in einem eigenen Fenster geöffnet.</translation>
+    </message>
+    <message id="view.detached.show">
+        <translation>Fenster anzeigen</translation>
+    </message>
+    <message id="config.network.interfaces">
+        <translation>Netzwerkadapter und IP-Adressen</translation>
+    </message>
+    <message id="config.network.empty">
+        <translation>Keine Netzwerkadapter gemeldet.</translation>
+    </message>
+    <message id="config.network.copy.address">
+        <translation>Kopieren</translation>
     </message>
 </context>
 </TS>

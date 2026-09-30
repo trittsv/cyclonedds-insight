@@ -29,7 +29,8 @@ for symbol in ("_PyInit__clayer", "_dds_create_participant", "_dds_get_typeinfo"
     assert symbol in exports, f"Missing export: {symbol}"
 symbols = subprocess.check_output(["xcrun", "nm", binary], text=True)
 assert "_OBJC_CLASS_$_UIDevice" in symbols, "Missing UIKit device-name lookup"
-for symbol in ("qt_static_plugin_QtQuick2Plugin", "qt_static_plugin_QtQuickControls2IOSStylePlugin"):
+for symbol in ("qt_static_plugin_QGifPlugin", "qt_static_plugin_QtQuick2Plugin", "qt_static_plugin_QtQuickControls2IOSStylePlugin",
+               "qt_static_plugin_QtQuickControls2BasicStylePlugin"):
     assert symbol in symbols, f"Missing static QML plugin: {symbol}"
 for relative in ("main.py", "qrc_file.py", "cyclonedds/internal.py", "loguru/__init__.py",
                  "requests/__init__.py", "certifi/cacert.pem", "packages/PySide6/__init__.py",

@@ -9,7 +9,8 @@ path = stage / "buildozer.spec"
 config = configparser.ConfigParser(interpolation=None)
 config.read(path)
 recipes = Path(config.get("app", "p4a.local_recipes"))
-shutil.copytree(root / "mobile/android/recipes/cyclonedds", recipes / "cyclonedds", dirs_exist_ok=True)
+for recipe in ("cyclonedds", "qtgif"):
+    shutil.copytree(root / "mobile/android/recipes" / recipe, recipes / recipe, dirs_exist_ok=True)
 for key, value in {
     "title": "CycloneDDS Insight",
     "version": "0.1",
@@ -19,7 +20,7 @@ for key, value in {
     # Buildozer joins domain and name to form the Android application ID.
     "package.name": "cycloneddsinsight",
     "package.domain": "trittsv.app",
-    "requirements": "python3==3.11.11,hostpython3==3.11.11,shiboken6,PySide6,cyclonedds,loguru==0.7.3,requests==2.32.3",
+    "requirements": "python3==3.11.11,hostpython3==3.11.11,shiboken6,PySide6,qtgif,cyclonedds,loguru==0.7.3,requests==2.32.3",
     "orientation": "portrait,landscape,portrait-reverse,landscape-reverse",
     "android.manifest.orientation": "fullSensor",
     "fullscreen": "0",
