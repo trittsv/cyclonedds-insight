@@ -3,6 +3,12 @@
 <TS version="2.1" language="en">
 <context>
     <name></name>
+    <message id="summary.overview">
+        <translation>Overview</translation>
+    </message>
+    <message id="summary.processes">
+        <translation>Processes</translation>
+    </message>
     <message id="listener.view.log.short">
         <translation>Log</translation>
     </message>

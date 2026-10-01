@@ -37,9 +37,9 @@ TreeView {
             if (participantModel.getIsRowDomain(currentIndex)) {
                 showDomainView(domainId)
             } else if (participantModel.getIsHost(currentIndex)) {
-                showHostView(domainId)
+                showHostView(domainId, participantModel.getNodeSummary(currentIndex))
             } else if (participantModel.getIsProcess(currentIndex)) {
-                showProcessView(domainId)
+                showProcessView(domainId, participantModel.getNodeSummary(currentIndex))
             } else if (participantModel.getIsParticipant(currentIndex)) {
                 name.slice(13)
                 var vendorName = participantModel.getVendorName(currentIndex);
@@ -47,8 +47,7 @@ TreeView {
             } else if (participantModel.getIsTopic(currentIndex)) {
                 showTopicEndpointView(domainId, name)
             } else if (participantModel.getIsEndpoint(currentIndex)) {
-                name.slice(8)
-                showEndpointView(domainId, name)
+                showEndpointView(domainId, name, participantModel.getEndpointTopicName(currentIndex), participantModel.getIsWriter(currentIndex))
             } else {
                 console.log("Nothing found, clear view.")
                 clearView()
@@ -109,8 +108,7 @@ TreeView {
             width: 18
             height: 18
             color: "transparent"
-            iconColor: row === treeView.currentRow
-                       ? Constants.accentColor : label.color
+            iconColor: label.color
             kind: model.is_domain ? "domain"
                   : model.is_host ? "host"
                   : model.is_process ? "process"

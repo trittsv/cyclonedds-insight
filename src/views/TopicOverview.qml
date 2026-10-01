@@ -100,8 +100,7 @@ TreeView {
             width: 18
             height: 18
             color: "transparent"
-            iconColor: row === treeView.currentRow
-                       ? Constants.accentColor : label.color
+            iconColor: label.color
             kind: model.is_domain ? "domain" : "topic"
         }
 

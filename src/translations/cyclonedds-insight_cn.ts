@@ -3,6 +3,12 @@
 <TS version="2.1" language="zh_CN">
 <context>
     <name></name>
+    <message id="summary.overview">
+        <translation>概览</translation>
+    </message>
+    <message id="summary.processes">
+        <translation>进程</translation>
+    </message>
     <message id="listener.view.log.short">
         <translation>日志</translation>
     </message>

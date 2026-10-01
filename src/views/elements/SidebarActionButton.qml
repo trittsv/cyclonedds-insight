@@ -35,12 +35,12 @@ Basic.ToolButton {
     background: Rectangle {
         radius: Constants.controlRadius
         color: control.down
-               ? Qt.alpha(Constants.accentColor, control.isDarkMode ? 0.4 : 0.24)
+               ? (control.isDarkMode ? "#555555" : "#b9b7b7")
              : control.hovered || control.highlighted
-               ? Qt.alpha(Constants.accentColor, control.isDarkMode ? 0.26 : 0.12)
+               ? (control.isDarkMode ? "#454545" : "#c9c7c7")
                : "transparent"
         border.width: control.visualFocus || control.hovered ? 1 : 0
         border.color: control.visualFocus ? Constants.accentColor
-                     : Qt.alpha(Constants.accentColor, 0.45)
+                     : Constants.designBorderColor(control.isDarkMode)
     }
 }

@@ -38,7 +38,9 @@
         <file>src/views/selection_details/ProcessView.qml</file>
         <file>src/views/selection_details/ParticipantView.qml</file>
         <file>src/views/selection_details/HostView.qml</file>
+        <file>src/views/selection_details/NodeSummaryView.qml</file>
         <file>src/views/selection_details/EndpointView.qml</file>
+        <file>src/views/selection_details/EndpointDetailsView.qml</file>
         <file>src/views/EndpointDetailWindow.qml</file>
         <file>src/views/main.qml</file>
         <file>src/views/AddDomainView.qml</file>

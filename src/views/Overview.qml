@@ -516,15 +516,17 @@ SplitView {
                         })
     }
 
-    function showHostView(domainId) {
+    function showHostView(domainId, summary) {
         showView("selection_details/HostView.qml", {
-                            domainId: domainId
+                            domainId: domainId,
+                            summary: summary
                         })
     }
 
-    function showProcessView(domainId) {
+    function showProcessView(domainId, summary) {
         showView("selection_details/ProcessView.qml", {
-                            domainId: domainId
+                            domainId: domainId,
+                            summary: summary
                         })
     }
 
@@ -543,10 +545,12 @@ SplitView {
                         })
     }
 
-    function showEndpointView(domainId, endpKey) {
+    function showEndpointView(domainId, endpKey, topicName, isWriter) {
         showView("selection_details/EndpointView.qml", {
                             domainId: domainId,
-                            endpointKey: endpKey
+                            endpointKey: endpKey,
+                            topicName: topicName,
+                            isWriter: isWriter
                         })
     }
 
