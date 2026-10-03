@@ -1,6 +1,7 @@
 """Select the DDS configuration before creating any participant."""
 import os
 from pathlib import Path
+from urllib.parse import unquote
 from xml.etree import ElementTree as ET
 from PySide6.QtCore import QObject, Property, QSettings, QUrl, Signal, Slot
 from PySide6.QtNetwork import QNetworkInterface
@@ -22,6 +23,12 @@ def validate_xml(xml):
 
 
 def file_path(uri):
+    # CycloneDDS accepts file:// followed by a native Windows drive path.
+    # QUrl treats its drive letter as a host, losing the path with backslashes.
+    if uri.lower().startswith("file://"):
+        path = uri[7:].lstrip("/")
+        if path[1:2] == ":":
+            return unquote(path)
     url = QUrl(uri)
     return url.toLocalFile() if url.isLocalFile() else uri
 

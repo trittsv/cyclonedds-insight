@@ -3,10 +3,11 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from PySide6.QtCore import QSettings, QUrl
-from models.dds_config_model import DdsConfigModel, DEFAULT_XML
+from models.dds_config_model import DdsConfigModel, DEFAULT_XML, file_path
 
 
 class DdsConfigurationTest(unittest.TestCase):
@@ -14,6 +15,39 @@ class DdsConfigurationTest(unittest.TestCase):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.settings = QSettings(str(Path(self.directory.name) / "config.ini"), QSettings.IniFormat)
+
+    def test_windows_drive_file_uri_preserves_drive_and_full_path(self):
+        cases = {
+            r"file://D:\cyclone.xml": r"D:\cyclone.xml",
+            r"file://D:\DDS settings\cyclone.xml": r"D:\DDS settings\cyclone.xml",
+            "file://D:/cyclone.xml": "D:/cyclone.xml",
+            "file:///D:/DDS%20settings/cyclone.xml": "D:/DDS settings/cyclone.xml",
+            r"D:\cyclone.xml": r"D:\cyclone.xml",
+            "file://server/share/cyclone.xml": "//server/share/cyclone.xml",
+        }
+        for uri, expected in cases.items():
+            with self.subTest(uri=uri):
+                self.assertEqual(file_path(uri).replace("\\", "/"), expected.replace("\\", "/"))
+
+    def test_windows_file_uri_load_reload_and_autosave_use_full_path(self):
+        path = Path(self.directory.name) / "cyclone.xml"
+        path.write_text(DEFAULT_XML, encoding="utf-8")
+        env = {"CYCLONEDDS_URI": r"file://D:\cyclone.xml"}
+
+        def resolve_path(value):
+            self.assertEqual(value, r"D:\cyclone.xml")
+            return path
+
+        # Redirect Windows filesystem access to a temporary file on any host.
+        with patch("models.dds_config_model.Path", side_effect=resolve_path):
+            model = DdsConfigModel(self.settings, env)
+            self.assertEqual(model.status, "")
+            self.assertEqual(model.editorXml, DEFAULT_XML)
+            self.assertTrue(model.editorWritable)
+            self.assertEqual(model.reloadEditor(), DEFAULT_XML)
+            self.assertTrue(model.saveEditor("<CycloneDDS/>"))
+        self.assertEqual(path.read_text(encoding="utf-8"), "<CycloneDDS/>")
+        self.assertEqual(env["CYCLONEDDS_URI"], r"file://D:\cyclone.xml")
 
     def test_shutdown_blocks_late_autosave_after_settings_destruction(self):
         import shiboken6
