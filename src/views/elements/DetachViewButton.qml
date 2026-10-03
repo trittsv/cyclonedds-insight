@@ -13,11 +13,14 @@
 import QtQuick
 import QtQuick.Controls
 
+import "qrc:/src/views"
 import "qrc:/src/views/icons"
 
-ToolButton {
+SidebarActionButton {
     id: control
     required property var viewHost
+    isDarkMode: rootWindow.isDarkMode
+
     contentItem: Item {
         WindowActionIcon {
             anchors.centerIn: parent

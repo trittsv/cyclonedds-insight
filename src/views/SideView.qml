@@ -222,19 +222,12 @@ ColumnLayout {
             hoverEnabled: true
         }
 
-        SidebarActionButton {
+        SearchToggleButton {
             isDarkMode: rootWindow.isDarkMode
-            Accessible.name: qsTrId("general.search.placeholder")
-            highlighted: searchField.visible
+            expanded: searchField.visible
             opacity: viewSelector.currentIndex === 0 ? 1 : 0
             enabled: viewSelector.currentIndex === 0
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            SearchIcon {
-                anchors.centerIn: parent
-                z: 1
-                expanded: searchField.visible
-                iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
-            }
             onClicked: {
                 if (viewSelector.currentIndex === 0) {
                     if (searchField.visible) {

@@ -63,6 +63,7 @@
         <file>src/views/icons/ConfigurationViewIcon.qml</file>
         <file>src/views/icons/PlusMinusIcon.qml</file>
         <file>src/views/elements/SidebarActionButton.qml</file>
+        <file>src/views/elements/SearchToggleButton.qml</file>
         <file>src/views/icons/MenuIcon.qml</file>
         <file>src/views/icons/ArrowIcon.qml</file>
         <file>src/views/icons/SplitViewIcon.qml</file>
