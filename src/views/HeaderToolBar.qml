@@ -166,7 +166,7 @@ ToolBar {
                 Label {
                     text: rootWindow.problemCount > 0
                           ? qsTrId("errors.count").arg(rootWindow.problemCount)
-                          : qsTrId("errors.title")
+                          : rootWindow.totalProblemCount > 0 ? qsTrId("errors.title") : qsTrId("errors.none")
                     font.bold: rootWindow.problemCount > 0
                 }
             }

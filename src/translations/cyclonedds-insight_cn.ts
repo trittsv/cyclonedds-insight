@@ -1050,6 +1050,9 @@
     <message id="idl.import.invalid-files">
         <translation>IDL 导入仅接受 .idl 文件。已拒绝 %1 个文件。</translation>
     </message>
+    <message id="errors.none">
+        <translation>无错误</translation>
+    </message>
     <message id="errors.title">
         <translation>错误</translation>
     </message>

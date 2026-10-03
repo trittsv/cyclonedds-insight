@@ -58,13 +58,31 @@ Popup {
             WarningTriangle {
                 Layout.preferredHeight: 25
                 Layout.preferredWidth: 25
+                visible: errorsDialog.totalCount > 0
+            }
+            Rectangle {
+                Layout.preferredHeight: 25
+                Layout.preferredWidth: 25
+                visible: errorsDialog.totalCount === 0
+                border.color: Constants.designBorderColor(rootWindow.isDarkMode)
+                border.width: 1
+                color: rootWindow.isDarkMode ? "#303030" : "#eeeeee"
+                radius: width / 2
+
+                Label {
+                    anchors.centerIn: parent
+                    color: Constants.mutedForegroundColor(rootWindow.isDarkMode)
+                    font.bold: true
+                    font.pixelSize: 14
+                    text: "✓"
+                }
             }
             Label {
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
                 font.bold: true
                 font.pixelSize: Constants.pageTitleFontSize
-                text: qsTrId("errors.title")
+                text: errorsDialog.totalCount > 0 ? qsTrId("errors.title") : qsTrId("errors.none")
                 wrapMode: Text.WordWrap
             }
             IconActionButton {

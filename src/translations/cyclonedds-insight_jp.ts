@@ -1050,6 +1050,9 @@
     <message id="idl.import.invalid-files">
         <translation>IDL インポートでは .idl ファイルのみ使用できます。%1 個のファイルが拒否されました。</translation>
     </message>
+    <message id="errors.none">
+        <translation>エラーなし</translation>
+    </message>
     <message id="errors.title">
         <translation>エラー</translation>
     </message>

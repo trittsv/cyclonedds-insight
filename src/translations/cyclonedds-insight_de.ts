@@ -1050,6 +1050,9 @@
     <message id="idl.import.invalid-files">
         <translation>Der IDL-Import akzeptiert nur .idl-Dateien. %1 Datei(en) wurden abgelehnt.</translation>
     </message>
+    <message id="errors.none">
+        <translation>Keine Fehler</translation>
+    </message>
     <message id="errors.title">
         <translation>Fehler</translation>
     </message>
