@@ -16,6 +16,10 @@
         <file>src/views/SecondaryWindow.qml</file>
         <file>src/views/DetachableView.qml</file>
         <file>src/views/elements/DetachViewButton.qml</file>
+        <file>src/views/elements/ExpandButton.qml</file>
+        <file>src/views/elements/DetailGroup.qml</file>
+        <file>src/views/elements/ResizeHandle.qml</file>
+        <file>src/views/icons/WindowActionIcon.qml</file>
         <!-- images -->
         <file>res/images/cyclonedds.png</file>
         <file>res/images/cyclonedds@2x.png</file>
@@ -56,6 +60,7 @@
         <file>src/views/icons/ChevronIcon.qml</file>
         <file>src/views/icons/SearchIcon.qml</file>
         <file>src/views/icons/EntityIcon.qml</file>
+        <file>src/views/icons/ConfigurationViewIcon.qml</file>
         <file>src/views/icons/PlusMinusIcon.qml</file>
         <file>src/views/elements/SidebarActionButton.qml</file>
         <file>src/views/icons/MenuIcon.qml</file>

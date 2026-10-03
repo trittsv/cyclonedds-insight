@@ -73,6 +73,25 @@ ColumnLayout {
             border.width: 1
             border.color: rootWindow.isDarkMode ? "#484848" : "#d0d0d0"
 
+            Rectangle {
+                id: selectedSegment
+                x: 2 + viewSelector.currentIndex * (width + 2)
+                y: 2
+                width: (viewSelector.width - 6) / 2
+                height: viewSelector.height - 4
+                radius: 3
+                color: rootWindow.isDarkMode ? "#414141" : "#fafafa"
+                border.width: 1
+                border.color: rootWindow.isDarkMode ? "#535353" : "#d5d5d5"
+
+                Behavior on x {
+                    NumberAnimation {
+                        duration: 140
+                        easing.type: Easing.OutCubic
+                    }
+                }
+            }
+
             Row {
                 anchors.fill: parent
                 anchors.margins: 2
@@ -92,19 +111,9 @@ ColumnLayout {
                         width: (parent.width - 2) / 2
                         height: parent.height
                         radius: 3
-                        color: selected
-                               ? rootWindow.isDarkMode
-                                 ? "#484848" : "#ffffff"
-                               : optionMouseArea.containsMouse
-                                 ? rootWindow.isDarkMode
-                                   ? "#363636" : Constants.lightDesignBorder
-                                 : rootWindow.isDarkMode
-                                   ? "#242424" : "transparent"
-                        border.width: 1
-                        border.color: selected
-                                      ? rootWindow.isDarkMode
-                                        ? "#747474" : "#c6c6c6"
-                                      : "transparent"
+                        color: !selected && optionMouseArea.containsMouse
+                               ? rootWindow.isDarkMode ? "#333333" : "#e0e0e0"
+                               : "transparent"
 
                         EntityIcon {
                             id: viewOptionIcon
@@ -112,7 +121,7 @@ ColumnLayout {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             symbol: viewOption.index === 0 ? "topic" : "participant"
-                            iconColor: viewOption.selected ? Constants.accentColor : viewOptionLabel.color
+                            iconColor: viewOptionLabel.color
                         }
 
                         Label {
@@ -127,9 +136,7 @@ ColumnLayout {
                             verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
                             color: rootWindow.isDarkMode
-                                   ? viewOption.selected
-                                     ? "#ffffff" : "#b8b8b8"
-                                   : "#262626"
+                                   ? Constants.darkMutedForeground : "#262626"
                         }
 
                         MouseArea {

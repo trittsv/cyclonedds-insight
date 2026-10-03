@@ -35,23 +35,12 @@ Rectangle {
         anchors.margins: 8
         spacing: 6
 
-        RowLayout {
+        Label {
             Layout.fillWidth: true
-
-            Label {
-                Layout.fillWidth: true
-                Layout.minimumWidth: 0
-                text: qsTrId("config.network.interfaces")
-                wrapMode: Text.WordWrap
-                font.bold: true
-            }
-            ToolButton {
-                text: panel.expanded ? "−" : "+"
-                Accessible.name: qsTrId("config.network.interfaces")
-                checkable: true
-                checked: panel.expanded
-                onClicked: panel.expanded = !panel.expanded
-            }
+            Layout.minimumWidth: 0
+            text: qsTrId("config.network.interfaces")
+            wrapMode: Text.WordWrap
+            font.bold: true
         }
 
         ListView {

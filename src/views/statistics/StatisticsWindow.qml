@@ -19,6 +19,7 @@ import QtQuick.Dialogs
 import org.eclipse.cyclonedds.insight
 import "qrc:/src/views"
 import "qrc:/src/views/icons"
+import "qrc:/src/views/elements"
 import "qrc:/src/views/selection_details"
 
 
@@ -92,8 +93,9 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 8
 
-            Button {
-                text: qsTrId("general.settings") + (statisticsMainViewId.controlsExpanded ? " ▴" : " ▾")
+            ExpandButton {
+                text: qsTrId("general.settings")
+                expanded: statisticsMainViewId.controlsExpanded
                 onClicked: statisticsMainViewId.controlsExpanded = !statisticsMainViewId.controlsExpanded
             }
             Item { Layout.fillWidth: true }
@@ -127,12 +129,11 @@ Rectangle {
                 columnSpacing: 12
                 rowSpacing: 10
 
-                GroupBox {
+                DetailGroup {
                     id: settingsGroubBox
                     title: qsTrId("general.settings")
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    spacing: 6
 
                     ColumnLayout {
                         anchors.fill: parent
@@ -225,10 +226,9 @@ Rectangle {
                     }
                 }
 
-                GroupBox {
+                DetailGroup {
                     id: chatGroubBox
                     title: qsTrId("statistic.chart.controls")
-                    spacing: 0
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
 

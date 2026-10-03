@@ -26,6 +26,15 @@ import "qrc:/src/views/selection_details"
 SplitView {
     id: overviewRoot
     orientation: Qt.Horizontal
+    handle: sidebarCollapsed ? collapsedSidebarHandle : expandedSidebarHandle
+    property Component expandedSidebarHandle: ResizeHandle {
+        orientation: overviewRoot.orientation
+    }
+    property Component collapsedSidebarHandle: Item {
+        implicitWidth: 0
+        implicitHeight: 0
+        enabled: false
+    }
 
     property var childView
     property bool splitDetails: false
@@ -71,6 +80,7 @@ SplitView {
             id: sidebarContent
             anchors.fill: parent
             orientation: Qt.Vertical
+            handle: ResizeHandle { orientation: sidebarContent.orientation }
             visible: !overviewRoot.sidebarCollapsed
 
             Rectangle {
@@ -388,6 +398,7 @@ SplitView {
                 width: parent.width
                 height: parent.height - bar.height
                 orientation: Qt.Horizontal
+                handle: ResizeHandle { orientation: mainLayoutId.orientation }
 
                 Item {
                     id: inspectTab

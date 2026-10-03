@@ -80,11 +80,6 @@ import qrc_file
 
 
 if __name__ == "__main__":
-
-    if IS_ANDROID:
-        os.environ["QT_QUICK_CONTROLS_STYLE"] = "Material"
-        os.environ["QT_QUICK_CONTROLS_MATERIAL_THEME"] = "System"
-
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(QPixmap(":/res/images/cyclonedds.png")))
     app.setApplicationName("CycloneDDS Insight")
@@ -119,11 +114,15 @@ if __name__ == "__main__":
     logging.info(f"Qt version: {qVersion()}")
 
     if IS_ANDROID:
+        os.environ["QT_QUICK_CONTROLS_STYLE"] = "Material"
+        os.environ["QT_QUICK_CONTROLS_MATERIAL_THEME"] = "System"
         QQuickStyle.setStyle("Material")
     elif IS_IOS:
         QQuickStyle.setStyle("iOS")
     elif sys.platform == "darwin":
         QQuickStyle.setStyle("macOS")
+    elif sys.platform == "win32":
+        QQuickStyle.setStyle("FluentWinUI3")
     else:
         QQuickStyle.setStyle("Fusion")
 

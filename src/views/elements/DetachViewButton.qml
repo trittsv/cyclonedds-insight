@@ -13,11 +13,18 @@
 import QtQuick
 import QtQuick.Controls
 
+import "qrc:/src/views/icons"
+
 ToolButton {
     id: control
     required property var viewHost
-    text: viewHost && viewHost.detached ? "↙" : "↗"
-    font.pixelSize: 22
+    contentItem: Item {
+        WindowActionIcon {
+            anchors.centerIn: parent
+            iconColor: control.palette.buttonText
+            dock: control.viewHost ? control.viewHost.detached : false
+        }
+    }
     implicitWidth: 36
     implicitHeight: 36
     enabled: viewHost !== null

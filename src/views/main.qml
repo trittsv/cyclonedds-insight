@@ -138,8 +138,24 @@ ApplicationWindow {
             id: overviewId
         }
 
-        ConfigEditorView {
-            id: configEditorViewId
+        Loader {
+            id: configEditorLoader
+            // Create the editor with a visible viewport, not on a hidden page
+            // during startup. Keep it alive afterwards to retain editor state.
+            active: false
+            readonly property bool pageReady: visible && width > 0 && height > 0
+                                              && layout.currentIndex === 2
+            function loadEditor() {
+                if (pageReady)
+                    active = true
+            }
+            onPageReadyChanged: {
+                if (pageReady)
+                    Qt.callLater(loadEditor)
+            }
+            sourceComponent: ConfigEditorView {
+                id: configEditorViewId
+            }
         }
 
         DetachableView {

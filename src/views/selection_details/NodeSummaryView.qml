@@ -14,6 +14,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import "qrc:/src/views"
+import "qrc:/src/views/elements"
 
 Rectangle {
     id: view
@@ -80,29 +81,15 @@ Rectangle {
 
             }
 
-            Rectangle {
+            DetailGroup {
                 Layout.fillWidth: true
-                implicitHeight: identity.implicitHeight + 24
-                radius: Constants.cardRadius
-                color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
-                border.width: 1
-                border.color: Constants.designBorderColor(rootWindow.isDarkMode)
+                title: qsTrId("tab.details")
                 GridLayout {
                     id: identity
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: 12
+                    anchors.fill: parent
                     columns: width < 450 ? 1 : 2
                     columnSpacing: 18
                     rowSpacing: 12
-                    Label {
-                        Layout.columnSpan: identity.columns
-                        Layout.fillWidth: true
-                        text: qsTrId("tab.details")
-                        font.bold: true
-                        color: view.textColor
-                    }
                     DetailRow {
                         label: view.process ? qsTrId("entity.process") : qsTrId("entity.host")
                         value: (view.process ? view.summary.processName : view.summary.hostname) || ""
@@ -129,26 +116,13 @@ Rectangle {
                 }
             }
 
-            Rectangle {
+            DetailGroup {
                 Layout.fillWidth: true
-                implicitHeight: metrics.implicitHeight + 24
-                radius: Constants.cardRadius
-                color: Constants.cardBackgroundColor(rootWindow.isDarkMode)
-                border.width: 1
-                border.color: Constants.designBorderColor(rootWindow.isDarkMode)
+                title: qsTrId("summary.overview")
                 ColumnLayout {
                     id: metrics
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: 12
+                    anchors.fill: parent
                     spacing: 12
-                    Label {
-                        Layout.fillWidth: true
-                        text: qsTrId("summary.overview")
-                        font.bold: true
-                        color: view.textColor
-                    }
                     Repeater {
                         model: {
                             const counts = [

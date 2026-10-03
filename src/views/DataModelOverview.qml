@@ -38,9 +38,10 @@ Rectangle {
         Rectangle {
             color: Constants.headerBackgroundColor(rootWindow.isDarkMode)
             Layout.fillWidth: true
-            Layout.preferredHeight: 30
+            Layout.preferredHeight: Math.max(30, dataModelToolbar.implicitHeight)
 
             RowLayout {
+                id: dataModelToolbar
                 anchors.fill: parent
                 spacing: 0
 

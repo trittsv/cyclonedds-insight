@@ -168,9 +168,9 @@ Rectangle {
                 onAccepted: receiverProxyModel.searchText = text
             }
 
-            Button {
+            ExpandButton {
                 id: actionsButton
-                text: qsTrId("listener.actions") + " ▾"
+                text: qsTrId("listener.actions")
                 onClicked: actionsMenu.open()
 
                 Menu {
@@ -219,10 +219,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             orientation: Qt.Horizontal
-            handle: Rectangle {
-                implicitWidth: 10
-                color: listenerTabId.color
-            }
+            handle: ResizeHandle {}
 
             Rectangle {
                 color: listenerTabId.surfaceColor
