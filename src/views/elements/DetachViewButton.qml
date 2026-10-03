@@ -24,7 +24,7 @@ SidebarActionButton {
     contentItem: Item {
         WindowActionIcon {
             anchors.centerIn: parent
-            iconColor: control.palette.buttonText
+            iconColor: Constants.mutedForegroundColor(control.isDarkMode)
             dock: control.viewHost ? control.viewHost.detached : false
         }
     }

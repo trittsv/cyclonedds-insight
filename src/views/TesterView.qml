@@ -62,7 +62,10 @@ Rectangle {
         function onModelReset()  { testerRev++ }
         function onRowsInserted(){ testerRev++ }
         function onRowsRemoved() { testerRev++ }
-        function onCountChanged() { testerRev++ }
+        function onCountChanged() {
+            testerRev++
+            refreshCurrentModels()
+        }
     }
 
     ColumnLayout {
@@ -269,10 +272,12 @@ Rectangle {
                         }
 
                         onCurrentIndexChanged: {
+                            currentDataIndex = 0
+                            refreshCurrentModels()
                             if (testerModel && currentIndex >= 0) {
-                                currentDataIndex = 0
-                                refreshCurrentModels()
                                 descriptionField.text = testerModel.getDescription(currentIndex)
+                            } else {
+                                descriptionField.text = ""
                             }
                         }
 
