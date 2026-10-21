@@ -26,6 +26,8 @@ Rectangle {
     id: listenerTabId
     anchors.fill: parent
     color: Constants.mainContentColor(rootWindow.isDarkMode)
+    signal replayImported(int sessionIndex)
+    property bool treeView: false
     property bool started: true
     property bool autoScrollEnabled: true
     property bool manageReadersVisible: false
@@ -190,6 +192,17 @@ Rectangle {
                         }
                     }
 
+                    MenuItem {
+                        text: qsTrId("listener.tree")
+                        checkable: true
+                        checked: listenerTabId.treeView
+                        onTriggered: listenerTabId.treeView = !listenerTabId.treeView
+                    }
+                    MenuItem {
+                        text: qsTrId("listener.watch.clear")
+                        onTriggered: receiverModel.clearWatchlist()
+                    }
+
                     MenuSeparator {}
 
                     MenuItem {
@@ -200,9 +213,21 @@ Rectangle {
                         text: qsTrId("listener.preset.export")
                         onTriggered: exportListenerPresetDialog.open()
                     }
+                    MenuSeparator {}
+
                     MenuItem {
                         text: qsTrId("listener.sample.export")
                         onTriggered: exportSampleLogFileDialog.open()
+                    }
+
+                    MenuItem {
+                        text: qsTrId("listener.replay.import")
+                        onTriggered: importReplayDialog.open()
+                    }
+                    MenuItem {
+                        text: qsTrId("listener.replay.export")
+                        enabled: receiverModel.replayCount > 0
+                        onTriggered: exportReplayDialog.open()
                     }
 
                     MenuSeparator {}
@@ -279,7 +304,8 @@ Rectangle {
                                     id: receivedMessageText
                                     width: parent.width
                                     text: "\u00a0".repeat(parent.timestampSpacing)
-                                          + "•  " + model.receivedMsg
+                                          + "•  " + (listenerTabId.treeView && Object.keys(model.structured).length > 0
+                                                       ? model.topicName : model.receivedMsg)
                                     readOnly: true
                                     color: rootWindow.isDarkMode ? "white" : "black"
                                     wrapMode: Text.Wrap
@@ -340,6 +366,12 @@ Rectangle {
                                            !sampleDelegate.sampleInfoVisible
                             }
 
+                        }
+
+                        MessageTree {
+                            visible: listenerTabId.treeView && Object.keys(model.structured).length > 0
+                            payload: visible ? model.structured : ({})
+                            scope: model.readerId + ":" + model.topicType + ":" + model.topicName
                         }
 
                         Rectangle {
@@ -518,6 +550,25 @@ Rectangle {
                 SplitView.minimumWidth: 320
                 SplitView.maximumWidth: Math.max(320, listenerTabId.width - 200)
             }
+        }
+    }
+
+    FileDialog {
+        id: exportReplayDialog
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: "json"
+        nameFilters: ["JSON (*.json)"]
+        title: qsTrId("listener.replay.export")
+        onAccepted: receiverModel.exportReplay(qmlUtils.toLocalFile(selectedFile))
+    }
+    FileDialog {
+        id: importReplayDialog
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["JSON (*.json)"]
+        title: qsTrId("listener.replay.import")
+        onAccepted: {
+            if (replayModel.importJson(qmlUtils.toLocalFile(selectedFile)))
+                listenerTabId.replayImported(replayModel.sessions.length - 1)
         }
     }
 

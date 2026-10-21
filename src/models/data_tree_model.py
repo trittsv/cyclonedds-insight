@@ -13,7 +13,7 @@
 from loguru import logger as logging
 import re
 import copy
-from PySide6.QtCore import Qt, QModelIndex, QAbstractItemModel, Qt
+from PySide6.QtCore import qtTrId, Qt, QModelIndex, QAbstractItemModel, Qt
 from PySide6.QtCore import Signal, Slot
 import sys
 
@@ -318,6 +318,34 @@ class DataTreeModel(QAbstractItemModel):
 
         printNode(self.rootItem)
 
+    def fromDataObject(self, value, dataModelHandler):
+        """Populate the preset tree from a received DDS sample without string parsing."""
+        def populate(node, value):
+            if node.role == self.IsUnionRole:
+                raise ValueError(qtTrId("listener.error.union"))
+            if node.role in (self.IsSequenceRole, self.IsArrayRole, self.IsOptionalRole):
+                values = ([value] if value is not None else []) if node.role == self.IsOptionalRole else value
+                node.childItems.clear()
+                for entry in values:
+                    child = DataTreeNode("", "", self.IsSequenceElementRole, parent=node)
+                    missing = set()
+                    dataModelHandler.toNode(node.itemArrayTypeName, child, missing)
+                    if missing:
+                        raise ValueError(qtTrId("listener.error.types").replace("%1", ", ".join(sorted(missing))))
+                    node.appendChild(child)
+                    populate(child, entry)
+            elif node.childItems:
+                for child in node.childItems:
+                    populate(child, getattr(value, child.itemName) if child.itemName else value)
+            else:
+                node.itemValue = getattr(value, "value", value) if node.role == self.IsEnumRole else value
+        self.beginResetModel()
+        try:
+            populate(self.rootItem, value)
+            self.rootItem.dataType = value
+        finally:
+            self.endResetModel()
+
     def toJson(self):
         def default_value_for_node(node):
             if node.itemValue is not None:
@@ -367,6 +395,9 @@ class DataTreeModel(QAbstractItemModel):
     def fromJson(self, jsonDict, dataModelHandler):
 
         def updateNode(node: DataTreeNode, value, dataModelHandler):
+            # Older presets represented optional primitive members as scalars.
+            if node.role == self.IsOptionalRole and not isinstance(value, (dict, list)):
+                value = [] if value is None else [{"__value__": {"__value__": value}}]
             if isinstance(value, dict):
                 if "__value__" in value:
                     value = value["__value__"]
@@ -380,7 +411,7 @@ class DataTreeModel(QAbstractItemModel):
 
             elif isinstance(value, list):
                 for idx, item_val in enumerate(value):
-                    if node.itemArrayTypeName:
+                    if node.itemArrayTypeName and node.role != self.IsArrayRole:
                         targetRole = DataTreeModel.IsSequenceElementRole
                         if node.role == DataTreeModel.IsOptionalRole:
                             targetRole = DataTreeModel.IsOptionalElementRole
@@ -388,7 +419,7 @@ class DataTreeModel(QAbstractItemModel):
 
                         currentTreeIndex = self.createIndex(node.row(), 0, node)
                         self.addArrayItem(currentTreeIndex, itemNode)
-                    elif node.parentItem.itemArrayTypeName:
+                    elif node.role != self.IsArrayRole and node.parentItem.itemArrayTypeName:
                         itemNode = dataModelHandler.toNode(node.parentItem.itemArrayTypeName, DataTreeNode("", "", DataTreeModel.IsSequenceElementRole, parent=node))
                         itemNode.itemArrayTypeName = node.parentItem.itemArrayTypeName
                         currentTreeIndex = self.createIndex(node.row(), 0, node)

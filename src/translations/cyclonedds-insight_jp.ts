@@ -1195,5 +1195,113 @@
     <message id="config.network.copy.address">
         <translation>コピー</translation>
     </message>
+    <message id="listener.replay.export">
+        <translation>リプレイをエクスポート…</translation>
+    </message>
+    <message id="listener.replay.import">
+        <translation>リプレイをインポート…</translation>
+    </message>
+    <message id="listener.tree">
+        <translation>ツリー表示</translation>
+    </message>
+    <message id="listener.watch.add">
+        <translation>ウォッチリストに追加</translation>
+    </message>
+    <message id="listener.watch.remove">
+        <translation>ウォッチリストから削除</translation>
+    </message>
+    <message id="listener.watch.clear">
+        <translation>ウォッチリストをクリア</translation>
+    </message>
+    <message id="listener.replay.interval">
+        <translation>間隔 (ms)</translation>
+    </message>
+    <message id="listener.replay.original">
+        <translation>元の時間間隔を使用</translation>
+    </message>
+    <message id="listener.replay.play">
+        <translation>再生</translation>
+    </message>
+    <message id="listener.replay.stop">
+        <translation>停止</translation>
+    </message>
+    <message id="listener.replay.position">
+        <translation>メッセージ %1 / %2</translation>
+    </message>
+    <message id="listener.error.format">
+        <translation>テスタープリセットまたは記録のJSONオブジェクトが必要です</translation>
+    </message>
+    <message id="listener.error.preset">
+        <translation>無効なプリセット</translation>
+    </message>
+    <message id="listener.error.preset.id">
+        <translation>プリセットIDが無効または重複しています</translation>
+    </message>
+    <message id="listener.error.metadata">
+        <translation>ドメイン、トピック、QoSのメタデータが無効です</translation>
+    </message>
+    <message id="listener.error.messages">
+        <translation>メッセージ一覧が無効です</translation>
+    </message>
+    <message id="listener.error.message">
+        <translation>プリセットのメッセージが無効です</translation>
+    </message>
+    <message id="listener.error.message.id">
+        <translation>メッセージIDが無効または重複しています</translation>
+    </message>
+    <message id="listener.error.types">
+        <translation>必要なIDLを先にインポートしてください: %1</translation>
+    </message>
+    <message id="listener.error.version">
+        <translation>リプレイのメタデータバージョンは未対応です</translation>
+    </message>
+    <message id="listener.error.empty">
+        <translation>このファイルには再生するメッセージがありません</translation>
+    </message>
+    <message id="listener.error.event">
+        <translation>リプレイイベントが無効です</translation>
+    </message>
+    <message id="listener.error.reference">
+        <translation>リプレイが不明なメッセージを参照しています</translation>
+    </message>
+    <message id="listener.error.timestamps">
+        <translation>リプレイの時刻は有限かつ非負で、順番に並んでいる必要があります</translation>
+    </message>
+    <message id="listener.error.range">
+        <translation>再生するメッセージの選択または間隔が無効です</translation>
+    </message>
+    <message id="listener.error.timeout">
+        <translation>DDSリプレイの待機がタイムアウトしました</translation>
+    </message>
+    <message id="listener.error.replay">
+        <translation>リプレイに失敗しました: %1</translation>
+    </message>
+    <message id="listener.error.import">
+        <translation>リプレイをインポートできません: %1</translation>
+    </message>
+    <message id="listener.error.reader">
+        <translation>リーダーのメタデータがありません</translation>
+    </message>
+    <message id="listener.error.samples">
+        <translation>リスナーに有効なサンプルがありません</translation>
+    </message>
+    <message id="listener.error.export">
+        <translation>リプレイをエクスポートできません: %1</translation>
+    </message>
+    <message id="listener.error.union">
+        <translation>プリセットのデータツリーはunion値に対応していません</translation>
+    </message>
+    <message id="listener.error.writer">
+        <translation>リプレイのライターが利用できなくなりました</translation>
+    </message>
+    <message id="listener.replay.select.all">
+        <translation>すべて選択</translation>
+    </message>
+    <message id="listener.replay.deselect.all">
+        <translation>選択を解除</translation>
+    </message>
+    <message id="listener.replay.selected.count">
+        <translation>%2 件中 %1 件を選択</translation>
+    </message>
 </context>
 </TS>

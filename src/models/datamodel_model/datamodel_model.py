@@ -37,7 +37,7 @@ class DatamodelModel(QAbstractListModel):
 
     newDataArrived = Signal(
         str, str, str, bool, str, str, str, str, str, str, str, str, str, str,
-        str, str
+        str, str, object
     )
     isLoadingSignal = Signal(bool)
     requestDataType = Signal(str, int, str, str)
@@ -45,6 +45,7 @@ class DatamodelModel(QAbstractListModel):
     newReaderSignal = Signal(str, int, str, str, object)
     qosProviderError = Signal(str)
     operationError = Signal(str)
+    endpointFailed = Signal(str, str)
 
     def __init__(self, threads, dataModelHandler, parent=typing.Optional[QObject]) -> None:
         super().__init__()
@@ -104,12 +105,12 @@ class DatamodelModel(QAbstractListModel):
     def endInsertModule(self):
         self.endInsertRows()
 
-    @Slot(str, str, str, bool, str, str, str, str, str, int, str, str, str, str)
+    @Slot(str, str, str, bool, str, str, str, str, str, int, str, str, str, str, object)
     def onData(self, _id: str, data: str, sample_info: str, valid_data: bool,
                source_timestamp: str, transmission_time: str,
                received_timestamp: str, writer_id: str, reader_id: str,
                domain_id: int, writer_participant_id: str, topic_type: str,
-               topic_name: str, instance_handle: str):
+               topic_name: str, instance_handle: str, sample):
         participant = None
         if domain_id in self.ddsData.the_domains:
             participant = self.ddsData.the_domains[domain_id].getParticipantByKey(
@@ -125,7 +126,7 @@ class DatamodelModel(QAbstractListModel):
             _id, data, sample_info, valid_data, source_timestamp,
             transmission_time, received_timestamp, writer_id, reader_id,
             process_name, hostname, process_id, addresses, topic_type, topic_name,
-            instance_handle
+            instance_handle, sample
         )
 
     @Slot()
@@ -213,6 +214,7 @@ class DatamodelModel(QAbstractListModel):
         except Exception as error:
             message = f"Failed to create endpoint '{topic_name}': {error}"
             logging.error(message)
+            self.endpointFailed.emit(_id, message)
             self.operationError.emit(message)
 
     @Slot(str, int)
@@ -312,6 +314,7 @@ class DatamodelModel(QAbstractListModel):
     @Slot(str, str)
     def endpointCreationFailed(self, id, message):
         self.pendingEndpoints.pop(id, None)
+        self.endpointFailed.emit(id, message)
         self.operationError.emit(message)
 
     @Slot(str)

@@ -251,6 +251,15 @@ ApplicationWindow {
     }
 
     Connections {
+        target: receiverModel
+        function onOperationError(message) { rootWindow.showOperationError(message) }
+    }
+    Connections {
+        target: replayModel
+        function onOperationError(message) { rootWindow.showOperationError(message) }
+    }
+
+    Connections {
         target: testerModel
         function onOperationError(message) {
             rootWindow.showOperationError(message)

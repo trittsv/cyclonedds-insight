@@ -311,7 +311,9 @@ class DataModelHandler(QObject):
             for k in self.structMembers[topicType].keys():
                 currentTypeName = self.structMembers[topicType][k]
                 realType = self.getRealType(currentTypeName)
-                if self.isArray(realType):
+                if self.isOptional(realType):
+                    initList.append(None)
+                elif self.isArray(realType):
                     arrayDefaultValues = []
                     metaType = self.getMetaDataType(realType)
                     innerType = metaType.subtype
@@ -337,8 +339,6 @@ class DataModelHandler(QObject):
                     initList.append(None)
                 elif self.isStruct(realType):
                     initList.append(self.getInitializedDataObj(realType))
-                elif self.isOptional(realType):
-                    initList.append(None)                    
 
             module = self.allTypes[topicType]
             logging.trace(f"init with list: {initList}")
@@ -547,8 +547,18 @@ class DataModelHandler(QObject):
                 tt = str(self.structMembers[theType][keyStructMem]).replace(".", "::")
                 realType = self.getRealType(self.structMembers[theType][keyStructMem])
 
+                if self.isOptional(realType):
+                    optionalNode = DataTreeNode(keyStructMem, tt, DataTreeModel.IsOptionalRole, parent=rootNode)
+                    optionalNode.maxElements = 1
+                    optType = self.getOptionalType(realType)
+                    inner = (optType.__idl_typename__ if hasattr(optType, "__idl_typename__")
+                             else str(optType)).replace(".", "::")
+                    optionalNode.dataType = self.getInitializedDataObj(inner)
+                    optionalNode.itemArrayTypeName = inner
+                    rootNode.appendChild(optionalNode)
+
                 # string
-                if self.isStr(realType):
+                elif self.isStr(realType):
                     rootNode.appendChild(DataTreeNode(keyStructMem, tt, DataTreeModel.IsStrRole, parent=rootNode))
 
                 # integer
@@ -608,15 +618,6 @@ class DataModelHandler(QObject):
                     seqRootNode.itemArrayType = inner
 
                     rootNode.appendChild(seqRootNode)
-
-                elif self.isOptional(realType):
-                    optionalNode = DataTreeNode(keyStructMem, tt, DataTreeModel.IsOptionalRole, parent=rootNode)
-                    optionalNode.maxElements = 1
-                    optType = self.getOptionalType(realType)
-                    inner = str(optType).replace(".", "::")
-                    optionalNode.dataType = self.getInitializedDataObj(inner)
-                    optionalNode.itemArrayTypeName = inner
-                    rootNode.appendChild(optionalNode)
 
                 # enum
                 elif self.isEnum(realType):

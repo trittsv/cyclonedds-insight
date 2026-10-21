@@ -1195,5 +1195,113 @@
     <message id="config.network.copy.address">
         <translation>复制</translation>
     </message>
+    <message id="listener.replay.export">
+        <translation>导出回放…</translation>
+    </message>
+    <message id="listener.replay.import">
+        <translation>导入回放…</translation>
+    </message>
+    <message id="listener.tree">
+        <translation>树状视图</translation>
+    </message>
+    <message id="listener.watch.add">
+        <translation>添加到监视列表</translation>
+    </message>
+    <message id="listener.watch.remove">
+        <translation>从监视列表移除</translation>
+    </message>
+    <message id="listener.watch.clear">
+        <translation>清空监视列表</translation>
+    </message>
+    <message id="listener.replay.interval">
+        <translation>间隔 (ms)</translation>
+    </message>
+    <message id="listener.replay.original">
+        <translation>使用原始时间间隔</translation>
+    </message>
+    <message id="listener.replay.play">
+        <translation>播放</translation>
+    </message>
+    <message id="listener.replay.stop">
+        <translation>停止</translation>
+    </message>
+    <message id="listener.replay.position">
+        <translation>消息 %1 / %2</translation>
+    </message>
+    <message id="listener.error.format">
+        <translation>需要测试器预设或录制的 JSON 对象</translation>
+    </message>
+    <message id="listener.error.preset">
+        <translation>无效预设</translation>
+    </message>
+    <message id="listener.error.preset.id">
+        <translation>预设 ID 无效或重复</translation>
+    </message>
+    <message id="listener.error.metadata">
+        <translation>域、主题或 QoS 元数据无效</translation>
+    </message>
+    <message id="listener.error.messages">
+        <translation>消息列表无效</translation>
+    </message>
+    <message id="listener.error.message">
+        <translation>预设消息无效</translation>
+    </message>
+    <message id="listener.error.message.id">
+        <translation>消息 ID 无效或重复</translation>
+    </message>
+    <message id="listener.error.types">
+        <translation>请先导入所需的 IDL：%1</translation>
+    </message>
+    <message id="listener.error.version">
+        <translation>不支持的回放元数据版本</translation>
+    </message>
+    <message id="listener.error.empty">
+        <translation>此文件中没有可回放的消息</translation>
+    </message>
+    <message id="listener.error.event">
+        <translation>回放事件无效</translation>
+    </message>
+    <message id="listener.error.reference">
+        <translation>回放引用了未知消息</translation>
+    </message>
+    <message id="listener.error.timestamps">
+        <translation>回放时间戳必须有限、非负且按顺序排列</translation>
+    </message>
+    <message id="listener.error.range">
+        <translation>回放选择或间隔无效</translation>
+    </message>
+    <message id="listener.error.timeout">
+        <translation>等待 DDS 回放超时</translation>
+    </message>
+    <message id="listener.error.replay">
+        <translation>回放失败：%1</translation>
+    </message>
+    <message id="listener.error.import">
+        <translation>无法导入回放：%1</translation>
+    </message>
+    <message id="listener.error.reader">
+        <translation>读取器元数据不可用</translation>
+    </message>
+    <message id="listener.error.samples">
+        <translation>监听器中没有有效样本</translation>
+    </message>
+    <message id="listener.error.export">
+        <translation>无法导出回放：%1</translation>
+    </message>
+    <message id="listener.error.union">
+        <translation>预设数据树不支持联合类型值</translation>
+    </message>
+    <message id="listener.error.writer">
+        <translation>回放写入器已不可用</translation>
+    </message>
+    <message id="listener.replay.select.all">
+        <translation>全选</translation>
+    </message>
+    <message id="listener.replay.deselect.all">
+        <translation>取消全选</translation>
+    </message>
+    <message id="listener.replay.selected.count">
+        <translation>已选择 %1 / %2 条</translation>
+    </message>
 </context>
 </TS>

@@ -1195,5 +1195,113 @@
     <message id="config.network.copy.address">
         <translation>Copier</translation>
     </message>
+    <message id="listener.replay.export">
+        <translation>Exporter la relecture…</translation>
+    </message>
+    <message id="listener.replay.import">
+        <translation>Importer une relecture…</translation>
+    </message>
+    <message id="listener.tree">
+        <translation>Vue arborescente</translation>
+    </message>
+    <message id="listener.watch.add">
+        <translation>Ajouter à la liste de surveillance</translation>
+    </message>
+    <message id="listener.watch.remove">
+        <translation>Retirer de la liste de surveillance</translation>
+    </message>
+    <message id="listener.watch.clear">
+        <translation>Vider la liste de surveillance</translation>
+    </message>
+    <message id="listener.replay.interval">
+        <translation>Intervalle (ms)</translation>
+    </message>
+    <message id="listener.replay.original">
+        <translation>Utiliser les intervalles d’origine</translation>
+    </message>
+    <message id="listener.replay.play">
+        <translation>Lire</translation>
+    </message>
+    <message id="listener.replay.stop">
+        <translation>Arrêter</translation>
+    </message>
+    <message id="listener.replay.position">
+        <translation>Message %1 sur %2</translation>
+    </message>
+    <message id="listener.error.format">
+        <translation>Un objet JSON de préréglage du testeur ou d’enregistrement est attendu</translation>
+    </message>
+    <message id="listener.error.preset">
+        <translation>Préréglage invalide</translation>
+    </message>
+    <message id="listener.error.preset.id">
+        <translation>ID de préréglage invalide ou en double</translation>
+    </message>
+    <message id="listener.error.metadata">
+        <translation>Métadonnées de domaine, de topic ou de QoS invalides</translation>
+    </message>
+    <message id="listener.error.messages">
+        <translation>Liste de messages invalide</translation>
+    </message>
+    <message id="listener.error.message">
+        <translation>Message de préréglage invalide</translation>
+    </message>
+    <message id="listener.error.message.id">
+        <translation>ID de message invalide ou en double</translation>
+    </message>
+    <message id="listener.error.types">
+        <translation>Importez d’abord l’IDL requis : %1</translation>
+    </message>
+    <message id="listener.error.version">
+        <translation>Version des métadonnées de relecture non prise en charge</translation>
+    </message>
+    <message id="listener.error.empty">
+        <translation>Ce fichier ne contient aucun message à relire</translation>
+    </message>
+    <message id="listener.error.event">
+        <translation>Événement de relecture invalide</translation>
+    </message>
+    <message id="listener.error.reference">
+        <translation>La relecture référence un message inconnu</translation>
+    </message>
+    <message id="listener.error.timestamps">
+        <translation>Les horodatages doivent être finis, positifs ou nuls et ordonnés</translation>
+    </message>
+    <message id="listener.error.range">
+        <translation>Sélection ou intervalle de relecture invalide</translation>
+    </message>
+    <message id="listener.error.timeout">
+        <translation>Délai d’attente de relecture DDS dépassé</translation>
+    </message>
+    <message id="listener.error.replay">
+        <translation>Échec de la relecture : %1</translation>
+    </message>
+    <message id="listener.error.import">
+        <translation>Impossible d’importer la relecture : %1</translation>
+    </message>
+    <message id="listener.error.reader">
+        <translation>Métadonnées du lecteur indisponibles</translation>
+    </message>
+    <message id="listener.error.samples">
+        <translation>Aucun échantillon valide dans le récepteur</translation>
+    </message>
+    <message id="listener.error.export">
+        <translation>Impossible d’exporter la relecture : %1</translation>
+    </message>
+    <message id="listener.error.union">
+        <translation>Les valeurs union ne sont pas prises en charge par l’arbre de données des préréglages</translation>
+    </message>
+    <message id="listener.error.writer">
+        <translation>Le rédacteur de relecture n’est plus disponible</translation>
+    </message>
+    <message id="listener.replay.select.all">
+        <translation>Tout sélectionner</translation>
+    </message>
+    <message id="listener.replay.deselect.all">
+        <translation>Tout désélectionner</translation>
+    </message>
+    <message id="listener.replay.selected.count">
+        <translation>%1 sur %2 sélectionnés</translation>
+    </message>
 </context>
 </TS>

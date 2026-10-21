@@ -193,7 +193,8 @@ SplitView {
                     boundsBehavior: Flickable.StopAtBounds
 
                     function revealTab(index) {
-                        const tab = tabRow.children[index]
+                        const tab = index < 4 ? tabRow.children[index]
+                                             : replayTabRepeater.itemAt(index - 4)
                         if (!tab)
                             return
                         const rightEdge = tab.x + tab.width
@@ -231,10 +232,10 @@ SplitView {
                         InsightTabButton {
                             tabText: qsTrId("tab.details")
                             tabIcon: "details"
-                            checked: overviewRoot.multiViewEnabled
+                            checked: bar.currentIndex < 4 && (overviewRoot.multiViewEnabled
                                      ? overviewRoot.splitDetails
-                                     : bar.currentIndex === 0
-                            paneToggleMode: overviewRoot.multiViewEnabled
+                                     : bar.currentIndex === 0)
+                            paneToggleMode: overviewRoot.multiViewEnabled && bar.currentIndex < 4
                             paneIncluded: overviewRoot.splitDetails
                             paneToggleToolTip:
                                 overviewRoot.tabToggleToolTip(0)
@@ -246,10 +247,10 @@ SplitView {
                         InsightTabButton {
                             tabText: qsTrId("tab.statistics")
                             tabIcon: "statistics"
-                            checked: overviewRoot.multiViewEnabled
+                            checked: bar.currentIndex < 4 && (overviewRoot.multiViewEnabled
                                      ? overviewRoot.splitStatistics
-                                     : bar.currentIndex === 1
-                            paneToggleMode: overviewRoot.multiViewEnabled
+                                     : bar.currentIndex === 1)
+                            paneToggleMode: overviewRoot.multiViewEnabled && bar.currentIndex < 4
                             paneIncluded: overviewRoot.splitStatistics
                             paneToggleToolTip:
                                 overviewRoot.tabToggleToolTip(1)
@@ -266,10 +267,10 @@ SplitView {
                         InsightTabButton {
                             tabText: qsTrId("tab.tester")
                             tabIcon: "tester"
-                            checked: overviewRoot.multiViewEnabled
+                            checked: bar.currentIndex < 4 && (overviewRoot.multiViewEnabled
                                      ? overviewRoot.splitTester
-                                     : bar.currentIndex === 2
-                            paneToggleMode: overviewRoot.multiViewEnabled
+                                     : bar.currentIndex === 2)
+                            paneToggleMode: overviewRoot.multiViewEnabled && bar.currentIndex < 4
                             paneIncluded: overviewRoot.splitTester
                             paneToggleToolTip:
                                 overviewRoot.tabToggleToolTip(2)
@@ -286,10 +287,10 @@ SplitView {
                         InsightTabButton {
                             tabText: qsTrId("tab.listener")
                             tabIcon: "listener"
-                            checked: overviewRoot.multiViewEnabled
+                            checked: bar.currentIndex < 4 && (overviewRoot.multiViewEnabled
                                      ? overviewRoot.splitListener
-                                     : bar.currentIndex === 3
-                            paneToggleMode: overviewRoot.multiViewEnabled
+                                     : bar.currentIndex === 3)
+                            paneToggleMode: overviewRoot.multiViewEnabled && bar.currentIndex < 4
                             paneIncluded: overviewRoot.splitListener
                             paneToggleToolTip:
                                 overviewRoot.tabToggleToolTip(3)
@@ -303,13 +304,34 @@ SplitView {
                             height: parent.height
                             width: Math.max(150, minimumTabWidth)
                         }
+                        Repeater {
+                            id: replayTabRepeater
+                            model: replayModel.sessions
+                            InsightTabButton {
+                                required property int index
+                                required property var modelData
+                                objectName: "replayTab-" + index
+                                tabText: modelData.name
+                                tabIcon: "tester"
+                                closable: true
+                                checked: bar.currentIndex === index + 4
+                                height: tabRow.height
+                                width: Math.max(150, Math.min(300, minimumTabWidth))
+                                onClicked: overviewRoot.activateView(index + 4)
+                                onCloseRequested: overviewRoot.closeReplay(index)
+                                onActiveFocusChanged: {
+                                    if (activeFocus)
+                                        tabFlickable.revealTab(index + 4)
+                                }
+                            }
+                        }
                     }
 
                 }
 
                 Rectangle {
                     id: splitViewStatus
-                    visible: overviewRoot.multiViewEnabled
+                    visible: overviewRoot.multiViewEnabled && bar.currentIndex < 4
                              && bar.width >= 600 + width + sideBySideButton.width + 24
                     anchors.right: sideBySideButton.left
                     anchors.rightMargin: 6
@@ -334,6 +356,8 @@ SplitView {
 
                 Rectangle {
                     id: sideBySideButton
+                    enabled: bar.currentIndex < 4
+                    opacity: enabled ? 1 : 0.4
                     anchors.right: parent.right
                     anchors.rightMargin: 6
                     anchors.verticalCenter: parent.verticalCenter
@@ -395,6 +419,7 @@ SplitView {
             }
             SplitView {
                 id: mainLayoutId
+                visible: bar.currentIndex < 4
                 width: parent.width
                 height: parent.height - bar.height
                 orientation: Qt.Horizontal
@@ -481,10 +506,35 @@ SplitView {
 
                     ListenerView {
                         id: listenerView
+                        onReplayImported: function(sessionIndex) {
+                            overviewRoot.activateView(sessionIndex + 4)
+                        }
                     }
                 }
             }
+            Repeater {
+                model: replayModel.sessions
+                ReplayView {
+                    required property int index
+                    required property var modelData
+                    objectName: "replayPage-" + index
+                    width: centerItem.width
+                    height: centerItem.height - bar.height
+                    visible: bar.currentIndex === index + 4
+                    session: modelData
+                }
+            }
         }
+    }
+
+    function closeReplay(index) {
+        const tabIndex = index + 4
+        if (bar.currentIndex === tabIndex)
+            bar.currentIndex = 3
+        else if (bar.currentIndex > tabIndex)
+            bar.currentIndex -= 1
+        replayModel.close(index)
+        Qt.callLater(function() { tabFlickable.revealTab(bar.currentIndex) })
     }
 
     function clearView() {
@@ -649,6 +699,8 @@ SplitView {
     }
 
     function toggleSplitMode() {
+        if (bar.currentIndex >= 4)
+            return
         if (splitModeActive) {
             exitSplitMode()
             return
@@ -703,7 +755,14 @@ SplitView {
     }
 
     function activateView(index) {
-        if (multiViewEnabled) {
+        if (index >= 4) {
+            bar.currentIndex = index
+            Qt.callLater(function() { tabFlickable.revealTab(index) })
+        } else if (multiViewEnabled && bar.currentIndex >= 4) {
+            bar.currentIndex = index
+            setSplitViewSelected(index, true)
+            resetSplitViewWidths()
+        } else if (multiViewEnabled) {
             toggleSplitView(index)
         } else {
             bar.currentIndex = index

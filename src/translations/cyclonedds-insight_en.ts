@@ -1195,5 +1195,113 @@
     <message id="config.network.copy.address">
         <translation>Copy</translation>
     </message>
+    <message id="listener.replay.export">
+        <translation>Export replay…</translation>
+    </message>
+    <message id="listener.replay.import">
+        <translation>Import replay…</translation>
+    </message>
+    <message id="listener.tree">
+        <translation>Tree view</translation>
+    </message>
+    <message id="listener.watch.add">
+        <translation>Add to watchlist</translation>
+    </message>
+    <message id="listener.watch.remove">
+        <translation>Remove from watchlist</translation>
+    </message>
+    <message id="listener.watch.clear">
+        <translation>Clear watchlist</translation>
+    </message>
+    <message id="listener.replay.interval">
+        <translation>Interval (ms)</translation>
+    </message>
+    <message id="listener.replay.original">
+        <translation>Use original timing</translation>
+    </message>
+    <message id="listener.replay.play">
+        <translation>Play</translation>
+    </message>
+    <message id="listener.replay.stop">
+        <translation>Stop</translation>
+    </message>
+    <message id="listener.replay.position">
+        <translation>Message %1 of %2</translation>
+    </message>
+    <message id="listener.error.format">
+        <translation>Expected a tester preset or recording JSON object</translation>
+    </message>
+    <message id="listener.error.preset">
+        <translation>Invalid preset</translation>
+    </message>
+    <message id="listener.error.preset.id">
+        <translation>Invalid or duplicate preset ID</translation>
+    </message>
+    <message id="listener.error.metadata">
+        <translation>Invalid domain, topic or QoS metadata</translation>
+    </message>
+    <message id="listener.error.messages">
+        <translation>Invalid messages list</translation>
+    </message>
+    <message id="listener.error.message">
+        <translation>Invalid preset message</translation>
+    </message>
+    <message id="listener.error.message.id">
+        <translation>Invalid or duplicate message ID</translation>
+    </message>
+    <message id="listener.error.types">
+        <translation>Import the required IDL first: %1</translation>
+    </message>
+    <message id="listener.error.version">
+        <translation>Unsupported replay metadata version</translation>
+    </message>
+    <message id="listener.error.empty">
+        <translation>No replay messages in this file</translation>
+    </message>
+    <message id="listener.error.event">
+        <translation>Invalid replay event</translation>
+    </message>
+    <message id="listener.error.reference">
+        <translation>Replay references an unknown message</translation>
+    </message>
+    <message id="listener.error.timestamps">
+        <translation>Replay timestamps must be finite, nonnegative and ordered</translation>
+    </message>
+    <message id="listener.error.range">
+        <translation>Invalid replay selection or interval</translation>
+    </message>
+    <message id="listener.error.timeout">
+        <translation>Timed out waiting for DDS replay</translation>
+    </message>
+    <message id="listener.error.replay">
+        <translation>Replay failed: %1</translation>
+    </message>
+    <message id="listener.error.import">
+        <translation>Cannot import replay: %1</translation>
+    </message>
+    <message id="listener.error.reader">
+        <translation>Reader metadata is unavailable</translation>
+    </message>
+    <message id="listener.error.samples">
+        <translation>No valid samples in the listener</translation>
+    </message>
+    <message id="listener.error.export">
+        <translation>Cannot export replay: %1</translation>
+    </message>
+    <message id="listener.error.union">
+        <translation>Union values are not supported by the preset data tree</translation>
+    </message>
+    <message id="listener.error.writer">
+        <translation>Replay writer is no longer available</translation>
+    </message>
+    <message id="listener.replay.select.all">
+        <translation>Select all</translation>
+    </message>
+    <message id="listener.replay.deselect.all">
+        <translation>Deselect all</translation>
+    </message>
+    <message id="listener.replay.selected.count">
+        <translation>%1 of %2 selected</translation>
+    </message>
 </context>
 </TS>

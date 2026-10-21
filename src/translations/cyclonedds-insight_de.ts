@@ -1195,5 +1195,113 @@
     <message id="config.network.copy.address">
         <translation>Kopieren</translation>
     </message>
+    <message id="listener.replay.export">
+        <translation>Replay exportieren…</translation>
+    </message>
+    <message id="listener.replay.import">
+        <translation>Replay importieren…</translation>
+    </message>
+    <message id="listener.tree">
+        <translation>Baumansicht</translation>
+    </message>
+    <message id="listener.watch.add">
+        <translation>Zur Watchliste hinzufügen</translation>
+    </message>
+    <message id="listener.watch.remove">
+        <translation>Aus Watchliste entfernen</translation>
+    </message>
+    <message id="listener.watch.clear">
+        <translation>Watchliste leeren</translation>
+    </message>
+    <message id="listener.replay.interval">
+        <translation>Abstand (ms)</translation>
+    </message>
+    <message id="listener.replay.original">
+        <translation>Ursprüngliche Zeitabstände verwenden</translation>
+    </message>
+    <message id="listener.replay.play">
+        <translation>Abspielen</translation>
+    </message>
+    <message id="listener.replay.stop">
+        <translation>Stoppen</translation>
+    </message>
+    <message id="listener.replay.position">
+        <translation>Nachricht %1 von %2</translation>
+    </message>
+    <message id="listener.error.format">
+        <translation>Tester-Preset oder Aufnahme als JSON-Objekt erwartet</translation>
+    </message>
+    <message id="listener.error.preset">
+        <translation>Ungültiges Preset</translation>
+    </message>
+    <message id="listener.error.preset.id">
+        <translation>Ungültige oder doppelte Preset-ID</translation>
+    </message>
+    <message id="listener.error.metadata">
+        <translation>Ungültige Domain-, Topic- oder QoS-Metadaten</translation>
+    </message>
+    <message id="listener.error.messages">
+        <translation>Ungültige Nachrichtenliste</translation>
+    </message>
+    <message id="listener.error.message">
+        <translation>Ungültige Preset-Nachricht</translation>
+    </message>
+    <message id="listener.error.message.id">
+        <translation>Ungültige oder doppelte Nachrichten-ID</translation>
+    </message>
+    <message id="listener.error.types">
+        <translation>Zuerst die erforderliche IDL importieren: %1</translation>
+    </message>
+    <message id="listener.error.version">
+        <translation>Nicht unterstützte Replay-Metadatenversion</translation>
+    </message>
+    <message id="listener.error.empty">
+        <translation>Diese Datei enthält keine Replay-Nachrichten</translation>
+    </message>
+    <message id="listener.error.event">
+        <translation>Ungültiges Replay-Ereignis</translation>
+    </message>
+    <message id="listener.error.reference">
+        <translation>Replay verweist auf eine unbekannte Nachricht</translation>
+    </message>
+    <message id="listener.error.timestamps">
+        <translation>Replay-Zeitstempel müssen endlich, nicht negativ und geordnet sein</translation>
+    </message>
+    <message id="listener.error.range">
+        <translation>Ungültige Replay-Auswahl oder Zeitabstand</translation>
+    </message>
+    <message id="listener.error.timeout">
+        <translation>Zeitüberschreitung beim Warten auf DDS-Replay</translation>
+    </message>
+    <message id="listener.error.replay">
+        <translation>Replay fehlgeschlagen: %1</translation>
+    </message>
+    <message id="listener.error.import">
+        <translation>Replay kann nicht importiert werden: %1</translation>
+    </message>
+    <message id="listener.error.reader">
+        <translation>Reader-Metadaten sind nicht verfügbar</translation>
+    </message>
+    <message id="listener.error.samples">
+        <translation>Keine gültigen Samples im Listener</translation>
+    </message>
+    <message id="listener.error.export">
+        <translation>Replay kann nicht exportiert werden: %1</translation>
+    </message>
+    <message id="listener.error.union">
+        <translation>Union-Werte werden vom Preset-Datenbaum nicht unterstützt</translation>
+    </message>
+    <message id="listener.error.writer">
+        <translation>Replay-Writer ist nicht mehr verfügbar</translation>
+    </message>
+    <message id="listener.replay.select.all">
+        <translation>Alle auswählen</translation>
+    </message>
+    <message id="listener.replay.deselect.all">
+        <translation>Auswahl aufheben</translation>
+    </message>
+    <message id="listener.replay.selected.count">
+        <translation>%1 von %2 ausgewählt</translation>
+    </message>
 </context>
 </TS>

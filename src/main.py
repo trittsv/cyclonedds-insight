@@ -56,6 +56,8 @@ from models.tester_model import TesterModel
 from models.listener.listener_model import ListenerModel
 from models.listener.listener_proxy_model import ListenerProxyModel
 from models.listener.receiver_model import ReceiverModel
+from models.listener.replay_model import ReplayModel
+from models.listener.sample_tree_model import SampleTreeModel
 from models.listener.receiver_proxy_model import ReceiverProxyModel
 from models.shapes_demo_model import ShapesDemoModel
 from models.graph_model import GraphModel
@@ -142,12 +144,14 @@ if __name__ == "__main__":
     datamodelRepoModelProxy = DatamodelProxyModel()
     datamodelRepoModelProxy.setSourceModel(datamodelRepoModel)
 
-    receiverModel = ReceiverModel()
+    listenerModel = ListenerModel(threads)
+    receiverModel = ReceiverModel(dataModelHandler, listenerModel)
+    replayModel = ReplayModel(datamodelRepoModel)
+    app.aboutToQuit.connect(replayModel.stopAll)
     datamodelRepoModel.newDataArrived.connect(receiverModel.addReceivedMsg, Qt.QueuedConnection)
     receiverProxyModel = ReceiverProxyModel()
     receiverProxyModel.setSourceModel(receiverModel)
 
-    listenerModel = ListenerModel(threads)
     datamodelRepoModel.newReaderSignal.connect(listenerModel.addReader)
     listenerModel.createEndpointSignal.connect(datamodelRepoModel.createEndpointFromTester)
     listenerProxyModel = ListenerProxyModel()
@@ -179,6 +183,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("datamodelRepoModel", datamodelRepoModel)
     engine.rootContext().setContextProperty("datamodelRepoModelProxy", datamodelRepoModelProxy)
     engine.rootContext().setContextProperty("testerModel", testerModel)
+    engine.rootContext().setContextProperty("replayModel", replayModel)
     engine.rootContext().setContextProperty("listenerModel", listenerModel)
     engine.rootContext().setContextProperty("listenerProxyModel", listenerProxyModel)
     engine.rootContext().setContextProperty("receiverModel", receiverModel)
@@ -203,6 +208,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("IS_FROZEN", IS_FROZEN)
     engine.rootContext().setContextProperty("IS_MOBILE", IS_MOBILE)
 
+    qmlRegisterType(SampleTreeModel, "org.eclipse.cyclonedds.insight", 1, 0, "SampleTreeModel")
     qmlRegisterType(EndpointModel, "org.eclipse.cyclonedds.insight", 1, 0, "EndpointModel")
     qmlRegisterType(StatisticsModel, "org.eclipse.cyclonedds.insight", 1, 0, "StatisticsModel")
     qmlRegisterType(StatisticsUnitModel, "org.eclipse.cyclonedds.insight", 1, 0, "StatisticsUnitModel")

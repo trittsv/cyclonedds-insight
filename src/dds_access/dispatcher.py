@@ -13,7 +13,7 @@
 from loguru import logger as logging
 import datetime
 import time
-from PySide6.QtCore import Signal, Slot, QThread
+from PySide6.QtCore import qtTrId, Signal, Slot, QThread
 from cyclonedds import core
 from cyclonedds.util import duration
 from cyclonedds.core import SampleState, ViewState, InstanceState
@@ -23,6 +23,7 @@ from cyclonedds.pub import Publisher, DataWriter
 from cyclonedds.internal import InvalidSample
 from dds_access.dds_listener import DdsListener
 from threading import Lock, Event
+from queue import SimpleQueue, Empty
 from dds_access.domain_participant_factory import DomainParticipantFactory
 from dds_access.datatypes.entity_type import EntityType
 
@@ -30,8 +31,9 @@ from dds_access.datatypes.entity_type import EntityType
 class DispatcherThread(QThread):
 
     onData = Signal(
-        str, str, str, bool, str, str, str, str, str, int, str, str, str, str
+        str, str, str, bool, str, str, str, str, str, int, str, str, str, str, object
     )
+    replayWritten = Signal(str, bool, str)
     endpointCreated = Signal(str)
     endpointCreationFailed = Signal(str, str)
 
@@ -67,11 +69,13 @@ class DispatcherThread(QThread):
         self.listener = DdsListener()
         self.domain_id = domain_id
         self.domain_participant = None
+        self.guardCondition = None
         self.running = False
         self.readerData = []
         self.writerIdsByHandle = {}
         self.writerParticipantIdsByHandle = {}
         self.writerData = {}
+        self.replayCommands = SimpleQueue()
         self.mutex = Lock()
         self.dpSetUpDone = Event()
 
@@ -89,6 +93,38 @@ class DispatcherThread(QThread):
             (_, writer, _) = self.writerData[id]
             writer.write(data)
             logging.debug("Write ... DONE")
+
+    @Slot(str, object)
+    def writeReplay(self, id, data):
+        if id.startswith(f"replay-{self.domain_id}-"):
+            self.replayCommands.put((id, data))
+            if self.guardCondition is not None:
+                self.guardCondition.set(True)
+
+    def deleteReplayWriter(self, id):
+        if id.startswith(f"replay-{self.domain_id}-"):
+            self.replayCommands.put((id, None))
+            if self.guardCondition is not None:
+                self.guardCondition.set(True)
+
+    def _drainReplayCommands(self):
+        # DDS writes run in run(), not in slots on the QThread's UI-thread QObject.
+        self.guardCondition.set(False)
+        while True:
+            try:
+                id, data = self.replayCommands.get_nowait()
+            except Empty:
+                break
+            if data is None:
+                self.writerData.pop(id, None)
+                continue
+            try:
+                if id not in self.writerData:
+                    raise RuntimeError(qtTrId("listener.error.writer"))
+                self.writerData[id][1].write(data)
+                self.replayWritten.emit(id, True, "")
+            except Exception as error:
+                self.replayWritten.emit(id, False, str(error))
 
     @Slot(str, object)
     def dispose(self, id, data):
@@ -197,6 +233,7 @@ class DispatcherThread(QThread):
                     if amount_triggered == 0:
                         continue
 
+                    self._drainReplayCommands()
                     for (_id, topic, _, readItem, condItem) in self.readerData:
                         try:
                             # Take one sample so a decode failure cannot discard a
@@ -206,6 +243,7 @@ class DispatcherThread(QThread):
                                 continue
 
                             received_timestamp_ns = time.time_ns()
+                            received_monotonic_ns = time.monotonic_ns()
                             received_time = datetime.datetime.fromtimestamp(
                                 received_timestamp_ns / 1_000_000_000,
                                 tz=datetime.timezone.utc
@@ -252,7 +290,9 @@ class DispatcherThread(QThread):
                                     writer_participant_id,
                                     str(topic.typename),
                                     str(topic.name),
-                                    str(sample.sample_info.instance_handle)
+                                    str(sample.sample_info.instance_handle),
+                                    {"sample": sample, "received_monotonic_ns": received_monotonic_ns}
+                                    if sample.sample_info.valid_data else None
                                 )
                         except Exception as error:
                             logging.error(
@@ -277,7 +317,8 @@ class DispatcherThread(QThread):
     def stop(self):
         logging.info(f"Request to stop worker thread for domain({str(self.domain_id)})")
         self.running = False
-        self.guardCondition.set(True)
+        if self.guardCondition is not None:
+            self.guardCondition.set(True)
 
     def isSetUpDone(self) -> bool:
         return self.dpSetUpDone.is_set()

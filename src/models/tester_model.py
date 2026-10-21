@@ -611,6 +611,8 @@ class TesterModel(QAbstractListModel):
 
     @Slot(str, int, str, str, object)
     def addWriter(self, id: str, domainId, topic_name, topic_type: str, qos):
+        if id.startswith("replay-"):
+            return
         logging.info("AddWriter to TesterModel")
 
         if domainId not in self.alreadyConnectedDomains:

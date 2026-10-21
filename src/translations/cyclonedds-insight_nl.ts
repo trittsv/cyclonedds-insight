@@ -1195,5 +1195,113 @@
     <message id="config.network.copy.address">
         <translation>Kopiëren</translation>
     </message>
+    <message id="listener.replay.export">
+        <translation>Replay exporteren…</translation>
+    </message>
+    <message id="listener.replay.import">
+        <translation>Replay importeren…</translation>
+    </message>
+    <message id="listener.tree">
+        <translation>Boomweergave</translation>
+    </message>
+    <message id="listener.watch.add">
+        <translation>Toevoegen aan volglijst</translation>
+    </message>
+    <message id="listener.watch.remove">
+        <translation>Verwijderen uit volglijst</translation>
+    </message>
+    <message id="listener.watch.clear">
+        <translation>Volglijst wissen</translation>
+    </message>
+    <message id="listener.replay.interval">
+        <translation>Interval (ms)</translation>
+    </message>
+    <message id="listener.replay.original">
+        <translation>Oorspronkelijke timing gebruiken</translation>
+    </message>
+    <message id="listener.replay.play">
+        <translation>Afspelen</translation>
+    </message>
+    <message id="listener.replay.stop">
+        <translation>Stoppen</translation>
+    </message>
+    <message id="listener.replay.position">
+        <translation>Bericht %1 van %2</translation>
+    </message>
+    <message id="listener.error.format">
+        <translation>Een tester-preset of opname als JSON-object verwacht</translation>
+    </message>
+    <message id="listener.error.preset">
+        <translation>Ongeldige preset</translation>
+    </message>
+    <message id="listener.error.preset.id">
+        <translation>Ongeldige of dubbele preset-ID</translation>
+    </message>
+    <message id="listener.error.metadata">
+        <translation>Ongeldige domein-, topic- of QoS-metagegevens</translation>
+    </message>
+    <message id="listener.error.messages">
+        <translation>Ongeldige berichtenlijst</translation>
+    </message>
+    <message id="listener.error.message">
+        <translation>Ongeldig preset-bericht</translation>
+    </message>
+    <message id="listener.error.message.id">
+        <translation>Ongeldige of dubbele bericht-ID</translation>
+    </message>
+    <message id="listener.error.types">
+        <translation>Importeer eerst de vereiste IDL: %1</translation>
+    </message>
+    <message id="listener.error.version">
+        <translation>Niet-ondersteunde versie van replay-metagegevens</translation>
+    </message>
+    <message id="listener.error.empty">
+        <translation>Dit bestand bevat geen replay-berichten</translation>
+    </message>
+    <message id="listener.error.event">
+        <translation>Ongeldige replay-gebeurtenis</translation>
+    </message>
+    <message id="listener.error.reference">
+        <translation>Replay verwijst naar een onbekend bericht</translation>
+    </message>
+    <message id="listener.error.timestamps">
+        <translation>Replay-tijdstempels moeten eindig, niet-negatief en geordend zijn</translation>
+    </message>
+    <message id="listener.error.range">
+        <translation>Ongeldige replay-selectie of interval</translation>
+    </message>
+    <message id="listener.error.timeout">
+        <translation>Wachttijd voor DDS-replay verstreken</translation>
+    </message>
+    <message id="listener.error.replay">
+        <translation>Replay mislukt: %1</translation>
+    </message>
+    <message id="listener.error.import">
+        <translation>Kan replay niet importeren: %1</translation>
+    </message>
+    <message id="listener.error.reader">
+        <translation>Reader-metagegevens zijn niet beschikbaar</translation>
+    </message>
+    <message id="listener.error.samples">
+        <translation>Geen geldige samples in de listener</translation>
+    </message>
+    <message id="listener.error.export">
+        <translation>Kan replay niet exporteren: %1</translation>
+    </message>
+    <message id="listener.error.union">
+        <translation>Union-waarden worden niet ondersteund door de preset-gegevensboom</translation>
+    </message>
+    <message id="listener.error.writer">
+        <translation>Replay-writer is niet meer beschikbaar</translation>
+    </message>
+    <message id="listener.replay.select.all">
+        <translation>Alles selecteren</translation>
+    </message>
+    <message id="listener.replay.deselect.all">
+        <translation>Selectie opheffen</translation>
+    </message>
+    <message id="listener.replay.selected.count">
+        <translation>%1 van %2 geselecteerd</translation>
+    </message>
 </context>
 </TS>

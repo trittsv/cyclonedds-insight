@@ -50,4 +50,54 @@ Presets
 -------
 
 To quickly set up listeners for common scenarios, presets can be used to create multiple readers with predefined configurations.
-Use the "Import" and "Export" buttons to share presets between different |var-project|.
+The listener-preset import/export entries form a separate section in Actions,
+separated from log and replay operations by a divider. Listener presets contain
+reader configuration without message data; log and replay exports contain the
+received messages.
+
+
+Recording and replay
+--------------------
+
+All valid samples received by the listener are automatically available for replay
+export. Use Actions → Export replay to save the listener history as JSON. There
+is no separate recording mode. Clearing the listener also clears the history
+available for replay. Changing views, searching, or hiding readers does not
+change the stored history. DDS instance-state notifications without valid data
+remain in the log but cannot be replayed as publishable messages.
+
+The JSON uses the tester preset format, including domain, topic, type, QoS and
+the existing data-tree message serialization. Additional ``replay`` metadata
+stores the chronological message references and receive-time offsets across
+readers. A recording can also be imported directly into the Tester, including a
+sequence preset preserving its message order. As with
+tester presets, the required datatypes must be available; import their IDL first
+when using a recording in another installation. Union fields are not currently
+supported by the preset data tree; replay export reports an error for these types.
+
+Use Actions → Import replay to open a recording as a tab immediately to the
+right of Listener in the main tab bar. Its title is the replay filename; hover
+over the tab to reveal its close button. Ordinary
+tester preset JSON files can also be opened there. Importing never publishes
+messages automatically. Select individual messages directly in the list using their checkboxes or by
+clicking their rows, then press Play to publish only those messages in their
+original order with the stored topic and QoS settings. All messages are selected
+initially; use Select all or Deselect all to change the whole selection. The
+default interval is 100 ms; select "Use original timing" to retain the recorded
+time gaps between the selected messages, including the elapsed time of skipped
+messages. Original timing for ordinary presets without replay metadata falls
+back to 100 ms. Stop or close the replay tab to end playback and release its
+writers. Multiple replay files can be open in separate tabs.
+
+Tree view and watchlist
+-----------------------
+
+The listener displays messages as text by default. Enable Actions → Tree view to inspect
+structured fields and expand nested objects, sequences and arrays. Right-click a
+field name or value to add it to the watchlist. A watched field stays visible
+when its ancestors are collapsed, with its full field path. Watching a parent
+object also highlights and retains each nested field individually, including
+fields added by later samples. Individual children can be removed from a parent
+watch without removing the other fields. Watches apply to
+other messages from the same reader, topic and datatype, including subsequent
+instance updates. Use Actions → Clear watchlist to remove all watches.

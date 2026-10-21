@@ -10,9 +10,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
 """
 
+import copy
+import json
+from pathlib import Path
+import time
+import uuid
+
+from models.data_tree_model import DataTreeModel
+
 from loguru import logger as logging
 
-from PySide6.QtCore import Qt, QModelIndex, QAbstractListModel, Property, Signal, Slot
+from PySide6.QtCore import qtTrId, Qt, QModelIndex, QAbstractListModel, Property, Signal, Slot, QSaveFile, QIODevice
 
 
 class ReceiverModel(QAbstractListModel):
@@ -33,10 +41,20 @@ class ReceiverModel(QAbstractListModel):
     TopicTypeRole = Qt.UserRole + 14
     TopicNameRole = Qt.UserRole + 15
 
+    StructuredRole = Qt.UserRole + 16
     instanceViewChanged = Signal()
+    operationError = Signal(str)
+    replayChanged = Signal()
+    watchChanged = Signal()
 
-    def __init__(self, parent=None):
+
+    def __init__(self, dataModelHandler=None, listenerModel=None, parent=None):
         super().__init__(parent)
+        self.watches = set()
+        self.watchExclusions = set()
+        self.dataModelHandler = dataModelHandler
+        self.listenerModel = listenerModel
+        self._replay_count = 0
         self._messages = []
         self._instances = []
         self._instance_rows = {}
@@ -67,6 +85,8 @@ class ReceiverModel(QAbstractListModel):
 
         item = self._visible_messages()[index.row()]
 
+        if role == self.StructuredRole:
+            return item.get("structured", {})
         if role == self.ReaderIdRole:
             return item["readerId"]
         if role == self.ReceivedMsgRole:
@@ -102,6 +122,7 @@ class ReceiverModel(QAbstractListModel):
 
     def roleNames(self):
         return {
+            self.StructuredRole: b"structured",
             self.ReaderIdRole: b"readerId",
             self.ReceivedMsgRole: b"receivedMsg",
             self.SampleInfoRole: b"sampleInfo",
@@ -121,12 +142,12 @@ class ReceiverModel(QAbstractListModel):
 
 
     @Slot(str, str, str, bool, str, str, str, str, str, str, str, str, str, str,
-          str, str)
+          str, str, object)
     def addReceivedMsg(self, readerId, msg, sampleInfo, validData,
                        sourceTimestamp, transmissionTime, receivedTimestamp,
                        writerId, ddsReaderId, writerApplication,
                        writerHostname, writerProcessId, writerAddresses,
-                       topicType, topicName, instanceHandle):
+                       topicType, topicName, instanceHandle, sample=None):
         item = {
             "readerId": readerId,
             "msg": msg,
@@ -144,6 +165,33 @@ class ReceiverModel(QAbstractListModel):
             "topicType": topicType,
             "topicName": topicName,
         }
+        received_monotonic_ns = time.monotonic_ns()
+        if isinstance(sample, dict) and "sample" in sample:
+            received_monotonic_ns = sample["received_monotonic_ns"]
+            sample = sample["sample"]
+        if validData and sample is not None and self.dataModelHandler is not None:
+            tree = None
+            try:
+                missing = set()
+                root = self.dataModelHandler.getRootNode(topicType, missing)
+                if missing:
+                    raise ValueError(qtTrId("listener.error.types").replace("%1", ", ".join(sorted(missing))))
+                tree = DataTreeModel(root)
+                tree.fromDataObject(sample, self.dataModelHandler)
+                item["structured"] = tree.toJson()
+                reader = self.listenerModel.readers.get(readerId) if self.listenerModel else None
+                if reader is None:
+                    raise ValueError(qtTrId("listener.error.reader"))
+                item["replay"] = {
+                    "received_monotonic_ns": received_monotonic_ns,
+                    "reader": copy.deepcopy(reader),
+                }
+            except Exception as error:
+                logging.error(f"Cannot serialize received sample: {error}")
+                item["replayError"] = str(error)
+            finally:
+                if tree is not None:
+                    tree.deleteLater()
         # DDS handles identify keyed (including composite-key) and unkeyed
         # instances within a reader, independently of their publishing writer.
         key = (readerId, instanceHandle)
@@ -155,6 +203,8 @@ class ReceiverModel(QAbstractListModel):
             self.beginInsertRows(QModelIndex(), row, row)
 
         self._messages.append(item)
+        if validData:
+            self._replay_count += 1
         if is_new:
             self._instance_rows[key] = len(self._instances)
             self._instances.append(item)
@@ -166,6 +216,8 @@ class ReceiverModel(QAbstractListModel):
         else:
             index = self.index(instance_row, 0)
             self.dataChanged.emit(index, index, list(self.roleNames()))
+        if validData:
+            self.replayChanged.emit()
 
 
     @Slot()
@@ -175,8 +227,10 @@ class ReceiverModel(QAbstractListModel):
         self._messages.clear()
         self._instances.clear()
         self._instance_rows.clear()
+        self._replay_count = 0
 
         self.endResetModel()
+        self.replayChanged.emit()
 
     @Slot(str)
     def exportToFile(self, filePath):
@@ -187,3 +241,66 @@ class ReceiverModel(QAbstractListModel):
                     f.write(f"[{item['receivedTimestamp']}]  -  {item['msg']}\n")
         except Exception as e:
             logging.error(f"Error exporting messages to file: {e}")
+
+    @Property(int, notify=replayChanged)
+    def replayCount(self):
+        return self._replay_count
+
+    @Slot(str)
+    def exportReplay(self, filePath):
+        try:
+            samples = [item for item in self._messages if item["validData"]]
+            if not samples:
+                raise ValueError(qtTrId("listener.error.samples"))
+            for item in samples:
+                if "replay" not in item:
+                    raise ValueError(item.get("replayError", qtTrId("listener.error.message")))
+            samples.sort(key=lambda item: item["replay"]["received_monotonic_ns"])
+            start_ns = samples[0]["replay"]["received_monotonic_ns"]
+            presets = {}
+            timeline = []
+            for entry in samples:
+                reader = entry["replay"]["reader"]
+                key = (reader.id, reader.domainId, reader.topic_name, reader.topic_type,
+                       json.dumps(reader.qos, sort_keys=True))
+                if key not in presets:
+                    presets[key] = {
+                        "id": str(uuid.uuid4()), "preset_name": reader.topic_name,
+                        "description": "", "domain_id": reader.domainId,
+                        "topic_name": reader.topic_name, "topic_type": reader.topic_type,
+                        "qos": reader.qos, "messages": [],
+                    }
+                preset = presets[key]
+                message = copy.deepcopy(entry["structured"])
+                message["id"] = preset["id"] if "message" not in preset else str(uuid.uuid4())
+                message["name"] = str(len(timeline) + 1)
+                message["source_timestamp"] = entry["sourceTimestamp"]
+                message["received_timestamp"] = entry["receivedTimestamp"]
+                if "message" not in preset:
+                    preset["message"] = message
+                else:
+                    preset["messages"].append(message)
+                timeline.append({"preset_id": preset["id"], "message_id": message["id"],
+                                 "offset_ms": (entry["replay"]["received_monotonic_ns"] - start_ns) / 1_000_000})
+            sequence = {"id": str(uuid.uuid4()), "preset_name": Path(filePath).stem,
+                        "description": "", "sequence_items": [event["message_id"] for event in timeline]}
+            payload = {"presets": list(presets.values()), "sequence_presets": [sequence],
+                       "replay": {"version": 1, "interval_ms": 100,
+                                  "use_original_timing": False, "events": timeline}}
+            content = json.dumps(payload, indent=4).encode("utf-8")
+            output = QSaveFile(filePath)
+            if not output.open(QIODevice.WriteOnly):
+                raise OSError(output.errorString())
+            if output.write(content) != len(content):
+                output.cancelWriting()
+                raise OSError(output.errorString())
+            if not output.commit():
+                raise OSError(output.errorString())
+        except Exception as error:
+            self.operationError.emit(qtTrId("listener.error.export").replace("%1", str(error)))
+
+    @Slot()
+    def clearWatchlist(self):
+        self.watches.clear()
+        self.watchExclusions.clear()
+        self.watchChanged.emit()

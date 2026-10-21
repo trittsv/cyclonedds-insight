@@ -22,13 +22,18 @@ TabButton {
     id: control
     property alias tabText: label.text
     property string tabIcon: ""
+    property bool closable: false
+    signal closeRequested()
     readonly property real minimumTabWidth: label.implicitWidth + 32
                                            + (tabIcon.length > 0 ? 26 : 0)
                                            + (paneToggleMode ? 30 : 0)
+                                           + (closable ? 30 : 0)
     property bool showLeftSeparator: false
     property bool paneToggleMode: false
     property bool paneIncluded: false
     property string paneToggleToolTip: ""
+
+    hoverEnabled: true
 
     leftInset: 0
     rightInset: 0
@@ -142,13 +147,40 @@ TabButton {
             text: control.tabText
             font.pixelSize: 16
             font.bold: control.checked
+            elide: Text.ElideMiddle
+            Layout.minimumWidth: 0
+            Layout.fillWidth: control.closable
 
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
             Layout.leftMargin: control.tabIcon.length > 0 ? 8 : 16
         }
 
         Item {
-            Layout.fillWidth: true
+            Layout.fillWidth: !control.closable
+        }
+
+        Item {
+            visible: control.closable
+            Layout.preferredWidth: 26
+            Layout.preferredHeight: 26
+            Layout.rightMargin: 8
+            Layout.alignment: Qt.AlignVCenter
+
+            ToolButton {
+                id: closeButton
+                objectName: "tabCloseButton"
+                anchors.fill: parent
+                hoverEnabled: true
+                visible: control.hovered || hovered || control.activeFocus || activeFocus
+                text: "×"
+                font.pixelSize: 20
+                padding: 0
+                Accessible.name: qsTrId("general.close")
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: qsTrId("general.close")
+                onClicked: control.closeRequested()
+            }
         }
 
         Rectangle {
