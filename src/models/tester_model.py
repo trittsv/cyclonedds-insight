@@ -29,11 +29,8 @@ import types
 from PySide6.QtQml import qmlRegisterType
 from models.data_tree_model import DataTreeModel, DataTreeNode
 from models.sequence_playback import SequencePlayback
-from utils.qml_utils import QmlUtils
-from utils.sequence_utils import sequence_fields, sequence_steps
+from utils.sequence_utils import sequence_steps
 from utils.preset_io import PresetIo, load_presets, export_presets
-
-import json
 
 class SequenceItem(QAbstractListModel):
     NameRole = Qt.UserRole + 1
@@ -475,7 +472,6 @@ class TesterModel(QAbstractListModel):
         self.pendingQosRequests = {}
         self.presetIo = presetIo if presetIo is not None else PresetIo(self)
         self.presetIo.changed.connect(self._ioChanged)
-        self.resetExportData()
         self._pendingStarts = set()
         self._cancelledStarts = set()
         self.datamodelRepoModel.newWriterSignal.connect(self.addWriter)
@@ -531,9 +527,6 @@ class TesterModel(QAbstractListModel):
     def _startFailed(self, writer_id, error):
         self._pendingStarts.discard(writer_id)
         self._cancelledStarts.discard(writer_id)
-
-    def resetExportData(self):
-        self.exportData = { "presets": [], "sequence_presets": [] }
 
     def _createDataTreeModel(self, topicType, messageRoot=None):
         rootNode = self.dataModelHandler.getRootNode(topicType)
@@ -1147,8 +1140,17 @@ class TesterModel(QAbstractListModel):
             self.operationError.emit(qtTrId("preset.io.busy"))
             return False
         try:
-            presets, sequences = [], []
+            export_ids = dict.fromkeys(ids)
             for key in ids:
+                item = self.items[key]
+                if isinstance(item, SequenceItem):
+                    for reference in item.sequenceItems:
+                        writer_id, _ = self._getDataReference(reference)
+                        if not writer_id:
+                            raise ValueError(qtTrId("listener.error.reference"))
+                        export_ids[writer_id] = None
+            presets, sequences = [], []
+            for key in export_ids:
                 item = self.items[key]
                 if isinstance(item, WriterItem):
                     presets.append(item.exportSnapshot())
@@ -1167,38 +1169,6 @@ class TesterModel(QAbstractListModel):
         if error is not None:
             self.operationError.emit(qtTrId("listener.error.export").replace("%1", error))
         self.exportFinished.emit(error is None)
-
-    def _exportJsonItem(self, currentIndex: int):
-        if currentIndex < 0:
-            return
-        mId = list(self.items.keys())[int(currentIndex)]
-        item = self.items[mId]
-
-        if isinstance(item, SequenceItem):
-            self.exportData["sequence_presets"].append({
-                    "id": mId,
-                    "preset_name": item.getPresetName(),
-                    "description": item.getDescription(),
-                    **sequence_fields(item.sequenceSteps)
-                })
-        if isinstance(item, WriterItem):
-            messages = []
-            for index in range(item.getDataTreeModelCount()):
-                message = item.messageSnapshot(index)
-                message["id"] = item.getDataItemId(index)
-                message["name"] = item.getDataItemName(index)
-                messages.append(message)
-            self.exportData["presets"].append({
-                    "id": mId,
-                    "preset_name": item.getPresetName(),
-                    "description": item.getDescription(),
-                    "domain_id": item.getDomainId(),
-                    "topic_name": item.getTopicName(),
-                    "topic_type": item.getTopicType(),
-                    "message": messages[0],
-                    "messages": messages[1:],
-                    "qos": item.qos
-                })
 
     @Slot()
     def addSequence(self):

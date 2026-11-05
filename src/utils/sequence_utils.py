@@ -39,11 +39,3 @@ def sequence_steps(preset, copy_steps=True):
                 or not math.isfinite(delay) or not 0 <= delay <= 2147483647):
             raise ValueError(qtTrId("listener.error.timestamps"))
     return steps
-
-
-def sequence_fields(steps):
-    """Generate the write-only string list for older testers from the complete steps."""
-    return {
-        "sequence_steps": copy.deepcopy(steps),
-        "sequence_items": [step["message_id"] for step in steps if step["operation"] == "write"],
-    }

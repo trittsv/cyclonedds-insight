@@ -29,6 +29,8 @@ Presets
 
 To quickly test data flow, presets can be used to create multiple writers with predefined data.
 Use the "Import" and "Export" buttons to share presets between different |var-project| instances.
+Exporting a single sequence also includes every referenced writer with its
+configuration and all message data in the same file. Each writer is included once.
 
 Record/Replay exports can also be imported. Import Record/Replay in the main menu
 opens Tester and selects the imported sequence without sending any messages.

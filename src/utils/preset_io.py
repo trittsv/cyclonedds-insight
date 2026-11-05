@@ -160,99 +160,6 @@ def save_json(path, document, check):
         raise
 
 
-class JsonReader:
-    """Decode messages/steps separately, avoiding a file-sized string and long GIL holds."""
-    def __init__(self, file, size, progress, check):
-        self.file, self.size, self.progress, self.check = file, max(size, 1), progress, check
-        self.buffer, self.pos, self.eof = "", 0, False
-        self.decoder = json.JSONDecoder()
-
-    def more(self):
-        self.check()
-        data = self.file.read(65536)
-        self.buffer = self.buffer[self.pos:] + data
-        self.pos = 0
-        self.eof = not data
-        self.progress(min(1.0, self.file.buffer.tell() / self.size))
-
-    def peek(self):
-        while True:
-            while self.pos < len(self.buffer) and self.buffer[self.pos] in " \t\r\n":
-                self.pos += 1
-            if self.pos < len(self.buffer):
-                return self.buffer[self.pos]
-            if self.eof:
-                return ""
-            self.more()
-
-    def expect(self, character):
-        if self.peek() != character:
-            raise ValueError(qtTrId("listener.error.format"))
-        self.pos += 1
-
-    def value(self):
-        self.peek()
-        while True:
-            try:
-                result, end = self.decoder.raw_decode(self.buffer, self.pos)
-            except json.JSONDecodeError:
-                if self.eof:
-                    raise
-                self.more()
-                continue
-            if end == len(self.buffer) and not self.eof:
-                self.more()
-                continue
-            if end < len(self.buffer) and self.buffer[end] not in " \t\r\n,:]}":
-                if not self.eof:
-                    self.more()
-                    continue
-                raise ValueError(qtTrId("listener.error.format"))
-            self.pos = end
-            return result
-
-    def array(self, value):
-        self.expect("[")
-        result = []
-        if self.peek() != "]":
-            while True:
-                self.check()
-                result.append(value())
-                if self.peek() != ",":
-                    break
-                self.pos += 1
-        self.expect("]")
-        return result
-
-    def object(self, value):
-        self.expect("{")
-        result = {}
-        if self.peek() != "}":
-            while True:
-                key = self.value()
-                if not isinstance(key, str):
-                    raise ValueError(qtTrId("listener.error.format"))
-                self.expect(":")
-                result[key] = value(key)
-                if self.peek() != ",":
-                    break
-                self.pos += 1
-        self.expect("}")
-        return result
-
-    def document(self):
-        def preset():
-            return self.object(lambda key: self.array(self.value) if key == "messages" else self.value())
-        def sequence():
-            return self.object(lambda key: self.array(self.value)
-                               if key in ("sequence_steps", "sequence_items") else self.value())
-        result = self.object(lambda key: self.array(preset) if key == "presets" else
-                             self.array(sequence) if key == "sequence_presets" else self.value())
-        if self.peek():
-            raise ValueError(qtTrId("listener.error.format"))
-        return result
-
-
 def load_presets(paths, recording, used_ids, available, progress, check):
     """Validate/remap plain data on the worker; return descriptors for UI publication."""
     available = set(available)
@@ -261,11 +168,14 @@ def load_presets(paths, recording, used_ids, available, progress, check):
     bytes_done = 0
     writers, sequences = [], []
     for path in paths:
+        check()
         size = Path(path).stat().st_size
         with open(path, encoding="utf-8") as file:
-            document = JsonReader(file, size, lambda value: progress(0.6 * (bytes_done + value * size) / total_bytes), check).document()
+            document = json.load(file)
+        check()
         bytes_done += size
-        if "replay" in document:
+        progress(0.6 * bytes_done / total_bytes)
+        if not isinstance(document, dict) or "replay" in document:
             raise ValueError(qtTrId("listener.error.format"))
         presets, sequence_presets = document.get("presets", []), document.get("sequence_presets", [])
         if not isinstance(presets, list) or not isinstance(sequence_presets, list):
@@ -313,7 +223,7 @@ def load_presets(paths, recording, used_ids, available, progress, check):
         if recording and not sequence_presets and imported:
             sequence_presets = [{"preset_name": Path(path).stem, "sequence_items": imported}]
         for sequence in sequence_presets:
-            # The reader owns these dictionaries; no extra full-size deepcopy is needed.
+            # The worker owns these dictionaries; no extra full-size deepcopy is needed.
             steps = sequence_steps(sequence, copy_steps=False)
             for index, step in enumerate(steps):
                 if index % 1000 == 0:
