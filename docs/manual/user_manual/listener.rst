@@ -127,9 +127,8 @@ on the right. The leftmost column shows a global reception number across all
 readers and topics, which is preserved when filtering or switching views. The
 counter resets on Clear, so the next message starts at 1; the instance view shows each instance's latest
 reception number. Timestamps stay in the right column in both text and tree mode.
-Disposed samples remain in tree mode with the complete field layout. Available
-key fields retain their values; non-key values are shown empty because DDS did
-not transmit them. The message details include the reception
+Disposed samples use the same tree display as regular messages, showing all
+field values provided by the returned sample object. The message details include the reception
 domain, which remains available after its reader is deleted.
 Fields follow their datatype definition order, as in the Tester, including
 nested structures and array elements. Fields are indented below the heading. Click a node's name or its arrow to expand individual nodes, or press

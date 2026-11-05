@@ -216,24 +216,6 @@ class ReceiverModel(QAbstractListModel):
                 tree = DataTreeModel(root)
                 tree.fromDataObject(sample, self.dataModelHandler)
                 structured = tree.toJson()
-                replay_message = copy.deepcopy(structured) if operation == "dispose" else None
-                if not validData:
-                    # Keep the complete field layout for lifecycle notifications,
-                    # but leave non-key values empty: DDS did not transmit them.
-                    annotations = getattr(type(sample), "__idl_annotations__", {})
-                    fields = getattr(type(sample), "__idl_field_annotations__", {})
-                    keys = annotations.get("keylist") or [name for name, value in fields.items() if "key" in value]
-                    def empty_values(value):
-                        if isinstance(value, dict):
-                            return {name: empty_values(child) for name, child in value.items()}
-                        if isinstance(value, list):
-                            return [empty_values(child) for child in value]
-                        return None
-
-                    structured["root"] = {
-                        name: value if name in keys else empty_values(value)
-                        for name, value in structured["root"].items()
-                    }
                 item["structured"] = structured
                 if recordable:
                     if reader is None:
@@ -243,8 +225,6 @@ class ReceiverModel(QAbstractListModel):
                         "writer_identity": writer_identity,
                         "reader": copy.deepcopy(reader),
                     }
-                    if replay_message is not None:
-                        item["replay"]["message"] = replay_message
             except Exception as error:
                 logging.error(f"Cannot serialize received sample: {error}")
                 item["replayError"] = str(error)
