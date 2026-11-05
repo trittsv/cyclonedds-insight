@@ -1288,10 +1288,10 @@
         <translation>コピー</translation>
     </message>
     <message id="listener.replay.export">
-        <translation>リプレイをエクスポート…</translation>
+        <translation>記録／リプレイをエクスポート…</translation>
     </message>
     <message id="listener.replay.import">
-        <translation>リプレイをインポート…</translation>
+        <translation>記録／リプレイをインポート…</translation>
     </message>
     <message id="listener.tree">
         <translation>ツリー表示</translation>
@@ -1304,21 +1304,6 @@
     </message>
     <message id="listener.watch.clear">
         <translation>ウォッチリストをクリア</translation>
-    </message>
-    <message id="listener.replay.interval">
-        <translation>間隔 (ms)</translation>
-    </message>
-    <message id="listener.replay.original">
-        <translation>元の時間間隔を使用</translation>
-    </message>
-    <message id="listener.replay.play">
-        <translation>再生</translation>
-    </message>
-    <message id="listener.replay.stop">
-        <translation>停止</translation>
-    </message>
-    <message id="listener.replay.position">
-        <translation>メッセージ %1 / %2</translation>
     </message>
     <message id="listener.error.format">
         <translation>テスタープリセットまたは記録のJSONオブジェクトが必要です</translation>
@@ -1344,32 +1329,26 @@
     <message id="listener.error.types">
         <translation>必要なIDLを先にインポートしてください: %1</translation>
     </message>
-    <message id="listener.error.version">
-        <translation>リプレイのメタデータバージョンは未対応です</translation>
-    </message>
     <message id="listener.error.empty">
-        <translation>このファイルには再生するメッセージがありません</translation>
+        <translation>このファイルにはプリセットまたはシーケンスのステップがありません</translation>
     </message>
     <message id="listener.error.event">
-        <translation>リプレイイベントが無効です</translation>
+        <translation>シーケンスのステップが無効です</translation>
     </message>
     <message id="listener.error.reference">
-        <translation>リプレイが不明なメッセージを参照しています</translation>
+        <translation>シーケンスが不明なメッセージを参照しています</translation>
     </message>
     <message id="listener.error.timestamps">
-        <translation>リプレイの時刻は有限かつ非負で、順番に並んでいる必要があります</translation>
+        <translation>シーケンスの待機時間は有限の非負の値で、2147483647 ms 以下である必要があります</translation>
     </message>
     <message id="listener.error.range">
-        <translation>再生するメッセージの選択または間隔が無効です</translation>
+        <translation>シーケンスの選択または間隔が無効です</translation>
     </message>
     <message id="listener.error.timeout">
-        <translation>DDSリプレイの待機がタイムアウトしました</translation>
-    </message>
-    <message id="listener.error.replay">
-        <translation>リプレイに失敗しました: %1</translation>
+        <translation>DDS 操作の待機がタイムアウトしました</translation>
     </message>
     <message id="listener.error.import">
-        <translation>リプレイをインポートできません: %1</translation>
+        <translation>プリセットまたは記録をインポートできません: %1</translation>
     </message>
     <message id="listener.error.reader">
         <translation>リーダーのメタデータがありません</translation>
@@ -1384,16 +1363,7 @@
         <translation>プリセットのデータツリーはunion値に対応していません</translation>
     </message>
     <message id="listener.error.writer">
-        <translation>リプレイのライターが利用できなくなりました</translation>
-    </message>
-    <message id="listener.replay.select.all">
-        <translation>すべて選択</translation>
-    </message>
-    <message id="listener.replay.deselect.all">
-        <translation>選択を解除</translation>
-    </message>
-    <message id="listener.replay.selected.count">
-        <translation>%2 件中 %1 件を選択</translation>
+        <translation>シーケンスの Writer は利用できなくなりました</translation>
     </message>
     <message id="entity.endpoints">
         <translation>エンドポイント</translation>
@@ -1418,6 +1388,69 @@
     </message>
     <message id="node.view.zoom">
         <translation>ズーム</translation>
+    </message>
+    <message id="tester.sequence.select.all">
+        <translation>すべて選択</translation>
+    </message>
+    <message id="tester.sequence.deselect.all">
+        <translation>すべて選択解除</translation>
+    </message>
+    <message id="tester.sequence.selected.count">
+        <translation>%2 件中 %1 件を選択</translation>
+    </message>
+    <message id="tester.sequence.send.single">
+        <translation>ステップを送信</translation>
+    </message>
+    <message id="tester.sequence.delay">
+        <translation>待機時間 (ms)</translation>
+    </message>
+    <message id="tester.sequence.move.up">
+        <translation>ステップを上へ移動</translation>
+    </message>
+    <message id="tester.sequence.move.down">
+        <translation>ステップを下へ移動</translation>
+    </message>
+    <message id="tester.sequence.timing">
+        <translation>シーケンスの待機時間を使用</translation>
+    </message>
+    <message id="tester.sequence.fixed.interval">
+        <translation>固定間隔</translation>
+    </message>
+    <message id="tester.sequence.interval">
+        <translation>間隔 (ms)</translation>
+    </message>
+    <message id="tester.sequence.stop">
+        <translation>停止</translation>
+    </message>
+    <message id="tester.sequence.play">
+        <translation>再生</translation>
+    </message>
+    <message id="tester.sequence.preparing">
+        <translation>Writer を準備中…</translation>
+    </message>
+    <message id="tester.sequence.finishing">
+        <translation>実行中の DDS 操作の完了を待機中…</translation>
+    </message>
+    <message id="tester.sequence.progress">
+        <translation>%2 ステップ中 %1 ステップが完了</translation>
+    </message>
+    <message id="tester.sequence.error">
+        <translation>シーケンスの再生に失敗しました: %1</translation>
+    </message>
+    <message id="tester.sequence.busy">
+        <translation>プリセットを変更する前にシーケンスの再生を停止してください。</translation>
+    </message>
+    <message id="tester.sequence.repeat">
+        <translation>繰り返す</translation>
+    </message>
+    <message id="preset.io.import">
+        <translation>プリセットと記録をインポート中...</translation>
+    </message>
+    <message id="preset.io.export">
+        <translation>プリセットと記録をエクスポート中...</translation>
+    </message>
+    <message id="preset.io.busy">
+        <translation>プリセットの処理またはシーケンスの再生が進行中です。</translation>
     </message>
 </context>
 </TS>

@@ -58,8 +58,8 @@ Rectangle {
     Canvas {
         id: iconCanvas
         anchors.centerIn: parent
-        width: 14
-        height: 14
+        width: iconActionButton.icon === "tree" ? 18 : 14
+        height: iconActionButton.icon === "tree" ? 18 : 14
 
         onPaint: {
             const context = getContext("2d")
@@ -199,6 +199,24 @@ Rectangle {
                 context.stroke()
                 context.strokeRect(1, 9.5, 4, 3.5)
                 context.strokeRect(9, 9.5, 4, 3.5)
+            } else if (iconActionButton.icon === "tree") {
+                // An expanded parent row with two indented child rows.
+                context.beginPath()
+                context.moveTo(1, 2)
+                context.lineTo(3, 4)
+                context.lineTo(5, 2)
+                context.moveTo(8, 3)
+                context.lineTo(17, 3)
+                context.moveTo(3, 7)
+                context.lineTo(3, 15)
+                context.lineTo(6, 15)
+                context.moveTo(3, 9)
+                context.lineTo(6, 9)
+                context.moveTo(9, 9)
+                context.lineTo(17, 9)
+                context.moveTo(9, 15)
+                context.lineTo(17, 15)
+                context.stroke()
             } else if (iconActionButton.icon === "info") {
                 context.beginPath()
                 context.arc(7, 7, 5, 0, Math.PI * 2)

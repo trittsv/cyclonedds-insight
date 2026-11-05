@@ -19,23 +19,48 @@ import QtQuick.Dialogs
 import org.eclipse.cyclonedds.insight
 
 
-Rectangle {
-    anchors.fill: parent
-    color: Constants.mainContentBackgroundColor(rootWindow.isDarkMode)
-
-    AnimatedImage {
-        id: animatedLoadingId
-        anchors.centerIn: parent
-        source: "qrc:/res/images/spinning.gif"
-        sourceSize.height: 100
-        sourceSize.width: 100
-        height: 100
-        width: 100
+Popup {
+    property string message: qsTrId("general.loading")
+    property real progress: -1
+    width: parent ? parent.width : 0
+    height: parent ? parent.height : 0
+    x: 0
+    y: 0
+    modal: true
+    focus: true
+    closePolicy: Popup.NoAutoClose
+    padding: 0
+    background: Rectangle {
+        color: Constants.mainContentBackgroundColor(rootWindow.isDarkMode)
     }
-
-    Label {
-        text: qsTrId("general.loading")
-        anchors.top: animatedLoadingId.bottom
-        anchors.horizontalCenter: animatedLoadingId.horizontalCenter
+    contentItem: Item {
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: 16
+            AnimatedImage {
+                Layout.alignment: Qt.AlignHCenter
+                source: "qrc:/res/images/spinning.gif"
+                sourceSize.width: 100
+                sourceSize.height: 100
+                Layout.preferredWidth: 100
+                Layout.preferredHeight: 100
+                playing: loading.visible
+            }
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                text: loading.message
+            }
+            ProgressBar {
+                Layout.preferredWidth: 280
+                indeterminate: loading.progress < 0
+                value: loading.progress < 0 ? 0 : loading.progress
+            }
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                visible: loading.progress >= 0
+                text: Math.round(Math.max(0, loading.progress) * 100) + " %"
+            }
+        }
     }
+    id: loading
 }

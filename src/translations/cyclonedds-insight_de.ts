@@ -1288,10 +1288,10 @@
         <translation>Kopieren</translation>
     </message>
     <message id="listener.replay.export">
-        <translation>Replay exportieren…</translation>
+        <translation>Record/Replay exportieren…</translation>
     </message>
     <message id="listener.replay.import">
-        <translation>Replay importieren…</translation>
+        <translation>Record/Replay importieren…</translation>
     </message>
     <message id="listener.tree">
         <translation>Baumansicht</translation>
@@ -1304,21 +1304,6 @@
     </message>
     <message id="listener.watch.clear">
         <translation>Watchliste leeren</translation>
-    </message>
-    <message id="listener.replay.interval">
-        <translation>Abstand (ms)</translation>
-    </message>
-    <message id="listener.replay.original">
-        <translation>Ursprüngliche Zeitabstände verwenden</translation>
-    </message>
-    <message id="listener.replay.play">
-        <translation>Abspielen</translation>
-    </message>
-    <message id="listener.replay.stop">
-        <translation>Stoppen</translation>
-    </message>
-    <message id="listener.replay.position">
-        <translation>Nachricht %1 von %2</translation>
     </message>
     <message id="listener.error.format">
         <translation>Tester-Preset oder Aufnahme als JSON-Objekt erwartet</translation>
@@ -1344,32 +1329,26 @@
     <message id="listener.error.types">
         <translation>Zuerst die erforderliche IDL importieren: %1</translation>
     </message>
-    <message id="listener.error.version">
-        <translation>Nicht unterstützte Replay-Metadatenversion</translation>
-    </message>
     <message id="listener.error.empty">
-        <translation>Diese Datei enthält keine Replay-Nachrichten</translation>
+        <translation>Diese Datei enthält keine Presets oder Sequenzschritte</translation>
     </message>
     <message id="listener.error.event">
-        <translation>Ungültiges Replay-Ereignis</translation>
+        <translation>Ungültiger Sequenzschritt</translation>
     </message>
     <message id="listener.error.reference">
-        <translation>Replay verweist auf eine unbekannte Nachricht</translation>
+        <translation>Die Sequenz verweist auf eine unbekannte Nachricht</translation>
     </message>
     <message id="listener.error.timestamps">
-        <translation>Replay-Zeitstempel müssen endlich, nicht negativ und geordnet sein</translation>
+        <translation>Sequenzwartezeiten müssen endlich, nicht negativ und höchstens 2147483647 ms sein</translation>
     </message>
     <message id="listener.error.range">
-        <translation>Ungültige Replay-Auswahl oder Zeitabstand</translation>
+        <translation>Ungültige Sequenzauswahl oder ungültiger Zeitabstand</translation>
     </message>
     <message id="listener.error.timeout">
-        <translation>Zeitüberschreitung beim Warten auf DDS-Replay</translation>
-    </message>
-    <message id="listener.error.replay">
-        <translation>Replay fehlgeschlagen: %1</translation>
+        <translation>Zeitüberschreitung beim Warten auf einen DDS-Aufruf</translation>
     </message>
     <message id="listener.error.import">
-        <translation>Replay kann nicht importiert werden: %1</translation>
+        <translation>Presets oder Aufnahme können nicht importiert werden: %1</translation>
     </message>
     <message id="listener.error.reader">
         <translation>Reader-Metadaten sind nicht verfügbar</translation>
@@ -1384,16 +1363,7 @@
         <translation>Union-Werte werden vom Preset-Datenbaum nicht unterstützt</translation>
     </message>
     <message id="listener.error.writer">
-        <translation>Replay-Writer ist nicht mehr verfügbar</translation>
-    </message>
-    <message id="listener.replay.select.all">
-        <translation>Alle auswählen</translation>
-    </message>
-    <message id="listener.replay.deselect.all">
-        <translation>Auswahl aufheben</translation>
-    </message>
-    <message id="listener.replay.selected.count">
-        <translation>%1 von %2 ausgewählt</translation>
+        <translation>Der Sequenz-Writer ist nicht mehr verfügbar</translation>
     </message>
     <message id="entity.endpoints">
         <translation>Endpunkte</translation>
@@ -1418,6 +1388,69 @@
     </message>
     <message id="node.view.zoom">
         <translation>Zoom</translation>
+    </message>
+    <message id="tester.sequence.select.all">
+        <translation>Alle auswählen</translation>
+    </message>
+    <message id="tester.sequence.deselect.all">
+        <translation>Alle abwählen</translation>
+    </message>
+    <message id="tester.sequence.selected.count">
+        <translation>%1 von %2 ausgewählt</translation>
+    </message>
+    <message id="tester.sequence.send.single">
+        <translation>Schritt senden</translation>
+    </message>
+    <message id="tester.sequence.delay">
+        <translation>Wartezeit (ms)</translation>
+    </message>
+    <message id="tester.sequence.move.up">
+        <translation>Schritt nach oben verschieben</translation>
+    </message>
+    <message id="tester.sequence.move.down">
+        <translation>Schritt nach unten verschieben</translation>
+    </message>
+    <message id="tester.sequence.timing">
+        <translation>Zeitabstände der Sequenz verwenden</translation>
+    </message>
+    <message id="tester.sequence.fixed.interval">
+        <translation>Fester Zeitabstand</translation>
+    </message>
+    <message id="tester.sequence.interval">
+        <translation>Zeitabstand (ms)</translation>
+    </message>
+    <message id="tester.sequence.stop">
+        <translation>Stoppen</translation>
+    </message>
+    <message id="tester.sequence.play">
+        <translation>Abspielen</translation>
+    </message>
+    <message id="tester.sequence.preparing">
+        <translation>Writer werden vorbereitet…</translation>
+    </message>
+    <message id="tester.sequence.finishing">
+        <translation>Warten auf den laufenden DDS-Aufruf…</translation>
+    </message>
+    <message id="tester.sequence.progress">
+        <translation>%1 von %2 Schritten abgeschlossen</translation>
+    </message>
+    <message id="tester.sequence.error">
+        <translation>Sequenzwiedergabe fehlgeschlagen: %1</translation>
+    </message>
+    <message id="tester.sequence.busy">
+        <translation>Stoppen Sie die Sequenzwiedergabe, bevor Sie Presets ändern.</translation>
+    </message>
+    <message id="tester.sequence.repeat">
+        <translation>Wiederholen</translation>
+    </message>
+    <message id="preset.io.import">
+        <translation>Presets und Aufnahme werden importiert...</translation>
+    </message>
+    <message id="preset.io.export">
+        <translation>Presets und Aufnahme werden exportiert...</translation>
+    </message>
+    <message id="preset.io.busy">
+        <translation>Ein Preset-Vorgang oder eine Sequenzwiedergabe läuft bereits.</translation>
     </message>
 </context>
 </TS>

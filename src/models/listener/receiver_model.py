@@ -12,15 +12,14 @@
 
 import copy
 import json
-from pathlib import Path
 import time
-import uuid
 
 from models.data_tree_model import DataTreeModel
 
 from loguru import logger as logging
+from utils.preset_io import PresetIo, export_recording
 
-from PySide6.QtCore import qtTrId, Qt, QModelIndex, QAbstractListModel, Property, Signal, Slot, QSaveFile, QIODevice
+from PySide6.QtCore import qtTrId, Qt, QModelIndex, QAbstractListModel, Property, Signal, Slot
 
 
 class ReceiverModel(QAbstractListModel):
@@ -42,19 +41,27 @@ class ReceiverModel(QAbstractListModel):
     TopicNameRole = Qt.UserRole + 15
 
     StructuredRole = Qt.UserRole + 16
+    MessageNumberRole = Qt.UserRole + 17
+    DomainIdRole = Qt.UserRole + 18
+    StructuredJsonRole = Qt.UserRole + 19
+    HasStructuredRole = Qt.UserRole + 20
     instanceViewChanged = Signal()
     operationError = Signal(str)
     replayChanged = Signal()
+    messageCountChanged = Signal()
     watchChanged = Signal()
+    exportFinished = Signal(bool)
 
 
-    def __init__(self, dataModelHandler=None, listenerModel=None, parent=None):
+    def __init__(self, dataModelHandler=None, listenerModel=None, parent=None, presetIo=None):
         super().__init__(parent)
+        self.presetIo = presetIo if presetIo is not None else PresetIo(self)
         self.watches = set()
         self.watchExclusions = set()
         self.dataModelHandler = dataModelHandler
         self.listenerModel = listenerModel
         self._replay_count = 0
+        self._received_total = 0
         self._messages = []
         self._instances = []
         self._instance_rows = {}
@@ -85,6 +92,14 @@ class ReceiverModel(QAbstractListModel):
 
         item = self._visible_messages()[index.row()]
 
+        if role == self.DomainIdRole:
+            return item["domainId"]
+        if role == self.MessageNumberRole:
+            return item["messageNumber"]
+        if role == self.HasStructuredRole:
+            return bool(item.get("structured"))
+        if role == self.StructuredJsonRole:
+            return json.dumps(item.get("structured", {}), ensure_ascii=False)
         if role == self.StructuredRole:
             return item.get("structured", {})
         if role == self.ReaderIdRole:
@@ -123,6 +138,10 @@ class ReceiverModel(QAbstractListModel):
     def roleNames(self):
         return {
             self.StructuredRole: b"structured",
+            self.StructuredJsonRole: b"structuredJson",
+            self.HasStructuredRole: b"hasStructured",
+            self.MessageNumberRole: b"messageNumber",
+            self.DomainIdRole: b"domainId",
             self.ReaderIdRole: b"readerId",
             self.ReceivedMsgRole: b"receivedMsg",
             self.SampleInfoRole: b"sampleInfo",
@@ -148,7 +167,19 @@ class ReceiverModel(QAbstractListModel):
                        writerId, ddsReaderId, writerApplication,
                        writerHostname, writerProcessId, writerAddresses,
                        topicType, topicName, instanceHandle, sample=None):
+        self._received_total += 1
+        reader = self.listenerModel.readers.get(readerId) if self.listenerModel else None
+        domain_id = reader.domainId if reader else -1
+        if isinstance(sample, dict):
+            domain_id = sample.get("domain_id", domain_id)
+        operation = "write" if validData else None
+        if not validData and isinstance(sample, dict):
+            operation = sample.get("operation")
+        recordable = validData or operation == "dispose"
         item = {
+            "operation": operation,
+            "domainId": domain_id,
+            "messageNumber": self._received_total,
             "readerId": readerId,
             "msg": msg,
             "sampleInfo": sampleInfo,
@@ -166,10 +197,16 @@ class ReceiverModel(QAbstractListModel):
             "topicName": topicName,
         }
         received_monotonic_ns = time.monotonic_ns()
+        writer_identity = ("guid", writerId)
         if isinstance(sample, dict) and "sample" in sample:
             received_monotonic_ns = sample["received_monotonic_ns"]
+            publication_handle = sample.get("publication_handle")
+            if isinstance(publication_handle, int) and publication_handle > 0:
+                # Discovery may temporarily provide no GUID, including after a
+                # writer disappears. The DDS publication handle stays unchanged.
+                writer_identity = ("publication", publication_handle)
             sample = sample["sample"]
-        if validData and sample is not None and self.dataModelHandler is not None:
+        if sample is not None and self.dataModelHandler is not None:
             tree = None
             try:
                 missing = set()
@@ -178,14 +215,36 @@ class ReceiverModel(QAbstractListModel):
                     raise ValueError(qtTrId("listener.error.types").replace("%1", ", ".join(sorted(missing))))
                 tree = DataTreeModel(root)
                 tree.fromDataObject(sample, self.dataModelHandler)
-                item["structured"] = tree.toJson()
-                reader = self.listenerModel.readers.get(readerId) if self.listenerModel else None
-                if reader is None:
-                    raise ValueError(qtTrId("listener.error.reader"))
-                item["replay"] = {
-                    "received_monotonic_ns": received_monotonic_ns,
-                    "reader": copy.deepcopy(reader),
-                }
+                structured = tree.toJson()
+                replay_message = copy.deepcopy(structured) if operation == "dispose" else None
+                if not validData:
+                    # Keep the complete field layout for lifecycle notifications,
+                    # but leave non-key values empty: DDS did not transmit them.
+                    annotations = getattr(type(sample), "__idl_annotations__", {})
+                    fields = getattr(type(sample), "__idl_field_annotations__", {})
+                    keys = annotations.get("keylist") or [name for name, value in fields.items() if "key" in value]
+                    def empty_values(value):
+                        if isinstance(value, dict):
+                            return {name: empty_values(child) for name, child in value.items()}
+                        if isinstance(value, list):
+                            return [empty_values(child) for child in value]
+                        return None
+
+                    structured["root"] = {
+                        name: value if name in keys else empty_values(value)
+                        for name, value in structured["root"].items()
+                    }
+                item["structured"] = structured
+                if recordable:
+                    if reader is None:
+                        raise ValueError(qtTrId("listener.error.reader"))
+                    item["replay"] = {
+                        "received_monotonic_ns": received_monotonic_ns,
+                        "writer_identity": writer_identity,
+                        "reader": copy.deepcopy(reader),
+                    }
+                    if replay_message is not None:
+                        item["replay"]["message"] = replay_message
             except Exception as error:
                 logging.error(f"Cannot serialize received sample: {error}")
                 item["replayError"] = str(error)
@@ -203,7 +262,7 @@ class ReceiverModel(QAbstractListModel):
             self.beginInsertRows(QModelIndex(), row, row)
 
         self._messages.append(item)
-        if validData:
+        if recordable:
             self._replay_count += 1
         if is_new:
             self._instance_rows[key] = len(self._instances)
@@ -216,7 +275,8 @@ class ReceiverModel(QAbstractListModel):
         else:
             index = self.index(instance_row, 0)
             self.dataChanged.emit(index, index, list(self.roleNames()))
-        if validData:
+        self.messageCountChanged.emit()
+        if recordable:
             self.replayChanged.emit()
 
 
@@ -228,8 +288,10 @@ class ReceiverModel(QAbstractListModel):
         self._instances.clear()
         self._instance_rows.clear()
         self._replay_count = 0
+        self._received_total = 0
 
         self.endResetModel()
+        self.messageCountChanged.emit()
         self.replayChanged.emit()
 
     @Slot(str)
@@ -242,62 +304,38 @@ class ReceiverModel(QAbstractListModel):
         except Exception as e:
             logging.error(f"Error exporting messages to file: {e}")
 
+    @Property(int, notify=messageCountChanged)
+    def totalReceivedCount(self):
+        return self._received_total
+
+    @Property(int, notify=messageCountChanged)
+    def messageCount(self):
+        return len(self._messages)
+
     @Property(int, notify=replayChanged)
     def replayCount(self):
         return self._replay_count
 
-    @Slot(str)
+    @Slot(str, result=bool)
     def exportReplay(self, filePath):
-        try:
-            samples = [item for item in self._messages if item["validData"]]
-            if not samples:
-                raise ValueError(qtTrId("listener.error.samples"))
-            for item in samples:
-                if "replay" not in item:
-                    raise ValueError(item.get("replayError", qtTrId("listener.error.message")))
-            samples.sort(key=lambda item: item["replay"]["received_monotonic_ns"])
-            start_ns = samples[0]["replay"]["received_monotonic_ns"]
-            presets = {}
-            timeline = []
-            for entry in samples:
-                reader = entry["replay"]["reader"]
-                key = (reader.id, reader.domainId, reader.topic_name, reader.topic_type,
-                       json.dumps(reader.qos, sort_keys=True))
-                if key not in presets:
-                    presets[key] = {
-                        "id": str(uuid.uuid4()), "preset_name": reader.topic_name,
-                        "description": "", "domain_id": reader.domainId,
-                        "topic_name": reader.topic_name, "topic_type": reader.topic_type,
-                        "qos": reader.qos, "messages": [],
-                    }
-                preset = presets[key]
-                message = copy.deepcopy(entry["structured"])
-                message["id"] = preset["id"] if "message" not in preset else str(uuid.uuid4())
-                message["name"] = str(len(timeline) + 1)
-                message["source_timestamp"] = entry["sourceTimestamp"]
-                message["received_timestamp"] = entry["receivedTimestamp"]
-                if "message" not in preset:
-                    preset["message"] = message
-                else:
-                    preset["messages"].append(message)
-                timeline.append({"preset_id": preset["id"], "message_id": message["id"],
-                                 "offset_ms": (entry["replay"]["received_monotonic_ns"] - start_ns) / 1_000_000})
-            sequence = {"id": str(uuid.uuid4()), "preset_name": Path(filePath).stem,
-                        "description": "", "sequence_items": [event["message_id"] for event in timeline]}
-            payload = {"presets": list(presets.values()), "sequence_presets": [sequence],
-                       "replay": {"version": 1, "interval_ms": 100,
-                                  "use_original_timing": False, "events": timeline}}
-            content = json.dumps(payload, indent=4).encode("utf-8")
-            output = QSaveFile(filePath)
-            if not output.open(QIODevice.WriteOnly):
-                raise OSError(output.errorString())
-            if output.write(content) != len(content):
-                output.cancelWriting()
-                raise OSError(output.errorString())
-            if not output.commit():
-                raise OSError(output.errorString())
-        except Exception as error:
-            self.operationError.emit(qtTrId("listener.error.export").replace("%1", str(error)))
+        if self.presetIo.busy:
+            self.operationError.emit(qtTrId("preset.io.busy"))
+            return False
+        # Received entries and their reader/structured snapshots are immutable.
+        # A shallow tuple fixes the export boundary while reception can continue.
+        samples = tuple(self._messages)
+        writer_label = qtTrId("entity.writer")
+        started = self.presetIo.start("export", lambda progress, check:
+                                      export_recording(filePath, samples, progress, check, writer_label),
+                                      self._exportDone)
+        if not started:
+            self.operationError.emit(qtTrId("preset.io.busy"))
+        return started
+
+    def _exportDone(self, result, error):
+        if error is not None:
+            self.operationError.emit(qtTrId("listener.error.export").replace("%1", error))
+        self.exportFinished.emit(error is None)
 
     @Slot()
     def clearWatchlist(self):

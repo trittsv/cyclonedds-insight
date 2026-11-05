@@ -248,6 +248,10 @@ ToolBar {
                     onTriggered: rootWindow.openLogs()
                 }
                 MenuItem {
+                    text: qsTrId("listener.replay.import")
+                    onTriggered: rootWindow.openReplayImport()
+                }
+                MenuItem {
                     text: qsTrId("general.export.ddsentities")
                     onTriggered: exportDdsSystemFileDialog.open()
                 }

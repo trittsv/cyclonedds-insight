@@ -33,7 +33,7 @@ class DispatcherThread(QThread):
     onData = Signal(
         str, str, str, bool, str, str, str, str, str, int, str, str, str, str, object
     )
-    replayWritten = Signal(str, bool, str)
+    sequenceWritten = Signal(str, bool, str)
     endpointCreated = Signal(str)
     endpointCreationFailed = Signal(str, str)
 
@@ -75,7 +75,7 @@ class DispatcherThread(QThread):
         self.writerIdsByHandle = {}
         self.writerParticipantIdsByHandle = {}
         self.writerData = {}
-        self.replayCommands = SimpleQueue()
+        self.sequenceCommands = SimpleQueue()
         self.mutex = Lock()
         self.dpSetUpDone = Event()
 
@@ -95,36 +95,36 @@ class DispatcherThread(QThread):
             logging.debug("Write ... DONE")
 
     @Slot(str, object)
-    def writeReplay(self, id, data):
-        if id.startswith(f"replay-{self.domain_id}-"):
-            self.replayCommands.put((id, data))
-            if self.guardCondition is not None:
-                self.guardCondition.set(True)
+    def writeSequence(self, id, data):
+        self.sequenceCommands.put((id, "write", data))
+        if self.guardCondition is not None:
+            self.guardCondition.set(True)
 
-    def deleteReplayWriter(self, id):
-        if id.startswith(f"replay-{self.domain_id}-"):
-            self.replayCommands.put((id, None))
-            if self.guardCondition is not None:
-                self.guardCondition.set(True)
+    @Slot(str, object)
+    def disposeSequence(self, id, data):
+        self.sequenceCommands.put((id, "dispose", data))
+        if self.guardCondition is not None:
+            self.guardCondition.set(True)
 
-    def _drainReplayCommands(self):
+    def _drainSequenceCommands(self):
         # DDS writes run in run(), not in slots on the QThread's UI-thread QObject.
         self.guardCondition.set(False)
         while True:
             try:
-                id, data = self.replayCommands.get_nowait()
+                id, operation, data = self.sequenceCommands.get_nowait()
             except Empty:
                 break
-            if data is None:
-                self.writerData.pop(id, None)
-                continue
             try:
                 if id not in self.writerData:
                     raise RuntimeError(qtTrId("listener.error.writer"))
-                self.writerData[id][1].write(data)
-                self.replayWritten.emit(id, True, "")
+                writer = self.writerData[id][1]
+                if operation == "dispose":
+                    writer.dispose(data)
+                else:
+                    writer.write(data)
+                self.sequenceWritten.emit(id, True, "")
             except Exception as error:
-                self.replayWritten.emit(id, False, str(error))
+                self.sequenceWritten.emit(id, False, str(error))
 
     @Slot(str, object)
     def dispose(self, id, data):
@@ -233,7 +233,7 @@ class DispatcherThread(QThread):
                     if amount_triggered == 0:
                         continue
 
-                    self._drainReplayCommands()
+                    self._drainSequenceCommands()
                     for (_id, topic, _, readItem, condItem) in self.readerData:
                         try:
                             # Take one sample so a decode failure cannot discard a
@@ -291,8 +291,12 @@ class DispatcherThread(QThread):
                                     str(topic.typename),
                                     str(topic.name),
                                     str(sample.sample_info.instance_handle),
-                                    {"sample": sample, "received_monotonic_ns": received_monotonic_ns}
-                                    if sample.sample_info.valid_data else None
+                                    {"sample": sample.key_sample if isinstance(sample, InvalidSample) else sample,
+                                     "received_monotonic_ns": received_monotonic_ns,
+                                     "publication_handle": publication_handle,
+                                     "domain_id": self.domain_id,
+                                     "operation": "write" if sample.sample_info.valid_data else
+                                     "dispose" if sample.sample_info.instance_state == InstanceState.NotAliveDisposed else None}
                                 )
                         except Exception as error:
                             logging.error(

@@ -35,9 +35,16 @@ Rectangle {
     property bool isPresetNameEditorVisible: false
     property int currentDataIndex: 0
     property int testerRev: 0
+    readonly property var playback: testerModel.sequencePlayback
     readonly property color surfaceColor: Constants.cardBackgroundColor(rootWindow.isDarkMode)
     readonly property color borderColor: Constants.designBorderColor(rootWindow.isDarkMode)
     readonly property color secondaryTextColor: Constants.secondaryTextColor(rootWindow.isDarkMode)
+
+    function selectPreset(index) {
+        librariesCombobox.currentIndex = index
+        isSequenceEditorVisible = false
+        refreshCurrentModels()
+    }
 
     function refreshCurrentModels() {
         if (!testerModel || librariesCombobox.currentIndex < 0) {
@@ -58,6 +65,7 @@ Rectangle {
 
     Connections {
         target: testerModel
+        function onSelectionRequested(index) { selectPreset(index) }
         function onDataChanged() { testerRev++ }
         function onModelReset()  { testerRev++ }
         function onRowsInserted(){ testerRev++ }
@@ -76,6 +84,7 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 36
+            enabled: !testerModel.playbackBusy
             spacing: 9
 
             DetailBadge {
@@ -120,7 +129,7 @@ Rectangle {
 
                     MenuItem {
                         text: qsTrId("tester.duplicate")
-                        enabled: librariesCombobox.count > 0
+                        enabled: librariesCombobox.count > 0 && !testerModel.playbackBusy
                         onClicked: {
                             testerModel.duplicatePreset(librariesCombobox.currentIndex)
                             librariesCombobox.currentIndex = librariesCombobox.count - 1
@@ -139,7 +148,7 @@ Rectangle {
 
                     MenuItem {
                         text: qsTrId("tester.export.current")
-                        enabled: librariesCombobox.count > 0
+                        enabled: librariesCombobox.count > 0 && !testerModel.playbackBusy
                         onClicked: {
                             exportPresetDialog.exportAll = false
                             exportPresetDialog.open()
@@ -148,7 +157,7 @@ Rectangle {
 
                     MenuItem {
                         text: qsTrId("tester.export.all")
-                        enabled: librariesCombobox.count > 0
+                        enabled: librariesCombobox.count > 0 && !testerModel.playbackBusy
                         onClicked: {
                             exportPresetDialog.exportAll = true
                             exportPresetDialog.open()
@@ -159,7 +168,7 @@ Rectangle {
 
                     MenuItem {
                         text: qsTrId("tester.delete.current")
-                        enabled: librariesCombobox.count > 0
+                        enabled: librariesCombobox.count > 0 && !testerModel.playbackBusy
                         onClicked: {
                             const idx = librariesCombobox.currentIndex
                             testerModel.deleteWriter(idx)
@@ -172,7 +181,7 @@ Rectangle {
 
                     MenuItem {
                         text: qsTrId("tester.delete.all")
-                        enabled: librariesCombobox.count > 0
+                        enabled: librariesCombobox.count > 0 && !testerModel.playbackBusy
                         onClicked: testerModel.deleteAllWriters()
                     }
                 }
@@ -182,6 +191,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: presetConfigLayout.implicitHeight + 20
+            enabled: !testerModel.playbackBusy
             radius: Constants.cardRadius
             color: listenerTabId.surfaceColor
             border.width: 1
@@ -213,7 +223,7 @@ Rectangle {
                         model: testerModel
                         Layout.fillWidth: true
                         textRole: "name"
-                        enabled: librariesCombobox.count > 0
+                        enabled: librariesCombobox.count > 0 && !testerModel.playbackBusy
 
                         property string searchText: ""
 
@@ -292,7 +302,7 @@ Rectangle {
                         tooltipText: listenerTabId.isPresetNameEditorVisible
                                      ? qsTrId("tester.preset.editor.hide")
                                      : qsTrId("tester.preset.rename")
-                        enabled: librariesCombobox.count > 0
+                        enabled: librariesCombobox.count > 0 && !testerModel.playbackBusy
                         opacity: enabled ? 1 : 0.5
                         onClicked: {
                             listenerTabId.isPresetNameEditorVisible =
@@ -364,6 +374,7 @@ Rectangle {
                                   : qsTrId("general.start")
                             highlighted: !(testerRev, testerModel.getIsStarted(
                                                librariesCombobox.currentIndex))
+                            enabled: !testerModel.playbackBusy
                             onClicked: {
                                 if (testerModel.getIsStarted(librariesCombobox.currentIndex)) {
                                     testerModel.stopItem(librariesCombobox.currentIndex)
@@ -487,6 +498,7 @@ Rectangle {
             Layout.rightMargin: 3
             Layout.bottomMargin: -11
             visible: dataTreeModel !== null && sequenceModel === null
+            enabled: !testerModel.playbackBusy
             spacing: 3
             z: 2
 
@@ -778,9 +790,30 @@ Rectangle {
                                   ? qsTrId("general.done")
                                   : qsTrId("tester.sequence.edit")
                             flat: true
+                            enabled: !testerModel.playbackBusy
                             onClicked: {
                                 isSequenceEditorVisible = !isSequenceEditorVisible
                             }
+                        }
+                    }
+
+                    Flow {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: implicitHeight
+                        spacing: 8
+                        Button {
+                            text: qsTrId("tester.sequence.select.all")
+                            enabled: !testerModel.playbackBusy
+                            onClicked: sequenceModel.selectAll(true)
+                        }
+                        Button {
+                            text: qsTrId("tester.sequence.deselect.all")
+                            enabled: !testerModel.playbackBusy
+                            onClicked: sequenceModel.selectAll(false)
+                        }
+                        Label {
+                            text: sequenceModel ? qsTrId("tester.sequence.selected.count")
+                                  .arg(sequenceModel.selectedCount).arg(sequenceModel.count) : ""
                         }
                     }
 
@@ -796,6 +829,7 @@ Rectangle {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             visible: isSequenceEditorVisible
+                            enabled: !testerModel.playbackBusy
 
                             ListView {
                                 id: availableList
@@ -819,6 +853,7 @@ Rectangle {
 
                         ColumnLayout {
                             visible: isSequenceEditorVisible
+                            enabled: !testerModel.playbackBusy
                             Layout.alignment: Qt.AlignVCenter
                             spacing: 8
 
@@ -902,12 +937,109 @@ Rectangle {
                                 currentIndex: sequenceEditor.sequenceIndex
 
                                 delegate: ItemDelegate {
+                                    id: sequenceStepDelegate
+                                    objectName: "sequenceStep-" + index
                                     required property int index
                                     required property string dataItemId
+                                    required property string operation
+                                    required property real delayMs
+                                    required property bool stepSelected
+                                    readonly property bool currentStep: listenerTabId.playback.busy
+                                                && listenerTabId.playback.sequence === sequenceModel
+                                                && listenerTabId.playback.position === index
                                     width: ListView.view.width
-                                    text: (testerRev, testerModel.getDataItemDisplayName(dataItemId))
-                                    highlighted: index === sequenceList.currentIndex
+                                    highlighted: currentStep || index === sequenceList.currentIndex
                                     onClicked: sequenceList.currentIndex = index
+
+                                    contentItem: ColumnLayout {
+                                        spacing: 4
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            CheckBox {
+                                                objectName: "sequenceStepSelected-" + sequenceStepDelegate.index
+                                                text: String(sequenceStepDelegate.index + 1)
+                                                checked: sequenceStepDelegate.stepSelected
+                                                enabled: !testerModel.playbackBusy
+                                                onClicked: sequenceModel.setSelected(sequenceStepDelegate.index, checked)
+                                            }
+                                            Label {
+                                                Layout.fillWidth: true
+                                                text: (testerRev, testerModel.getDataItemDisplayName(sequenceStepDelegate.dataItemId))
+                                                elide: Text.ElideRight
+                                                color: sequenceStepDelegate.highlighted
+                                                       ? sequenceStepDelegate.palette.highlightedText
+                                                       : sequenceStepDelegate.palette.text
+                                            }
+                                            ToolButton {
+                                                objectName: "sequenceStepSend-" + sequenceStepDelegate.index
+                                                text: "▶"
+                                                Accessible.name: qsTrId("tester.sequence.send.single")
+                                                enabled: !testerModel.playbackBusy
+                                                onClicked: testerModel.sendSequenceStep(librariesCombobox.currentIndex,
+                                                                                       sequenceStepDelegate.index)
+                                            }
+                                        }
+                                        Flow {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: implicitHeight
+                                            spacing: 6
+                                            ComboBox {
+                                                objectName: "sequenceStepOperation-" + sequenceStepDelegate.index
+                                                model: [qsTrId("general.write"), qsTrId("general.dispose")]
+                                                currentIndex: sequenceStepDelegate.operation === "dispose" ? 1 : 0
+                                                enabled: isSequenceEditorVisible && !testerModel.playbackBusy
+                                                implicitContentWidthPolicy: ComboBox.WidestText
+                                                onActivated: function(index) {
+                                                    sequenceModel.setOperation(sequenceStepDelegate.index,
+                                                                               index === 1 ? "dispose" : "write")
+                                                }
+                                            }
+                                            Label {
+                                                text: qsTrId("tester.sequence.delay")
+                                                height: delayInput.height
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
+                                            TextField {
+                                                id: delayInput
+                                                objectName: "sequenceStepDelay-" + sequenceStepDelegate.index
+                                                width: 120
+                                                text: Number(sequenceStepDelegate.delayMs).toLocaleString(Qt.locale(), "f", 6)
+                                                      .replace(/0+$/, "").replace(/[.,]$/, "")
+                                                Accessible.name: qsTrId("tester.sequence.delay")
+                                                validator: DoubleValidator {
+                                                    locale: Qt.locale().name
+                                                    bottom: 0
+                                                    top: 2147483647
+                                                    decimals: 6
+                                                    notation: DoubleValidator.StandardNotation
+                                                }
+                                                enabled: isSequenceEditorVisible && !testerModel.playbackBusy
+                                                onEditingFinished: {
+                                                    if (acceptableInput)
+                                                        sequenceModel.setDelay(sequenceStepDelegate.index,
+                                                                               Number.fromLocaleString(Qt.locale(), text))
+                                                    text = Qt.binding(function() {
+                                                        return Number(sequenceStepDelegate.delayMs).toLocaleString(Qt.locale(), "f", 6)
+                                                               .replace(/0+$/, "").replace(/[.,]$/, "")
+                                                    })
+                                                }
+                                            }
+                                            ToolButton {
+                                                text: "↑"
+                                                Accessible.name: qsTrId("tester.sequence.move.up")
+                                                visible: isSequenceEditorVisible
+                                                enabled: !testerModel.playbackBusy && sequenceStepDelegate.index > 0
+                                                onClicked: sequenceList.currentIndex = sequenceModel.moveStep(sequenceStepDelegate.index, -1)
+                                            }
+                                            ToolButton {
+                                                text: "↓"
+                                                Accessible.name: qsTrId("tester.sequence.move.down")
+                                                visible: isSequenceEditorVisible
+                                                enabled: !testerModel.playbackBusy && sequenceStepDelegate.index < sequenceModel.count - 1
+                                                onClicked: sequenceList.currentIndex = sequenceModel.moveStep(sequenceStepDelegate.index, 1)
+                                            }
+                                        }
+                                    }
                                 }
 
                                 ScrollBar.vertical: ScrollBar { }
@@ -919,6 +1051,7 @@ Rectangle {
 
             TreeView {
                 id: treeView
+                enabled: !testerModel.playbackBusy
                 model: dataTreeModel
                 anchors.fill: parent
                 anchors.margins: 8
@@ -1125,47 +1258,110 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 46
-            visible: testerModel.count > 0
-            enabled: (testerRev, testerModel.getIsStarted(librariesCombobox.currentIndex))
+            Layout.preferredHeight: playbackControls.implicitHeight + 16
+            visible: sequenceModel !== null
             radius: Constants.cardRadius
             color: listenerTabId.surfaceColor
             border.width: 1
             border.color: listenerTabId.borderColor
-
+            ColumnLayout {
+                id: playbackControls
+                anchors.fill: parent
+                anchors.margins: 8
+                Flow {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: implicitHeight
+                    spacing: 8
+                    ComboBox {
+                        id: sequenceTiming
+                        objectName: "sequenceTiming"
+                        model: [qsTrId("tester.sequence.timing"), qsTrId("tester.sequence.fixed.interval")]
+                        enabled: !testerModel.playbackBusy
+                        implicitContentWidthPolicy: ComboBox.WidestText
+                    }
+                    SpinBox {
+                        id: fixedInterval
+                        objectName: "sequenceFixedInterval"
+                        from: 1
+                        to: 60000
+                        value: 100
+                        editable: true
+                        enabled: sequenceTiming.currentIndex === 1 && !testerModel.playbackBusy
+                        Accessible.name: qsTrId("tester.sequence.interval")
+                    }
+                    Label { text: "ms"; height: fixedInterval.height; verticalAlignment: Text.AlignVCenter }
+                    CheckBox {
+                        id: repeatSequence
+                        objectName: "sequenceRepeat"
+                        text: qsTrId("tester.sequence.repeat")
+                        checked: false
+                        enabled: !testerModel.playbackBusy
+                    }
+                    Button {
+                        objectName: "sequencePlayStop"
+                        readonly property bool currentPlayback: listenerTabId.playback.sequence === sequenceModel
+                        text: currentPlayback && listenerTabId.playback.playing
+                              ? qsTrId("tester.sequence.stop") : qsTrId("tester.sequence.play")
+                        highlighted: true
+                        enabled: (currentPlayback && listenerTabId.playback.playing)
+                                 || (!testerModel.playbackBusy && sequenceModel !== null
+                                     && sequenceModel.selectedCount > 0)
+                        onClicked: {
+                            if (currentPlayback && listenerTabId.playback.playing)
+                                listenerTabId.playback.stop()
+                            else
+                                testerModel.playSequence(librariesCombobox.currentIndex,
+                                                         sequenceTiming.currentIndex === 0, fixedInterval.value,
+                                                         repeatSequence.checked)
+                        }
+                    }
+                }
+                Label {
+                    visible: listenerTabId.playback.sequence === sequenceModel
+                    text: listenerTabId.playback.preparing ? qsTrId("tester.sequence.preparing")
+                          : listenerTabId.playback.busy && !listenerTabId.playback.playing
+                            ? qsTrId("tester.sequence.finishing")
+                            : qsTrId("tester.sequence.progress").arg(listenerTabId.playback.completed).arg(listenerTabId.playback.total)
+                }
+                ProgressBar {
+                    Layout.fillWidth: true
+                    visible: listenerTabId.playback.sequence === sequenceModel
+                    from: 0
+                    to: Math.max(1, listenerTabId.playback.total)
+                    value: listenerTabId.playback.completed
+                    indeterminate: listenerTabId.playback.preparing
+                }
+            }
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 46
+            visible: testerModel.count > 0 && sequenceModel === null
+            enabled: !testerModel.playbackBusy && (testerRev, testerModel.getIsStarted(librariesCombobox.currentIndex))
+            radius: Constants.cardRadius
+            color: listenerTabId.surfaceColor
+            border.width: 1
+            border.color: listenerTabId.borderColor
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 8
                 anchors.rightMargin: 8
                 spacing: 8
-
                 Button {
-                    id: writeButton
                     text: qsTrId("general.write")
                     font.bold: true
-                    onClicked: testerModel.writeData(
-                                   librariesCombobox.currentIndex,
-                                   currentDataIndex)
+                    onClicked: testerModel.writeData(librariesCombobox.currentIndex, currentDataIndex)
                 }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
+                Item { Layout.fillWidth: true }
                 Button {
                     text: qsTrId("general.dispose")
                     flat: true
-                    onClicked: testerModel.disposeData(
-                                   librariesCombobox.currentIndex,
-                                   currentDataIndex)
+                    onClicked: testerModel.disposeData(librariesCombobox.currentIndex, currentDataIndex)
                 }
-
                 Button {
                     text: qsTrId("general.unregister")
                     flat: true
-                    onClicked: testerModel.unregisterData(
-                                   librariesCombobox.currentIndex,
-                                   currentDataIndex)
+                    onClicked: testerModel.unregisterData(librariesCombobox.currentIndex, currentDataIndex)
                 }
             }
         }
@@ -1181,7 +1377,6 @@ Rectangle {
         selectedFile: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0] + "/" + (presetNameField.text !== "" ? presetNameField.text : "preset") + ".json"
         property bool exportAll: false
         onAccepted: {
-            qmlUtils.createFileFromQUrl(selectedFile)
             var localPath = qmlUtils.toLocalFile(selectedFile);
             if (exportPresetDialog.exportAll) {
                 testerModel.exportJsonAll(localPath);
@@ -1198,12 +1393,10 @@ Rectangle {
         title: qsTrId("tester.presets.import")
         nameFilters: ["JSON files (*.json)"]
         onAccepted: {
-            for (var i = 0; i < selectedFiles.length; i++) {
-                var selectedFile = selectedFiles[i];
-                console.debug("Selected file: " + selectedFile)
-                var localPath = qmlUtils.toLocalFile(selectedFile);
-                testerModel.importJson(localPath);
-            }
+            var paths = []
+            for (var i = 0; i < selectedFiles.length; i++)
+                paths.push(qmlUtils.toLocalFile(selectedFiles[i]))
+            testerModel.importJsonFiles(paths)
         }
     }
 }

@@ -26,8 +26,7 @@ Rectangle {
     id: listenerTabId
     anchors.fill: parent
     color: Constants.mainContentColor(rootWindow.isDarkMode)
-    signal replayImported(int sessionIndex)
-    property bool treeView: false
+    property bool treeView: true
     property bool started: true
     property bool autoScrollEnabled: true
     property bool manageReadersVisible: false
@@ -48,19 +47,28 @@ Rectangle {
         }
     }
 
+    function scrollToNewest() {
+        if (listenerTabId.autoScrollEnabled)
+            listView.positionViewAtEnd()
+    }
+
     Connections {
         target: receiverProxyModel
         function onRowsInserted(parent, first, last) {
             // auto scroll
             if (listenerTabId.autoScrollEnabled) {
-                Qt.callLater(function () {
-                    listView.positionViewAtEnd();
-                });
+                Qt.callLater(listenerTabId.scrollToNewest);
             }
             if (!listenerTabId.started) {
                 listenerTabId.started = true;
             }
         }
+    }
+
+    TextMetrics {
+        id: messageNumberMetrics
+        font.pixelSize: Constants.captionFontSize
+        text: "9".repeat(String(receiverModel.totalReceivedCount).length)
     }
 
     ColumnLayout {
@@ -170,6 +178,26 @@ Rectangle {
                 onAccepted: receiverProxyModel.searchText = text
             }
 
+            IconActionButton {
+                objectName: "listenerTreeToggle"
+                icon: "tree"
+                active: listenerTabId.treeView
+                Accessible.name: qsTrId("listener.tree")
+                Accessible.role: Accessible.CheckBox
+                Accessible.checkable: true
+                Accessible.checked: active
+                onClicked: listenerTabId.treeView = !listenerTabId.treeView
+            }
+
+            IconActionButton {
+                objectName: "listenerClear"
+                icon: "delete-all"
+                Accessible.name: qsTrId("general.clear")
+                destructive: true
+                enabled: receiverModel.messageCount > 0
+                onClicked: receiverModel.clear()
+            }
+
             ExpandButton {
                 id: actionsButton
                 text: qsTrId("listener.actions")
@@ -193,12 +221,6 @@ Rectangle {
                     }
 
                     MenuItem {
-                        text: qsTrId("listener.tree")
-                        checkable: true
-                        checked: listenerTabId.treeView
-                        onTriggered: listenerTabId.treeView = !listenerTabId.treeView
-                    }
-                    MenuItem {
                         text: qsTrId("listener.watch.clear")
                         onTriggered: receiverModel.clearWatchlist()
                     }
@@ -210,32 +232,27 @@ Rectangle {
                         onTriggered: importListenerPresetDialog.open()
                     }
                     MenuItem {
+                        objectName: "listenerPresetExport"
                         text: qsTrId("listener.preset.export")
+                        enabled: listenerModel.count > 0
                         onTriggered: exportListenerPresetDialog.open()
                     }
                     MenuSeparator {}
 
                     MenuItem {
+                        objectName: "listenerLogExport"
                         text: qsTrId("listener.sample.export")
+                        enabled: receiverModel.messageCount > 0
                         onTriggered: exportSampleLogFileDialog.open()
                     }
 
                     MenuItem {
-                        text: qsTrId("listener.replay.import")
-                        onTriggered: importReplayDialog.open()
-                    }
-                    MenuItem {
+                        objectName: "listenerReplayExport"
                         text: qsTrId("listener.replay.export")
                         enabled: receiverModel.replayCount > 0
                         onTriggered: exportReplayDialog.open()
                     }
 
-                    MenuSeparator {}
-
-                    MenuItem {
-                        text: qsTrId("general.clear")
-                        onTriggered: receiverModel.clear()
-                    }
                 }
             }
         }
@@ -265,6 +282,7 @@ Rectangle {
                         id: sampleDelegate
                         width: ListView.view.width - listenerScrollBar.width
                         property bool sampleInfoVisible: false
+                        property bool treeInitialized: false
 
                         Item {
                             height: index > 0 ? 4 : 0
@@ -285,27 +303,47 @@ Rectangle {
                             width: parent.width
                             spacing: 6
 
+                            Label {
+                                objectName: "messageNumber-" + index
+                                Layout.rightMargin: 12
+                                text: model.messageNumber
+                                font: messageNumberMetrics.font
+                                color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                                horizontalAlignment: Text.AlignRight
+                                Layout.preferredWidth: Math.max(32, messageNumberMetrics.advanceWidth)
+                                Layout.alignment: Qt.AlignTop
+                                Layout.topMargin: 4
+                            }
+
                             Item {
-                                implicitHeight: receivedMessageText.implicitHeight
+                                id: sampleContent
+                                readonly property bool showingTree: listenerTabId.treeView
+                                                                    && (!model.validData || model.hasStructured)
+                                implicitHeight: showingTree && treeLoader.item
+                                                ? treeLoader.item.implicitHeight
+                                                : receivedMessageText.implicitHeight
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignTop
 
-                                property int timestampSpacing:
-                                    Math.ceil((receivedTimestampText.contentWidth + 6)
-                                              / Math.max(receivedTextSpace.advanceWidth, 1))
-
-                                TextMetrics {
-                                    id: receivedTextSpace
-                                    font: receivedMessageText.font
-                                    text: "\u00a0"
+                                Loader {
+                                    id: treeLoader
+                                    width: parent.width
+                                    visible: sampleContent.showingTree
+                                    active: listenerTabId.treeView || sampleDelegate.treeInitialized
+                                    onLoaded: sampleDelegate.treeInitialized = true
+                                    sourceComponent: MessageTree {
+                                        treeVisible: sampleContent.showingTree
+                                        payloadJson: model.hasStructured ? model.structuredJson : '{"root":{}}'
+                                        rootLabel: model.topicName
+                                        scope: model.readerId + ":" + model.topicType + ":" + model.topicName
+                                    }
                                 }
 
                                 TextEdit {
                                     id: receivedMessageText
                                     width: parent.width
-                                    text: "\u00a0".repeat(parent.timestampSpacing)
-                                          + "•  " + (listenerTabId.treeView && Object.keys(model.structured).length > 0
-                                                       ? model.topicName : model.receivedMsg)
+                                    visible: !sampleContent.showingTree
+                                    text: model.receivedMsg
                                     readOnly: true
                                     color: rootWindow.isDarkMode ? "white" : "black"
                                     wrapMode: Text.Wrap
@@ -318,25 +356,22 @@ Rectangle {
                                     }
                                 }
 
-                                TextEdit {
-                                    id: receivedTimestampText
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 2
-                                    y: receivedMessageText.padding
-                                       + Math.max(0, (receivedTextSpace.height - height) / 2)
-                                    width: contentWidth
-                                    height: contentHeight
-                                    text: model.receivedTimestamp
-                                    readOnly: true
-                                    selectByMouse: true
-                                    padding: 0
-                                    color: Constants.secondaryTextColor(rootWindow.isDarkMode)
-                                    font.pixelSize: Constants.captionFontSize
-                                    onActiveFocusChanged: {
-                                        if (activeFocus) {
-                                            listenerTabId.autoScrollEnabled = false;
-                                        }
-                                    }
+                            }
+
+                            TextEdit {
+                                id: receivedTimestampText
+                                objectName: "messageTimestamp-" + index
+                                text: model.receivedTimestamp
+                                readOnly: true
+                                selectByMouse: true
+                                padding: 0
+                                color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                                font.pixelSize: Constants.captionFontSize
+                                Layout.alignment: Qt.AlignTop
+                                Layout.topMargin: 4
+                                onActiveFocusChanged: {
+                                    if (activeFocus)
+                                        listenerTabId.autoScrollEnabled = false
                                 }
                             }
 
@@ -359,6 +394,7 @@ Rectangle {
                             }
 
                             IconActionButton {
+                                objectName: "sampleInfo-" + index
                                 icon: "info"
                                 active: sampleDelegate.sampleInfoVisible
                                 Layout.alignment: Qt.AlignTop
@@ -368,151 +404,154 @@ Rectangle {
 
                         }
 
-                        MessageTree {
-                            visible: listenerTabId.treeView && Object.keys(model.structured).length > 0
-                            payload: visible ? model.structured : ({})
-                            scope: model.readerId + ":" + model.topicType + ":" + model.topicName
-                        }
-
-                        Rectangle {
-                            visible: sampleDelegate.sampleInfoVisible
+                        Loader {
                             width: parent.width
-                            height: sampleInfoLayout.implicitHeight + 12
-                            radius: Constants.controlRadius
-                            color: rootWindow.isDarkMode
-                                   ? Constants.mainContentBackgroundColor(true)
-                                   : "#eeeeee"
-                            border.width: 1
-                            border.color: listenerTabId.borderColor
+                            active: sampleDelegate.sampleInfoVisible
+                            visible: active
+                            sourceComponent: Rectangle {
+                                width: parent.width
+                                height: sampleInfoLayout.implicitHeight + 12
+                                radius: Constants.controlRadius
+                                color: rootWindow.isDarkMode
+                                       ? Constants.mainContentBackgroundColor(true)
+                                       : "#eeeeee"
+                                border.width: 1
+                                border.color: listenerTabId.borderColor
 
-                            ColumnLayout {
-                                id: sampleInfoLayout
-                                anchors.fill: parent
-                                anchors.margins: 6
-                                spacing: 6
+                                ColumnLayout {
+                                    id: sampleInfoLayout
+                                    anchors.fill: parent
+                                    anchors.margins: 6
+                                    spacing: 6
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    implicitHeight: originLayout.implicitHeight + 12
-                                    radius: Constants.controlRadius
-                                    color: rootWindow.isDarkMode ? "#292929" : "#fafafa"
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        implicitHeight: originLayout.implicitHeight + 12
+                                        radius: Constants.controlRadius
+                                        color: rootWindow.isDarkMode ? "#292929" : "#fafafa"
 
-                                    ColumnLayout {
-                                        id: originLayout
-                                        anchors.fill: parent
-                                        anchors.margins: 6
-                                        spacing: 3
+                                        ColumnLayout {
+                                            id: originLayout
+                                            anchors.fill: parent
+                                            anchors.margins: 6
+                                            spacing: 3
 
-                                        Label {
-                                            text: qsTrId("listener.sample.group.path")
-                                            color: Constants.secondaryTextColor(rootWindow.isDarkMode)
-                                            font.bold: true
-                                            font.pixelSize: Constants.captionFontSize
-                                        }
-                                        GridLayout {
-                                            Layout.fillWidth: true
-                                            columns: 2
-                                            columnSpacing: 12
-                                            rowSpacing: 2
+                                            Label {
+                                                text: qsTrId("listener.sample.group.path")
+                                                color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                                                font.bold: true
+                                                font.pixelSize: Constants.captionFontSize
+                                            }
+                                            GridLayout {
+                                                Layout.fillWidth: true
+                                                columns: 2
+                                                columnSpacing: 12
+                                                rowSpacing: 2
 
-                                            Label { text: qsTrId("listener.sample.sent.from"); font.bold: true }
-                                            DetailValue {
-                                                text: model.writerApplication + ":"
-                                                      + model.writerProcessId + "@"
-                                                      + model.writerHostname
-                                            }
-                                            Label { text: qsTrId("listener.sample.writer.addresses"); font.bold: true }
-                                            DetailValue {
-                                                text: model.writerAddresses
-                                            }
-                                            Label { text: qsTrId("listener.sample.writer.id"); font.bold: true }
-                                            DetailValue {
-                                                text: model.writerId
-                                            }
-                                            Label { text: qsTrId("listener.sample.reader.id"); font.bold: true }
-                                            DetailValue {
-                                                text: model.ddsReaderId
-                                            }
-                                            Label { text: qsTrId("listener.sample.topic.name"); font.bold: true }
-                                            DetailValue {
-                                                text: model.topicName
-                                            }
-                                            Label { text: qsTrId("listener.sample.topic.type"); font.bold: true }
-                                            DetailValue {
-                                                text: model.topicType
+                                                Label { text: qsTrId("participant.domain"); font.bold: true }
+                                                DetailValue {
+                                                    objectName: "messageDomain-" + index
+                                                    text: model.domainId >= 0 ? model.domainId : "-"
+                                                }
+                                                Label { text: qsTrId("listener.sample.sent.from"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.writerApplication + ":"
+                                                          + model.writerProcessId + "@"
+                                                          + model.writerHostname
+                                                }
+                                                Label { text: qsTrId("listener.sample.writer.addresses"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.writerAddresses
+                                                }
+                                                Label { text: qsTrId("listener.sample.writer.id"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.writerId
+                                                }
+                                                Label { text: qsTrId("listener.sample.reader.id"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.ddsReaderId
+                                                }
+                                                Label { text: qsTrId("listener.sample.topic.name"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.topicName
+                                                }
+                                                Label { text: qsTrId("listener.sample.topic.type"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.topicType
+                                                }
                                             }
                                         }
                                     }
-                                }
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    implicitHeight: timingLayout.implicitHeight + 12
-                                    radius: Constants.controlRadius
-                                    color: rootWindow.isDarkMode ? "#292929" : "#fafafa"
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        implicitHeight: timingLayout.implicitHeight + 12
+                                        radius: Constants.controlRadius
+                                        color: rootWindow.isDarkMode ? "#292929" : "#fafafa"
 
-                                    ColumnLayout {
-                                        id: timingLayout
-                                        anchors.fill: parent
-                                        anchors.margins: 6
-                                        spacing: 3
+                                        ColumnLayout {
+                                            id: timingLayout
+                                            anchors.fill: parent
+                                            anchors.margins: 6
+                                            spacing: 3
 
-                                        Label {
-                                            text: qsTrId("listener.sample.group.timing")
-                                            color: Constants.secondaryTextColor(rootWindow.isDarkMode)
-                                            font.bold: true
-                                            font.pixelSize: Constants.captionFontSize
-                                        }
-                                        GridLayout {
-                                            Layout.fillWidth: true
-                                            columns: 2
-                                            columnSpacing: 12
-                                            rowSpacing: 2
-
-                                            Label { text: qsTrId("listener.sample.source.timestamp"); font.bold: true }
-                                            DetailValue {
-                                                text: model.sourceTimestamp
+                                            Label {
+                                                text: qsTrId("listener.sample.group.timing")
+                                                color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                                                font.bold: true
+                                                font.pixelSize: Constants.captionFontSize
                                             }
-                                            Label { text: qsTrId("listener.sample.received.timestamp"); font.bold: true }
-                                            DetailValue {
-                                                text: model.receivedTimestamp
+                                            GridLayout {
+                                                Layout.fillWidth: true
+                                                columns: 2
+                                                columnSpacing: 12
+                                                rowSpacing: 2
+
+                                                Label { text: qsTrId("listener.sample.source.timestamp"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.sourceTimestamp
+                                                }
+                                                Label { text: qsTrId("listener.sample.received.timestamp"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.receivedTimestamp
+                                                }
+                                                Label { text: qsTrId("listener.sample.transmission.time"); font.bold: true }
+                                                DetailValue {
+                                                    text: model.transmissionTime
+                                                }
                                             }
-                                            Label { text: qsTrId("listener.sample.transmission.time"); font.bold: true }
-                                            DetailValue {
-                                                text: model.transmissionTime
+                                            Label {
+                                                text: qsTrId("listener.sample.transmission.hint")
+                                                color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                                                font.pixelSize: Constants.captionFontSize
+                                                font.italic: true
+                                                wrapMode: Text.Wrap
+                                                Layout.fillWidth: true
                                             }
-                                        }
-                                        Label {
-                                            text: qsTrId("listener.sample.transmission.hint")
-                                            color: Constants.secondaryTextColor(rootWindow.isDarkMode)
-                                            font.pixelSize: Constants.captionFontSize
-                                            font.italic: true
-                                            wrapMode: Text.Wrap
-                                            Layout.fillWidth: true
                                         }
                                     }
-                                }
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    implicitHeight: rawInfoLayout.implicitHeight + 12
-                                    radius: Constants.controlRadius
-                                    color: rootWindow.isDarkMode ? "#292929" : "#fafafa"
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        implicitHeight: rawInfoLayout.implicitHeight + 12
+                                        radius: Constants.controlRadius
+                                        color: rootWindow.isDarkMode ? "#292929" : "#fafafa"
 
-                                    ColumnLayout {
-                                        id: rawInfoLayout
-                                        anchors.fill: parent
-                                        anchors.margins: 6
-                                        spacing: 3
+                                        ColumnLayout {
+                                            id: rawInfoLayout
+                                            anchors.fill: parent
+                                            anchors.margins: 6
+                                            spacing: 3
 
-                                        Label {
-                                            text: qsTrId("listener.sample.group.raw")
-                                            color: Constants.secondaryTextColor(rootWindow.isDarkMode)
-                                            font.bold: true
-                                            font.pixelSize: Constants.captionFontSize
-                                        }
-                                        DetailValue {
-                                            text: model.sampleInfo
+                                            Label {
+                                                text: qsTrId("listener.sample.group.raw")
+                                                color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                                                font.bold: true
+                                                font.pixelSize: Constants.captionFontSize
+                                            }
+                                            DetailValue {
+                                                text: model.sampleInfo
+                                            }
                                         }
                                     }
                                 }
@@ -560,16 +599,6 @@ Rectangle {
         nameFilters: ["JSON (*.json)"]
         title: qsTrId("listener.replay.export")
         onAccepted: receiverModel.exportReplay(qmlUtils.toLocalFile(selectedFile))
-    }
-    FileDialog {
-        id: importReplayDialog
-        fileMode: FileDialog.OpenFile
-        nameFilters: ["JSON (*.json)"]
-        title: qsTrId("listener.replay.import")
-        onAccepted: {
-            if (replayModel.importJson(qmlUtils.toLocalFile(selectedFile)))
-                listenerTabId.replayImported(replayModel.sessions.length - 1)
-        }
     }
 
     FileDialog {

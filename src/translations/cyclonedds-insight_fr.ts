@@ -1288,10 +1288,10 @@
         <translation>Copier</translation>
     </message>
     <message id="listener.replay.export">
-        <translation>Exporter la relecture…</translation>
+        <translation>Exporter un enregistrement/une relecture…</translation>
     </message>
     <message id="listener.replay.import">
-        <translation>Importer une relecture…</translation>
+        <translation>Importer un enregistrement/une relecture…</translation>
     </message>
     <message id="listener.tree">
         <translation>Vue arborescente</translation>
@@ -1304,21 +1304,6 @@
     </message>
     <message id="listener.watch.clear">
         <translation>Vider la liste de surveillance</translation>
-    </message>
-    <message id="listener.replay.interval">
-        <translation>Intervalle (ms)</translation>
-    </message>
-    <message id="listener.replay.original">
-        <translation>Utiliser les intervalles d’origine</translation>
-    </message>
-    <message id="listener.replay.play">
-        <translation>Lire</translation>
-    </message>
-    <message id="listener.replay.stop">
-        <translation>Arrêter</translation>
-    </message>
-    <message id="listener.replay.position">
-        <translation>Message %1 sur %2</translation>
     </message>
     <message id="listener.error.format">
         <translation>Un objet JSON de préréglage du testeur ou d’enregistrement est attendu</translation>
@@ -1344,32 +1329,26 @@
     <message id="listener.error.types">
         <translation>Importez d’abord l’IDL requis : %1</translation>
     </message>
-    <message id="listener.error.version">
-        <translation>Version des métadonnées de relecture non prise en charge</translation>
-    </message>
     <message id="listener.error.empty">
-        <translation>Ce fichier ne contient aucun message à relire</translation>
+        <translation>Ce fichier ne contient aucun préréglage ni aucune étape de séquence</translation>
     </message>
     <message id="listener.error.event">
-        <translation>Événement de relecture invalide</translation>
+        <translation>Étape de séquence invalide</translation>
     </message>
     <message id="listener.error.reference">
-        <translation>La relecture référence un message inconnu</translation>
+        <translation>La séquence fait référence à un message inconnu</translation>
     </message>
     <message id="listener.error.timestamps">
-        <translation>Les horodatages doivent être finis, positifs ou nuls et ordonnés</translation>
+        <translation>Les délais de séquence doivent être finis, positifs ou nuls et ne pas dépasser 2147483647 ms</translation>
     </message>
     <message id="listener.error.range">
-        <translation>Sélection ou intervalle de relecture invalide</translation>
+        <translation>Sélection de séquence ou intervalle invalide</translation>
     </message>
     <message id="listener.error.timeout">
-        <translation>Délai d’attente de relecture DDS dépassé</translation>
-    </message>
-    <message id="listener.error.replay">
-        <translation>Échec de la relecture : %1</translation>
+        <translation>Délai d’attente d’une opération DDS dépassé</translation>
     </message>
     <message id="listener.error.import">
-        <translation>Impossible d’importer la relecture : %1</translation>
+        <translation>Impossible d’importer les préréglages ou l’enregistrement : %1</translation>
     </message>
     <message id="listener.error.reader">
         <translation>Métadonnées du lecteur indisponibles</translation>
@@ -1384,16 +1363,7 @@
         <translation>Les valeurs union ne sont pas prises en charge par l’arbre de données des préréglages</translation>
     </message>
     <message id="listener.error.writer">
-        <translation>Le rédacteur de relecture n’est plus disponible</translation>
-    </message>
-    <message id="listener.replay.select.all">
-        <translation>Tout sélectionner</translation>
-    </message>
-    <message id="listener.replay.deselect.all">
-        <translation>Tout désélectionner</translation>
-    </message>
-    <message id="listener.replay.selected.count">
-        <translation>%1 sur %2 sélectionnés</translation>
+        <translation>Le writer de la séquence n’est plus disponible</translation>
     </message>
     <message id="entity.endpoints">
         <translation>Points de terminaison</translation>
@@ -1418,6 +1388,69 @@
     </message>
     <message id="node.view.zoom">
         <translation>Zoom</translation>
+    </message>
+    <message id="tester.sequence.select.all">
+        <translation>Tout sélectionner</translation>
+    </message>
+    <message id="tester.sequence.deselect.all">
+        <translation>Tout désélectionner</translation>
+    </message>
+    <message id="tester.sequence.selected.count">
+        <translation>%1 sur %2 sélectionnés</translation>
+    </message>
+    <message id="tester.sequence.send.single">
+        <translation>Envoyer cette étape</translation>
+    </message>
+    <message id="tester.sequence.delay">
+        <translation>Délai (ms)</translation>
+    </message>
+    <message id="tester.sequence.move.up">
+        <translation>Déplacer cette étape vers le haut</translation>
+    </message>
+    <message id="tester.sequence.move.down">
+        <translation>Déplacer cette étape vers le bas</translation>
+    </message>
+    <message id="tester.sequence.timing">
+        <translation>Utiliser les délais de la séquence</translation>
+    </message>
+    <message id="tester.sequence.fixed.interval">
+        <translation>Intervalle fixe</translation>
+    </message>
+    <message id="tester.sequence.interval">
+        <translation>Intervalle (ms)</translation>
+    </message>
+    <message id="tester.sequence.stop">
+        <translation>Arrêter</translation>
+    </message>
+    <message id="tester.sequence.play">
+        <translation>Lire</translation>
+    </message>
+    <message id="tester.sequence.preparing">
+        <translation>Préparation des writers…</translation>
+    </message>
+    <message id="tester.sequence.finishing">
+        <translation>Attente de la fin de l’opération DDS en cours…</translation>
+    </message>
+    <message id="tester.sequence.progress">
+        <translation>%1 étapes terminées sur %2</translation>
+    </message>
+    <message id="tester.sequence.error">
+        <translation>Échec de la lecture de la séquence : %1</translation>
+    </message>
+    <message id="tester.sequence.busy">
+        <translation>Arrêtez la lecture de la séquence avant de modifier les préréglages.</translation>
+    </message>
+    <message id="tester.sequence.repeat">
+        <translation>Répéter</translation>
+    </message>
+    <message id="preset.io.import">
+        <translation>Importation des préréglages et de l’enregistrement...</translation>
+    </message>
+    <message id="preset.io.export">
+        <translation>Exportation des préréglages et de l’enregistrement...</translation>
+    </message>
+    <message id="preset.io.busy">
+        <translation>Une opération sur les préréglages ou la lecture d’une séquence est déjà en cours.</translation>
     </message>
 </context>
 </TS>

@@ -53,12 +53,20 @@ class ListenerModel(QAbstractListModel):
 
     createEndpointSignal = Signal(str, int, str, str, int, str, object, object)
     allCheckedChanged = Signal()
+    countChanged = Signal()
 
     def __init__(self, threads, parent=None):
         super().__init__(parent)
 
         self.threads = threads
         self.readers = {}
+        self.rowsInserted.connect(lambda *_: self.countChanged.emit())
+        self.rowsRemoved.connect(lambda *_: self.countChanged.emit())
+        self.modelReset.connect(self.countChanged.emit)
+
+    @Property(int, notify=countChanged)
+    def count(self):
+        return len(self.readers)
 
     def rowCount(self, parent=QModelIndex()):
         if parent.isValid():

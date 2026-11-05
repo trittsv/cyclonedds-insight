@@ -1288,10 +1288,10 @@
         <translation>复制</translation>
     </message>
     <message id="listener.replay.export">
-        <translation>导出回放…</translation>
+        <translation>导出录制/回放…</translation>
     </message>
     <message id="listener.replay.import">
-        <translation>导入回放…</translation>
+        <translation>导入录制/回放…</translation>
     </message>
     <message id="listener.tree">
         <translation>树状视图</translation>
@@ -1304,21 +1304,6 @@
     </message>
     <message id="listener.watch.clear">
         <translation>清空监视列表</translation>
-    </message>
-    <message id="listener.replay.interval">
-        <translation>间隔 (ms)</translation>
-    </message>
-    <message id="listener.replay.original">
-        <translation>使用原始时间间隔</translation>
-    </message>
-    <message id="listener.replay.play">
-        <translation>播放</translation>
-    </message>
-    <message id="listener.replay.stop">
-        <translation>停止</translation>
-    </message>
-    <message id="listener.replay.position">
-        <translation>消息 %1 / %2</translation>
     </message>
     <message id="listener.error.format">
         <translation>需要测试器预设或录制的 JSON 对象</translation>
@@ -1344,32 +1329,26 @@
     <message id="listener.error.types">
         <translation>请先导入所需的 IDL：%1</translation>
     </message>
-    <message id="listener.error.version">
-        <translation>不支持的回放元数据版本</translation>
-    </message>
     <message id="listener.error.empty">
-        <translation>此文件中没有可回放的消息</translation>
+        <translation>此文件中没有预设或序列步骤</translation>
     </message>
     <message id="listener.error.event">
-        <translation>回放事件无效</translation>
+        <translation>序列步骤无效</translation>
     </message>
     <message id="listener.error.reference">
-        <translation>回放引用了未知消息</translation>
+        <translation>序列引用了未知消息</translation>
     </message>
     <message id="listener.error.timestamps">
-        <translation>回放时间戳必须有限、非负且按顺序排列</translation>
+        <translation>序列等待时间必须为有限非负数，且不超过 2147483647 ms</translation>
     </message>
     <message id="listener.error.range">
-        <translation>回放选择或间隔无效</translation>
+        <translation>序列选择或间隔无效</translation>
     </message>
     <message id="listener.error.timeout">
-        <translation>等待 DDS 回放超时</translation>
-    </message>
-    <message id="listener.error.replay">
-        <translation>回放失败：%1</translation>
+        <translation>等待 DDS 操作超时</translation>
     </message>
     <message id="listener.error.import">
-        <translation>无法导入回放：%1</translation>
+        <translation>无法导入预设或录制文件：%1</translation>
     </message>
     <message id="listener.error.reader">
         <translation>读取器元数据不可用</translation>
@@ -1384,16 +1363,7 @@
         <translation>预设数据树不支持联合类型值</translation>
     </message>
     <message id="listener.error.writer">
-        <translation>回放写入器已不可用</translation>
-    </message>
-    <message id="listener.replay.select.all">
-        <translation>全选</translation>
-    </message>
-    <message id="listener.replay.deselect.all">
-        <translation>取消全选</translation>
-    </message>
-    <message id="listener.replay.selected.count">
-        <translation>已选择 %1 / %2 条</translation>
+        <translation>序列 Writer 已不可用</translation>
     </message>
     <message id="entity.endpoints">
         <translation>端点</translation>
@@ -1418,6 +1388,69 @@
     </message>
     <message id="node.view.zoom">
         <translation>缩放</translation>
+    </message>
+    <message id="tester.sequence.select.all">
+        <translation>全选</translation>
+    </message>
+    <message id="tester.sequence.deselect.all">
+        <translation>取消全选</translation>
+    </message>
+    <message id="tester.sequence.selected.count">
+        <translation>已选择 %1 项，共 %2 项</translation>
+    </message>
+    <message id="tester.sequence.send.single">
+        <translation>发送此步骤</translation>
+    </message>
+    <message id="tester.sequence.delay">
+        <translation>等待时间 (ms)</translation>
+    </message>
+    <message id="tester.sequence.move.up">
+        <translation>上移步骤</translation>
+    </message>
+    <message id="tester.sequence.move.down">
+        <translation>下移步骤</translation>
+    </message>
+    <message id="tester.sequence.timing">
+        <translation>使用序列等待时间</translation>
+    </message>
+    <message id="tester.sequence.fixed.interval">
+        <translation>固定间隔</translation>
+    </message>
+    <message id="tester.sequence.interval">
+        <translation>间隔 (ms)</translation>
+    </message>
+    <message id="tester.sequence.stop">
+        <translation>停止</translation>
+    </message>
+    <message id="tester.sequence.play">
+        <translation>播放</translation>
+    </message>
+    <message id="tester.sequence.preparing">
+        <translation>正在准备 Writer…</translation>
+    </message>
+    <message id="tester.sequence.finishing">
+        <translation>正在等待当前 DDS 操作完成…</translation>
+    </message>
+    <message id="tester.sequence.progress">
+        <translation>已完成 %1 个步骤，共 %2 个</translation>
+    </message>
+    <message id="tester.sequence.error">
+        <translation>序列播放失败：%1</translation>
+    </message>
+    <message id="tester.sequence.busy">
+        <translation>修改预设前请先停止序列播放。</translation>
+    </message>
+    <message id="tester.sequence.repeat">
+        <translation>重复播放</translation>
+    </message>
+    <message id="preset.io.import">
+        <translation>正在导入预设和录制数据...</translation>
+    </message>
+    <message id="preset.io.export">
+        <translation>正在导出预设和录制数据...</translation>
+    </message>
+    <message id="preset.io.busy">
+        <translation>预设操作或序列播放正在进行。</translation>
     </message>
 </context>
 </TS>

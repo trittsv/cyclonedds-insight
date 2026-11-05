@@ -27,6 +27,7 @@ import "qrc:/src/views/errors"
 
 ApplicationWindow {
     id: rootWindow
+    property bool dataModelLoading: false
     width: 1100
     height: 650
     visible: true
@@ -48,6 +49,10 @@ ApplicationWindow {
         visible: Qt.platform.os === "osx"
         Menu {
             title: qsTrId("general.file")
+            MenuItem {
+                text: qsTrId("listener.replay.import")
+                onTriggered: rootWindow.openReplayImport()
+            }
             MenuItem {
                 text: qsTrId("general.export.ddsentities")
                 onTriggered: exportDdsSystemFileDialog.open()
@@ -220,6 +225,24 @@ ApplicationWindow {
         buttons: MessageDialog.Ok;
     }
 
+    function openReplayImport() {
+        importReplayDialog.open()
+    }
+
+    function importRecording(filePath) {
+        return testerModel.importRecordReplay(filePath)
+    }
+
+    FileDialog {
+        id: importReplayDialog
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["JSON (*.json)"]
+        title: qsTrId("listener.replay.import")
+        onAccepted: {
+            rootWindow.importRecording(qmlUtils.toLocalFile(selectedFile))
+        }
+    }
+
     function showOperationError(message) {
         errorCenter.addError(message)
     }
@@ -254,7 +277,7 @@ ApplicationWindow {
     Connections {
         target: datamodelRepoModel
         function onIsLoadingSignal(loading) {
-            loadingViewId.visible = loading
+            rootWindow.dataModelLoading = loading
         }
         function onOperationError(message) {
             rootWindow.showOperationError(message)
@@ -265,13 +288,13 @@ ApplicationWindow {
         target: receiverModel
         function onOperationError(message) { rootWindow.showOperationError(message) }
     }
-    Connections {
-        target: replayModel
-        function onOperationError(message) { rootWindow.showOperationError(message) }
-    }
 
     Connections {
         target: testerModel
+        function onRecordingImported(index) {
+            layout.currentIndex = 1
+            overviewId.showTester(index)
+        }
         function onOperationError(message) {
             rootWindow.showOperationError(message)
         }
@@ -286,7 +309,17 @@ ApplicationWindow {
 
     LoadingView {
         id: loadingViewId
-        visible: false
+        objectName: "presetLoading"
+        visible: rootWindow.dataModelLoading || presetIo.busy
+        message: presetIo.busy ? (presetIo.operation === "import"
+                                 ? qsTrId("preset.io.import") : qsTrId("preset.io.export"))
+                               : qsTrId("general.loading")
+        progress: presetIo.busy ? presetIo.progress : -1
+    }
+
+    Connections {
+        target: presetIo
+        function onFailed(message) { rootWindow.showOperationError(message) }
     }
 
     function shutdown() {

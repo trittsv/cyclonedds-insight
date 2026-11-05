@@ -1288,10 +1288,10 @@
         <translation>Kopiëren</translation>
     </message>
     <message id="listener.replay.export">
-        <translation>Replay exporteren…</translation>
+        <translation>Record/Replay exporteren…</translation>
     </message>
     <message id="listener.replay.import">
-        <translation>Replay importeren…</translation>
+        <translation>Record/Replay importeren…</translation>
     </message>
     <message id="listener.tree">
         <translation>Boomweergave</translation>
@@ -1304,21 +1304,6 @@
     </message>
     <message id="listener.watch.clear">
         <translation>Volglijst wissen</translation>
-    </message>
-    <message id="listener.replay.interval">
-        <translation>Interval (ms)</translation>
-    </message>
-    <message id="listener.replay.original">
-        <translation>Oorspronkelijke timing gebruiken</translation>
-    </message>
-    <message id="listener.replay.play">
-        <translation>Afspelen</translation>
-    </message>
-    <message id="listener.replay.stop">
-        <translation>Stoppen</translation>
-    </message>
-    <message id="listener.replay.position">
-        <translation>Bericht %1 van %2</translation>
     </message>
     <message id="listener.error.format">
         <translation>Een tester-preset of opname als JSON-object verwacht</translation>
@@ -1344,32 +1329,26 @@
     <message id="listener.error.types">
         <translation>Importeer eerst de vereiste IDL: %1</translation>
     </message>
-    <message id="listener.error.version">
-        <translation>Niet-ondersteunde versie van replay-metagegevens</translation>
-    </message>
     <message id="listener.error.empty">
-        <translation>Dit bestand bevat geen replay-berichten</translation>
+        <translation>Dit bestand bevat geen presets of reeksstappen</translation>
     </message>
     <message id="listener.error.event">
-        <translation>Ongeldige replay-gebeurtenis</translation>
+        <translation>Ongeldige reeksstap</translation>
     </message>
     <message id="listener.error.reference">
-        <translation>Replay verwijst naar een onbekend bericht</translation>
+        <translation>De reeks verwijst naar een onbekend bericht</translation>
     </message>
     <message id="listener.error.timestamps">
-        <translation>Replay-tijdstempels moeten eindig, niet-negatief en geordend zijn</translation>
+        <translation>Wachttijden van de reeks moeten eindig, niet-negatief en maximaal 2147483647 ms zijn</translation>
     </message>
     <message id="listener.error.range">
-        <translation>Ongeldige replay-selectie of interval</translation>
+        <translation>Ongeldige reeksselectie of ongeldig tijdsinterval</translation>
     </message>
     <message id="listener.error.timeout">
-        <translation>Wachttijd voor DDS-replay verstreken</translation>
-    </message>
-    <message id="listener.error.replay">
-        <translation>Replay mislukt: %1</translation>
+        <translation>Time-out tijdens het wachten op een DDS-bewerking</translation>
     </message>
     <message id="listener.error.import">
-        <translation>Kan replay niet importeren: %1</translation>
+        <translation>Kan presets of opname niet importeren: %1</translation>
     </message>
     <message id="listener.error.reader">
         <translation>Reader-metagegevens zijn niet beschikbaar</translation>
@@ -1384,16 +1363,7 @@
         <translation>Union-waarden worden niet ondersteund door de preset-gegevensboom</translation>
     </message>
     <message id="listener.error.writer">
-        <translation>Replay-writer is niet meer beschikbaar</translation>
-    </message>
-    <message id="listener.replay.select.all">
-        <translation>Alles selecteren</translation>
-    </message>
-    <message id="listener.replay.deselect.all">
-        <translation>Selectie opheffen</translation>
-    </message>
-    <message id="listener.replay.selected.count">
-        <translation>%1 van %2 geselecteerd</translation>
+        <translation>De writer van de reeks is niet meer beschikbaar</translation>
     </message>
     <message id="entity.endpoints">
         <translation>Eindpunten</translation>
@@ -1418,6 +1388,69 @@
     </message>
     <message id="node.view.zoom">
         <translation>Zoom</translation>
+    </message>
+    <message id="tester.sequence.select.all">
+        <translation>Alles selecteren</translation>
+    </message>
+    <message id="tester.sequence.deselect.all">
+        <translation>Alles deselecteren</translation>
+    </message>
+    <message id="tester.sequence.selected.count">
+        <translation>%1 van %2 geselecteerd</translation>
+    </message>
+    <message id="tester.sequence.send.single">
+        <translation>Stap verzenden</translation>
+    </message>
+    <message id="tester.sequence.delay">
+        <translation>Wachttijd (ms)</translation>
+    </message>
+    <message id="tester.sequence.move.up">
+        <translation>Stap omhoog verplaatsen</translation>
+    </message>
+    <message id="tester.sequence.move.down">
+        <translation>Stap omlaag verplaatsen</translation>
+    </message>
+    <message id="tester.sequence.timing">
+        <translation>Tijdsintervallen van de reeks gebruiken</translation>
+    </message>
+    <message id="tester.sequence.fixed.interval">
+        <translation>Vast tijdsinterval</translation>
+    </message>
+    <message id="tester.sequence.interval">
+        <translation>Tijdsinterval (ms)</translation>
+    </message>
+    <message id="tester.sequence.stop">
+        <translation>Stoppen</translation>
+    </message>
+    <message id="tester.sequence.play">
+        <translation>Afspelen</translation>
+    </message>
+    <message id="tester.sequence.preparing">
+        <translation>Writers voorbereiden…</translation>
+    </message>
+    <message id="tester.sequence.finishing">
+        <translation>Wachten op de huidige DDS-bewerking…</translation>
+    </message>
+    <message id="tester.sequence.progress">
+        <translation>%1 van %2 stappen voltooid</translation>
+    </message>
+    <message id="tester.sequence.error">
+        <translation>Afspelen van de reeks mislukt: %1</translation>
+    </message>
+    <message id="tester.sequence.busy">
+        <translation>Stop het afspelen van de reeks voordat u presets wijzigt.</translation>
+    </message>
+    <message id="tester.sequence.repeat">
+        <translation>Herhalen</translation>
+    </message>
+    <message id="preset.io.import">
+        <translation>Presets en opname importeren...</translation>
+    </message>
+    <message id="preset.io.export">
+        <translation>Presets en opname exporteren...</translation>
+    </message>
+    <message id="preset.io.busy">
+        <translation>Er wordt al een presetbewerking uitgevoerd of een reeks afgespeeld.</translation>
     </message>
 </context>
 </TS>

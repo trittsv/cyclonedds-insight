@@ -56,7 +56,6 @@ from models.tester_model import TesterModel
 from models.listener.listener_model import ListenerModel
 from models.listener.listener_proxy_model import ListenerProxyModel
 from models.listener.receiver_model import ReceiverModel
-from models.listener.replay_model import ReplayModel
 from models.listener.sample_tree_model import SampleTreeModel
 from models.listener.receiver_proxy_model import ReceiverProxyModel
 from models.shapes_demo_model import ShapesDemoModel
@@ -66,6 +65,7 @@ from models.participant_model import ParticipantTreeModel, ParticipantTreeNode
 from models.selection_details.participant_details_model import ParticipantDetailsModel
 import utils.build_info_helper as build_info_helper
 from utils.qml_utils import QmlUtils
+from utils.preset_io import PresetIo
 from version import CYCLONEDDS_INSIGHT_VERSION
 from module_handler import DataModelHandler
 from models.statistics_model import StatisticsModel, StatisticsUnitModel
@@ -145,9 +145,9 @@ if __name__ == "__main__":
     datamodelRepoModelProxy.setSourceModel(datamodelRepoModel)
 
     listenerModel = ListenerModel(threads)
-    receiverModel = ReceiverModel(dataModelHandler, listenerModel)
-    replayModel = ReplayModel(datamodelRepoModel)
-    app.aboutToQuit.connect(replayModel.stopAll)
+    presetIo = PresetIo()
+    app.aboutToQuit.connect(presetIo.shutdown)
+    receiverModel = ReceiverModel(dataModelHandler, listenerModel, presetIo=presetIo)
     datamodelRepoModel.newDataArrived.connect(receiverModel.addReceivedMsg, Qt.QueuedConnection)
     receiverProxyModel = ReceiverProxyModel()
     receiverProxyModel.setSourceModel(receiverModel)
@@ -157,8 +157,9 @@ if __name__ == "__main__":
     listenerProxyModel = ListenerProxyModel()
     listenerProxyModel.setSourceModel(listenerModel)
 
-    testerModel = TesterModel(threads, dataModelHandler, datamodelRepoModel)
-    datamodelRepoModel.newWriterSignal.connect(testerModel.addWriter)
+    testerModel = TesterModel(threads, dataModelHandler, datamodelRepoModel, presetIo=presetIo)
+    presetIo.allowed = lambda: not testerModel.sequencePlayback.busy
+    app.aboutToQuit.connect(testerModel.sequencePlayback.shutdown)
     participantRootItem = ParticipantTreeNode("Root")
     participantModel = ParticipantTreeModel(participantRootItem)
     shapesDemoModel = ShapesDemoModel()
@@ -183,7 +184,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("datamodelRepoModel", datamodelRepoModel)
     engine.rootContext().setContextProperty("datamodelRepoModelProxy", datamodelRepoModelProxy)
     engine.rootContext().setContextProperty("testerModel", testerModel)
-    engine.rootContext().setContextProperty("replayModel", replayModel)
+    engine.rootContext().setContextProperty("presetIo", presetIo)
     engine.rootContext().setContextProperty("listenerModel", listenerModel)
     engine.rootContext().setContextProperty("listenerProxyModel", listenerProxyModel)
     engine.rootContext().setContextProperty("receiverModel", receiverModel)
@@ -253,6 +254,8 @@ if __name__ == "__main__":
     logging.debug("Shutdown shapes demo ...")
     shapesDemoModel.stop()
     logging.debug("Shutdown data model ...")
+    testerModel.sequencePlayback.shutdown()
+    presetIo.shutdown()
     datamodelRepoModel.shutdownEndpoints()
     logging.debug("Shutdown data ...")
     data.join_observer()

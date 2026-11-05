@@ -59,45 +59,92 @@ received messages.
 Recording and replay
 --------------------
 
-All valid samples received by the listener are automatically available for replay
-export. Use Actions → Export replay to save the listener history as JSON. There
+Received data samples and Dispose notifications are automatically available for
+replay export. Use Actions → Export Record/Replay to save the listener history as JSON. There
 is no separate recording mode. Clearing the listener also clears the history
 available for replay. Changing views, searching, or hiding readers does not
-change the stored history. DDS instance-state notifications without valid data
-remain in the log but cannot be replayed as publishable messages.
+change the stored history. Dispose events retain their keys and are replayed as
+DDS Dispose operations, in order with writes. Other instance-state notifications,
+such as no-writers notifications, remain in the log without becoming writes.
 
 The JSON uses the tester preset format, including domain, topic, type, QoS and
-the existing data-tree message serialization. Additional ``replay`` metadata
-stores the chronological message references and receive-time offsets across
-readers. A recording can also be imported directly into the Tester, including a
-sequence preset preserving its message order. As with
-tester presets, the required datatypes must be available; import their IDL first
-when using a recording in another installation. Union fields are not currently
-supported by the preset data tree; replay export reports an error for these types.
+message data. Each original DDS writer is exported as a separate preset within
+its reader configuration, even when topic and type are identical. Presets sharing
+a topic have numbered writer names. Write and Dispose operations from the same
+DDS publication stay together, including when its GUID is temporarily unavailable.
 
-Use Actions → Import replay to open a recording as a tab immediately to the
-right of Listener in the main tab bar. Its title is the replay filename; hover
-over the tab to reveal its close button. Ordinary
-tester preset JSON files can also be opened there. Importing never publishes
-messages automatically. Select individual messages directly in the list using their checkboxes or by
-clicking their rows, then press Play to publish only those messages in their
-original order with the stored topic and QoS settings. All messages are selected
-initially; use Select all or Deselect all to change the whole selection. The
-default interval is 100 ms; select "Use original timing" to retain the recorded
-time gaps between the selected messages, including the elapsed time of skipped
-messages. Original timing for ordinary presets without replay metadata falls
-back to 100 ms. Stop or close the replay tab to end playback and release its
-writers. Multiple replay files can be open in separate tabs.
+The sequence preset stores chronological references, operations and the delay
+before each step in ``sequence_steps``. Delays come from the listener's monotonic
+receive times; the first step has a zero delay. Messages retain their source and
+receive timestamps as provenance. There is no separate ``replay`` section.
+For older Tester versions, ``sequence_items`` contains only Write steps.
+
+Use Import Record/Replay in the main menu, or File → Import Record/Replay on
+macOS. A successful import switches to Tester and selects the imported sequence;
+it never sends messages automatically. The normal Tester import accepts these
+files as well. There is no separate replay tab. Multiple recordings can be
+imported and selected as separate sequences in Tester.
+
+In the sequence editor, select the steps to play, choose sequence delays or a
+fixed interval, then press Play. Use Edit sequence to change operations, delays
+and order. The first selected step is sent immediately. With sequence delays,
+skipping steps retains the elapsed time between the selected steps. A step's
+send button executes only that step, ignoring its delay and the selection.
+
+Playback prepares the existing Tester writers as needed, then executes Write
+and Dispose calls in sequence order. Each call completes before the next is
+sent, including across domains. Stop cancels the remaining steps; an in-flight
+DDS operation finishes before editing or restarting is enabled. Writers remain
+active until stopped or removed in Tester, or until the application exits.
+Writer creation does not guarantee that every receiver has already matched.
+
+Completion of a DDS call does not mean that a remote application has consumed
+the sample. Listener readers are polled in turn, and DDS can group queued samples
+by instance. With a backlog, the displayed order can differ from the sending
+order. Recordings preserve the order in which samples were taken by the listener.
+
+The required datatypes must be available when importing a recording; import their
+IDL first on another installation. Union fields are not currently supported by
+the preset data tree, and export reports an error for these fields.
+
+Exports are enabled when their source data is available: listener presets need
+at least one reader, sample logs need received messages, and Record/Replay needs
+received data samples or Dispose events.
+
+Record/Replay export shows a loading view immediately and processes a snapshot
+of the recorded messages in the background. Messages received after export starts
+are included in the next export. An export error leaves an existing destination
+file intact.
 
 Tree view and watchlist
 -----------------------
 
-The listener displays messages as text by default. Enable Actions → Tree view to inspect
-structured fields and expand nested objects, sequences and arrays. Right-click a
-field name or value to add it to the watchlist. A watched field stays visible
-when its ancestors are collapsed, with its full field path. Watching a parent
+The listener displays messages as a tree by default. Use the tree button to the
+left of Actions to switch between structured fields and plain text. The adjacent
+Clear button clears the received messages. Messages start
+collapsed, with the topic name as the single expandable heading and the timestamp
+on the right. The leftmost column shows a global reception number across all
+readers and topics, which is preserved when filtering or switching views. The
+counter resets on Clear, so the next message starts at 1; the instance view shows each instance's latest
+reception number. Timestamps stay in the right column in both text and tree mode.
+Disposed samples remain in tree mode with the complete field layout. Available
+key fields retain their values; non-key values are shown empty because DDS did
+not transmit them. The message details include the reception
+domain, which remains available after its reader is deleted.
+Fields follow their datatype definition order, as in the Tester, including
+nested structures and array elements. Fields are indented below the heading. Click a node's name or its arrow to expand individual nodes, or press
+and hold any arrow to expand the entire message, including nested objects,
+sequences and arrays. Expansion is local to the displayed message and resets
+when it is replaced by a new sample. Right-click a field name or value to add it to the watchlist. Watched labels and values are
+bold and green. Watched fields stay pinned below the message heading with their
+full field paths and a fixed indentation, independently of expanded tree nodes.
+In text mode the watchlist is hidden; switching back restores it without
+changing the watches or expanded nodes. Watching a parent
 object also highlights and retains each nested field individually, including
 fields added by later samples. Individual children can be removed from a parent
 watch without removing the other fields. Watches apply to
 other messages from the same reader, topic and datatype, including subsequent
-instance updates. Use Actions → Clear watchlist to remove all watches.
+instance updates. Watched fields appear automatically in every matching message,
+while tree view is enabled. Text mode hides the watchlist without clearing it. Adding or removing watches does not change
+which nodes of any message are expanded. Use Clear watchlist in a field's right-click menu or Actions → Clear watchlist
+to remove all watches.

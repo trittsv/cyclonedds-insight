@@ -14,17 +14,21 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Basic as Basic
 import QtQuick.Layouts
+import "qrc:/src/views/icons"
 import org.eclipse.cyclonedds.insight
 
 Column {
     id: tree
-    property var payload: ({})
+    property string payloadJson: ""
     property string scope: ""
+    property string rootLabel: "root"
+    property bool treeVisible: true
+    readonly property bool hasWatches: fields.hasWatches
     width: parent.width
 
     SampleTreeModel {
         id: fields
-        payload: tree.payload
+        payloadJson: tree.payloadJson
         scope: tree.scope
         watchStore: receiverModel
     }
@@ -40,41 +44,76 @@ Column {
             required property bool expandable
             required property bool expanded
             required property bool watched
+            required property bool pinned
+            visible: tree.treeVisible || pinned
             width: tree.width
             spacing: 4
 
-            Item { Layout.preferredWidth: Math.min(fieldRow.depth * 16, tree.width / 3) }
+            Item { Layout.preferredWidth: Math.min(fieldRow.depth * 20, tree.width / 3) }
             Basic.ToolButton {
                 id: fieldExpandButton
-                background: Item {}
-                contentItem: Label {
-                    text: fieldExpandButton.text
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                objectName: "fieldExpand-" + fieldRow.index
+                property bool longPressed: false
+                hoverEnabled: true
+                background: Rectangle {
+                    radius: Constants.controlRadius
+                    color: fieldExpandButton.hovered && fieldRow.expandable
+                           ? Constants.cardBackgroundColor(rootWindow.isDarkMode)
+                           : "transparent"
+                    border.width: fieldExpandButton.visualFocus ? 1 : 0
+                    border.color: Constants.accentColor
                 }
-                text: fieldRow.expandable ? (fieldRow.expanded ? "▾" : "▸") : "·"
-                enabled: fieldRow.expandable
-                implicitWidth: 26
-                implicitHeight: 26
-                onClicked: fields.toggle(fieldRow.index)
+                contentItem: Item {
+                    ChevronIcon {
+                        anchors.centerIn: parent
+                        width: 14
+                        height: 14
+                        visible: fieldRow.expandable && !fieldRow.pinned
+                        direction: fieldRow.expanded ? "down" : "right"
+                        iconColor: Constants.mutedForegroundColor(rootWindow.isDarkMode)
+                    }
+                }
+                enabled: fieldRow.expandable && !fieldRow.pinned
+                implicitWidth: 24
+                implicitHeight: 24
+                Accessible.name: fieldRow.fieldLabel
+                onPressed: longPressed = false
+                onPressAndHold: {
+                    longPressed = true
+                    fields.expandAll()
+                }
+                onClicked: {
+                    if (!longPressed)
+                        fields.toggle(fieldRow.index)
+                }
             }
             Label {
-                text: (fieldRow.watched ? "★ " : "") + fieldRow.fieldLabel + ":"
+                text: (fieldRow.watched ? "★ " : "")
+                      + (fieldRow.index === 0 ? tree.rootLabel : fieldRow.fieldLabel + ":")
+                Layout.fillWidth: fieldRow.index === 0
+                wrapMode: Text.Wrap
                 font.bold: fieldRow.watched
-                color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                color: fieldRow.watched ? Constants.successColor
+                                        : Constants.secondaryTextColor(rootWindow.isDarkMode)
+                TapHandler {
+                    enabled: fieldRow.expandable && !fieldRow.pinned
+                    acceptedButtons: Qt.LeftButton
+                    onTapped: fields.toggle(fieldRow.index)
+                }
                 TapHandler {
                     acceptedButtons: Qt.RightButton
                     onTapped: fieldMenu.popup()
                 }
             }
             TextEdit {
+                visible: fieldRow.index !== 0
                 text: fieldRow.fieldValue
                 font.bold: fieldRow.watched
                 readOnly: true
                 selectByMouse: true
                 wrapMode: TextEdit.Wrap
-                color: Constants.secondaryTextColor(rootWindow.isDarkMode)
+                color: fieldRow.watched ? Constants.successColor
+                                        : Constants.secondaryTextColor(rootWindow.isDarkMode)
                 Layout.fillWidth: true
                 TapHandler {
                     acceptedButtons: Qt.RightButton
@@ -86,6 +125,12 @@ Column {
                 MenuItem {
                     text: fieldRow.watched ? qsTrId("listener.watch.remove") : qsTrId("listener.watch.add")
                     onTriggered: fields.toggleWatch(fieldRow.index)
+                }
+                MenuSeparator {}
+                MenuItem {
+                    objectName: "clearWatchlist-" + fieldRow.index
+                    text: qsTrId("listener.watch.clear")
+                    onTriggered: receiverModel.clearWatchlist()
                 }
             }
         }

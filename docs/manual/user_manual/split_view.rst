@@ -13,8 +13,8 @@
 Split View
 ==========
 
-Split view allows the Details, Statistics, Tester, and Listener views to be
-displayed side by side. This is useful when data should be written and observed
+Split view allows the Details, Statistics, Tester, and Listener
+views to be displayed side by side. This is useful when data should be written and observed
 at the same time, or when statistics and endpoint details need to remain
 visible.
 
@@ -31,6 +31,9 @@ Using Split View
 
 The final pane cannot be removed while split mode is active. Exit split mode to
 return to the normal single-tab view.
+
+Imported recordings are sequences in Tester. Place Tester beside Listener to
+play a recording and observe the resulting DDS messages at the same time.
 
 The ``Ctrl+5`` shortcut can also be used to enable or disable split mode.
 
