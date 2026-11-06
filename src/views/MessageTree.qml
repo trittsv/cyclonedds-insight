@@ -24,7 +24,13 @@ Column {
     property string rootLabel: "root"
     property bool treeVisible: true
     readonly property bool hasWatches: fields.hasWatches
+    readonly property bool hasPayload: fields.count > 0
+    signal interactionStarted()
     width: parent.width
+
+    function resetExpansion() {
+        fields.collapseAll()
+    }
 
     SampleTreeModel {
         id: fields
@@ -77,7 +83,10 @@ Column {
                 implicitWidth: 24
                 implicitHeight: 24
                 Accessible.name: fieldRow.fieldLabel
-                onPressed: longPressed = false
+                onPressed: {
+                    tree.interactionStarted()
+                    longPressed = false
+                }
                 onPressAndHold: {
                     longPressed = true
                     fields.expandAll()
@@ -98,11 +107,17 @@ Column {
                 TapHandler {
                     enabled: fieldRow.expandable && !fieldRow.pinned
                     acceptedButtons: Qt.LeftButton
-                    onTapped: fields.toggle(fieldRow.index)
+                    onTapped: {
+                        tree.interactionStarted()
+                        fields.toggle(fieldRow.index)
+                    }
                 }
                 TapHandler {
                     acceptedButtons: Qt.RightButton
-                    onTapped: fieldMenu.popup()
+                    onTapped: {
+                        tree.interactionStarted()
+                        fieldMenu.popup()
+                    }
                 }
             }
             TextEdit {
@@ -115,9 +130,16 @@ Column {
                 color: fieldRow.watched ? Constants.successColor
                                         : Constants.secondaryTextColor(rootWindow.isDarkMode)
                 Layout.fillWidth: true
+                onActiveFocusChanged: {
+                    if (activeFocus)
+                        tree.interactionStarted()
+                }
                 TapHandler {
                     acceptedButtons: Qt.RightButton
-                    onTapped: fieldMenu.popup()
+                    onTapped: {
+                        tree.interactionStarted()
+                        fieldMenu.popup()
+                    }
                 }
             }
             Menu {

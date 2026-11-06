@@ -119,6 +119,12 @@ class SampleTreeModel(QAbstractListModel):
         walk(self._payload.get("root", {}), ())
         self._rebuild()
 
+    @Slot()
+    def collapseAll(self):
+        if self._expanded:
+            self._expanded.clear()
+            self._rebuild()
+
     def _isWatched(self, path):
         if self._watchStore is None:
             return False

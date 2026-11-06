@@ -67,6 +67,12 @@ change the stored history. Dispose events retain their keys and are replayed as
 DDS Dispose operations, in order with writes. Other instance-state notifications,
 such as no-writers notifications, remain in the log without becoming writes.
 
+The history has no automatic size limit. Messages remain available until Clear
+is pressed or the application exits. Received data is retained as compact DDS
+snapshots; structured trees are prepared when their rows are displayed and held
+by the corresponding Qt delegates. Releasing a delegate does not remove its
+message. Replay export also includes messages that have never been displayed.
+
 The JSON uses the tester preset format, including domain, topic, type, QoS and
 message data. Each original DDS writer is exported as a separate preset within
 its reader configuration, even when topic and type are identical. Presets sharing
@@ -130,6 +136,9 @@ reception number. Timestamps stay in the right column in both text and tree mode
 Disposed samples use the same tree display as regular messages, showing all
 field values provided by the returned sample object. The message details include the reception
 domain, which remains available after its reader is deleted.
+The list follows new messages automatically. Scrolling, expanding a field,
+opening its context menu or selecting a value pauses automatic scrolling so the
+message remains available for inspection. Use the Auto scroll button to resume.
 Fields follow their datatype definition order, as in the Tester, including
 nested structures and array elements. Fields are indented below the heading. Click a node's name or its arrow to expand individual nodes, or press
 and hold any arrow to expand the entire message, including nested objects,

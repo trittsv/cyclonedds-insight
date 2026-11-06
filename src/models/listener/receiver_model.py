@@ -14,7 +14,7 @@ import copy
 import json
 import time
 
-from models.data_tree_model import DataTreeModel
+from module_handler import DataModelHandler
 
 from loguru import logger as logging
 from utils.preset_io import PresetIo, export_recording
@@ -66,6 +66,19 @@ class ReceiverModel(QAbstractListModel):
         self._instances = []
         self._instance_rows = {}
         self._instance_view = False
+        self._sample_handlers = {}
+
+    def _structuredData(self, item):
+        """Materialize a requested row; its Qt delegate owns the displayed data."""
+        try:
+            if "sampleCdr" in item:
+                sample_type = item["sampleType"]
+                sample = sample_type.deserialize(item["sampleCdr"])
+                payload = self._sample_handlers[sample_type].sampleToJson(item["topicType"], sample)
+                return payload, json.dumps(payload, ensure_ascii=False)
+        except Exception as error:
+            logging.error(f"Cannot display received sample: {error}")
+        return {}, "{}"
 
     @Property(bool, notify=instanceViewChanged)
     def instanceView(self):
@@ -87,21 +100,23 @@ class ReceiverModel(QAbstractListModel):
         return 0 if parent.isValid() else len(self._visible_messages())
 
     def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
+        items = self._visible_messages()
+        if not index.isValid() or not 0 <= index.row() < len(items):
             return None
 
-        item = self._visible_messages()[index.row()]
+        item = items[index.row()]
 
         if role == self.DomainIdRole:
             return item["domainId"]
         if role == self.MessageNumberRole:
             return item["messageNumber"]
         if role == self.HasStructuredRole:
-            return bool(item.get("structured"))
+            # Checking availability must not build the tree before structuredJson.
+            return "sampleCdr" in item
         if role == self.StructuredJsonRole:
-            return json.dumps(item.get("structured", {}), ensure_ascii=False)
+            return self._structuredData(item)[1]
         if role == self.StructuredRole:
-            return item.get("structured", {})
+            return self._structuredData(item)[0]
         if role == self.ReaderIdRole:
             return item["readerId"]
         if role == self.ReceivedMsgRole:
@@ -207,16 +222,15 @@ class ReceiverModel(QAbstractListModel):
                 writer_identity = ("publication", publication_handle)
             sample = sample["sample"]
         if sample is not None and self.dataModelHandler is not None:
-            tree = None
             try:
-                missing = set()
-                root = self.dataModelHandler.getRootNode(topicType, missing)
-                if missing:
-                    raise ValueError(qtTrId("listener.error.types").replace("%1", ", ".join(sorted(missing))))
-                tree = DataTreeModel(root)
-                tree.fromDataObject(sample, self.dataModelHandler)
-                structured = tree.toJson()
-                item["structured"] = structured
+                sample_type = type(sample)
+                item["sampleCdr"] = sample.serialize()
+                item["sampleType"] = sample_type
+                if sample_type not in self._sample_handlers:
+                    # Retain type definitions when readers or imported IDL are
+                    # removed. The sample class and CDR bytes are immutable.
+                    self._sample_handlers[sample_type] = DataModelHandler.fromTypeSnapshot(
+                        self.dataModelHandler.getTypeSnapshot())
                 if recordable:
                     if reader is None:
                         raise ValueError(qtTrId("listener.error.reader"))
@@ -226,11 +240,8 @@ class ReceiverModel(QAbstractListModel):
                         "reader": copy.deepcopy(reader),
                     }
             except Exception as error:
-                logging.error(f"Cannot serialize received sample: {error}")
+                logging.error(f"Cannot retain received sample: {error}")
                 item["replayError"] = str(error)
-            finally:
-                if tree is not None:
-                    tree.deleteLater()
         # DDS handles identify keyed (including composite-key) and unkeyed
         # instances within a reader, independently of their publishing writer.
         key = (readerId, instanceHandle)
@@ -267,6 +278,7 @@ class ReceiverModel(QAbstractListModel):
         self._messages.clear()
         self._instances.clear()
         self._instance_rows.clear()
+        self._sample_handlers.clear()
         self._replay_count = 0
         self._received_total = 0
 
@@ -301,12 +313,14 @@ class ReceiverModel(QAbstractListModel):
         if self.presetIo.busy:
             self.operationError.emit(qtTrId("preset.io.busy"))
             return False
-        # Received entries and their reader/structured snapshots are immutable.
+        # Received entries and their CDR/reader snapshots are immutable.
         # A shallow tuple fixes the export boundary while reception can continue.
         samples = tuple(self._messages)
+        type_snapshots = {sample_type: handler.getTypeSnapshot()
+                          for sample_type, handler in self._sample_handlers.items()}
         writer_label = qtTrId("entity.writer")
         started = self.presetIo.start("export", lambda progress, check:
-                                      export_recording(filePath, samples, progress, check, writer_label),
+                                      export_recording(filePath, samples, progress, check, writer_label, type_snapshots),
                                       self._exportDone)
         if not started:
             self.operationError.emit(qtTrId("preset.io.busy"))

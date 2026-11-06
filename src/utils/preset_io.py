@@ -247,7 +247,11 @@ def load_presets(paths, recording, used_ids, available, progress, check):
     return writers, sequences
 
 
-def export_recording(path, samples, progress, check, writer_label):
+def export_recording(path, samples, progress, check, writer_label, type_snapshots):
+    from module_handler import DataModelHandler
+
+    # These handlers/models are created and used on the export worker only.
+    handlers = {}
     groups, ordered = {}, []
     for index, entry in enumerate(samples):
         if index % 1000 == 0:
@@ -286,7 +290,11 @@ def export_recording(path, samples, progress, check, writer_label):
             progress(0.3 + 0.7 * done[0] / count)
     def message(index):
         entry = ordered[index]
-        value = dict(entry["replay"].get("message", entry["structured"]))
+        sample_type = entry["sampleType"]
+        if sample_type not in handlers:
+            handlers[sample_type] = DataModelHandler.fromTypeSnapshot(type_snapshots[sample_type])
+        sample = sample_type.deserialize(entry["sampleCdr"])
+        value = handlers[sample_type].sampleToJson(entry["topicType"], sample)
         value.update(id=ids[index], name=str(index + 1), source_timestamp=entry["sourceTimestamp"],
                      received_timestamp=entry["receivedTimestamp"])
         advanced()

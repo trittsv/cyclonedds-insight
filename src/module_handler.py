@@ -17,7 +17,7 @@ import importlib
 import json
 from pathlib import Path
 from PySide6.QtCore import Slot, QDir
-from PySide6.QtCore import QThread, Signal, QStandardPaths
+from PySide6.QtCore import QThread, Signal, QStandardPaths, qtTrId
 from PySide6.QtCore import QObject
 import inspect
 from utils.system import delete_folder
@@ -370,6 +370,35 @@ class DataModelHandler(QObject):
         rootNode = DataTreeNode("root", topic_type, DataTreeModel.IsStructRole)
         rootNode.dataType = self.getInitializedDataObj(topic_type)
         return self.toNode(topic_type, rootNode, unresolved_types)
+
+    def getTypeSnapshot(self):
+        """Copy plain type definitions without sharing QObject state across threads."""
+        return {
+            "allTypes": self.allTypes.copy(),
+            "structMembers": {name: members.copy() for name, members in self.structMembers.items()},
+            "customTypes": self.customTypes.copy(),
+        }
+
+    @classmethod
+    def fromTypeSnapshot(cls, snapshot):
+        """Create a handler owned by the calling thread, independent of the repository."""
+        handler = cls()
+        handler.allTypes = snapshot["allTypes"].copy()
+        handler.structMembers = {name: members.copy() for name, members in snapshot["structMembers"].items()}
+        handler.customTypes = snapshot["customTypes"].copy()
+        return handler
+
+    def sampleToJson(self, topic_type, sample):
+        """Use the existing preset tree conversion on the calling thread."""
+        missing = set()
+        root = self.getRootNode(topic_type, missing)
+        if missing:
+            raise ValueError(qtTrId("listener.error.types").replace("%1", ", ".join(sorted(missing))))
+        # This unparented model is local to the conversion; no deferred QObject
+        # deletion or event loop is needed for an export running on a worker.
+        tree = DataTreeModel(root)
+        tree.fromDataObject(sample, self)
+        return tree.toJson()
 
     def isInt(self, theType):
         args = typing.get_args(theType)

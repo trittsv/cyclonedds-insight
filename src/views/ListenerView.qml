@@ -48,17 +48,15 @@ Rectangle {
     }
 
     function scrollToNewest() {
-        if (listenerTabId.autoScrollEnabled)
+        if (listenerTabId.autoScrollEnabled) {
+            listView.forceLayout()
             listView.positionViewAtEnd()
+        }
     }
 
     Connections {
         target: receiverProxyModel
         function onRowsInserted(parent, first, last) {
-            // auto scroll
-            if (listenerTabId.autoScrollEnabled) {
-                Qt.callLater(listenerTabId.scrollToNewest);
-            }
             if (!listenerTabId.started) {
                 listenerTabId.started = true;
             }
@@ -277,12 +275,24 @@ Rectangle {
                     model: receiverProxyModel
                     anchors.margins: 10
                     clip: true
+                    reuseItems: true
+                    onContentHeightChanged: {
+                        if (listenerTabId.autoScrollEnabled)
+                            positionViewAtEnd()
+                    }
 
                     delegate: Column {
                         id: sampleDelegate
                         width: ListView.view.width - listenerScrollBar.width
                         property bool sampleInfoVisible: false
                         property bool treeInitialized: false
+
+                        ListView.onReused: {
+                            sampleInfoVisible = false
+                            treeInitialized = listenerTabId.treeView
+                            if (treeLoader.item)
+                                treeLoader.item.resetExpansion()
+                        }
 
                         Item {
                             height: index > 0 ? 4 : 0
@@ -318,9 +328,11 @@ Rectangle {
                             Item {
                                 id: sampleContent
                                 readonly property bool showingTree: listenerTabId.treeView
-                                                                    && (!model.validData || model.hasStructured)
-                                implicitHeight: showingTree && treeLoader.item
-                                                ? treeLoader.item.implicitHeight
+                                                                    && model.hasStructured
+                                                                    && (treeLoader.status !== Loader.Ready
+                                                                        || !treeLoader.item || treeLoader.item.hasPayload)
+                                implicitHeight: showingTree
+                                                ? (treeLoader.item ? treeLoader.item.implicitHeight : 24)
                                                 : receivedMessageText.implicitHeight
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignTop
@@ -332,8 +344,9 @@ Rectangle {
                                     active: listenerTabId.treeView || sampleDelegate.treeInitialized
                                     onLoaded: sampleDelegate.treeInitialized = true
                                     sourceComponent: MessageTree {
+                                        onInteractionStarted: listenerTabId.autoScrollEnabled = false
                                         treeVisible: sampleContent.showingTree
-                                        payloadJson: model.hasStructured ? model.structuredJson : '{"root":{}}'
+                                        payloadJson: model.structuredJson || ""
                                         rootLabel: model.topicName
                                         scope: model.readerId + ":" + model.topicType + ":" + model.topicName
                                     }
@@ -343,7 +356,7 @@ Rectangle {
                                     id: receivedMessageText
                                     width: parent.width
                                     visible: !sampleContent.showingTree
-                                    text: model.receivedMsg
+                                    text: visible ? model.receivedMsg : ""
                                     readOnly: true
                                     color: rootWindow.isDarkMode ? "white" : "black"
                                     wrapMode: Text.Wrap
@@ -572,7 +585,7 @@ Rectangle {
                     visible: !listenerTabId.autoScrollEnabled
                     onClicked: {
                         listenerTabId.autoScrollEnabled = true;
-                        listView.positionViewAtEnd();
+                        listenerTabId.scrollToNewest();
                     }
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
