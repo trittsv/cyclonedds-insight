@@ -296,8 +296,12 @@ class DataModelHandler(QObject):
 
         logging.trace(f"get initialized obj for {topicType}, {type(topicType)}")
 
+        topicType = self.getRealType(topicType)
+        if self.isChar(topicType):
+            return "\0"
         if isinstance(topicType, cyclonedds.idl._main.IdlMeta):
             topicType = topicType.__idl_typename__
+        topicType = str(topicType)
 
         if topicType.replace(".", "::") in self.structMembers or topicType.replace(".", "::") in self.allTypes or topicType.replace(".", "::") in self.customTypes:
             topicType = topicType.replace(".", "::")
@@ -320,10 +324,10 @@ class DataModelHandler(QObject):
                     if hasattr(innerType, "__idl_typename__"):
                         inner = innerType.__idl_typename__
                     else:
-                        inner = str(innerType)
+                        inner = innerType
                     arrayLength = metaType.length
                     for _ in range(arrayLength):
-                        arrayDefaultValues.append(self.getInitializedDataObj(str(inner)))
+                        arrayDefaultValues.append(self.getInitializedDataObj(inner))
                     initList.append(arrayDefaultValues)
                 elif self.isSequence(realType):
                     initList.append([])
@@ -332,7 +336,7 @@ class DataModelHandler(QObject):
                 elif self.isFloat(realType):
                     initList.append(0.0)
                 elif self.isStr(realType):
-                    initList.append("")
+                    initList.append("\0" if self.isChar(realType) else "")
                 elif self.isBool(realType):
                     initList.append(False)
                 elif self.isUnion(realType):
@@ -358,8 +362,6 @@ class DataModelHandler(QObject):
                 return None
             elif self.isSequence(topicType):
                 return []
-            elif self.isChar(topicType):
-                return ""
             else:
                 logging.warning(f"Unknown type: {topicType}")
                 initializedObj = None
@@ -582,14 +584,17 @@ class DataModelHandler(QObject):
                     optType = self.getOptionalType(realType)
                     inner = (optType.__idl_typename__ if hasattr(optType, "__idl_typename__")
                              else str(optType)).replace(".", "::")
-                    optionalNode.dataType = self.getInitializedDataObj(inner)
+                    optionalNode.dataType = self.getInitializedDataObj(optType)
                     optionalNode.itemArrayTypeName = inner
                     optionalNode.itemArrayType = optType
                     rootNode.appendChild(optionalNode)
 
                 # string
                 elif self.isStr(realType):
-                    rootNode.appendChild(DataTreeNode(keyStructMem, tt, DataTreeModel.IsStrRole, parent=rootNode))
+                    node = DataTreeNode(keyStructMem, tt, DataTreeModel.IsStrRole, parent=rootNode)
+                    node.isChar = self.isChar(realType)
+                    node.itemValue = "\0" if node.isChar else None
+                    rootNode.appendChild(node)
 
                 # integer
                 elif self.isInt(realType):
@@ -618,8 +623,9 @@ class DataModelHandler(QObject):
                         inner = innerType
                     arrayLength = metaType.length
 
-                    arrayRootNode.dataType = self.getInitializedDataObj(str(inner))
+                    arrayRootNode.dataType = self.getInitializedDataObj(innerType)
                     arrayRootNode.itemArrayTypeName = str(inner)
+                    arrayRootNode.itemArrayType = innerType
 
                     for _ in range(arrayLength):
                         arrElem = DataTreeNode("", "", DataTreeModel.IsArrayElementRole, parent=arrayRootNode)
@@ -643,7 +649,7 @@ class DataModelHandler(QObject):
 
                     inner = self.getRealType(inner)
 
-                    seqRootNode.dataType = self.getInitializedDataObj(str(inner))
+                    seqRootNode.dataType = self.getInitializedDataObj(inner)
                     seqRootNode.itemArrayTypeName = str(inner)
                     seqRootNode.itemArrayType = inner
 
@@ -677,7 +683,11 @@ class DataModelHandler(QObject):
             elif self.isFloat(theType):
                 rootNode.appendChild(DataTreeNode("", theType, DataTreeModel.IsFloatRole, parent=rootNode))
             elif self.isStr(theType):
-                rootNode.appendChild(DataTreeNode("", theType, DataTreeModel.IsStrRole, parent=rootNode))
+                node = DataTreeNode("", theType, DataTreeModel.IsStrRole, parent=rootNode)
+                node.isChar = rootNode.parentItem is not None and self.isChar(
+                    self.getRealType(rootNode.parentItem.itemArrayType))
+                node.itemValue = "\0" if node.isChar else None
+                rootNode.appendChild(node)
             elif self.isBool(theType):
                 rootNode.appendChild(DataTreeNode("", theType, DataTreeModel.IsBoolRole, parent=rootNode))
             elif self.isEnum(theType):
@@ -710,7 +720,7 @@ class DataModelHandler(QObject):
                     inner = inner.replace(".", "::")
                     inner = self.resolveCustomType(inner)
 
-                seqRootNode.dataType = self.getInitializedDataObj(str(inner))
+                seqRootNode.dataType = self.getInitializedDataObj(inner)
                 seqRootNode.itemArrayTypeName = str(inner)
                 seqRootNode.itemArrayType = inner
 

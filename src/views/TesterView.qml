@@ -1137,6 +1137,7 @@ Rectangle {
                         id: inputFieldStr
                         visible: model.is_str
                         enabled: model.is_str
+                        maximumLength: dataTreeModel !== null && dataTreeModel.getIsChar(treeView.index(row, column)) ? 1 : 32767
                         text: dataTreeModel !== null ? dataTreeModel.getStrValue(treeView.index(row, column)) : ""
                         placeholderText: qsTrId("tester.text.placeholder")
                         anchors.verticalCenter: parent.verticalCenter

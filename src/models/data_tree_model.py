@@ -32,6 +32,7 @@ class DataTreeNode:
         self.dataType = None
         self.enumItemNames = []
         self.maxElements = 0
+        self.isChar = False
 
     def __repr__(self):
         return f"Node(itemName={self.itemName}, itemTypeName={self.itemTypeName}, itemArrayTypeName={self.itemArrayTypeName}, itemArrayType={self.itemArrayType}, itemValue={self.itemValue}, role={self.role}, dataType={self.dataType}, enumItemNames={self.enumItemNames})"
@@ -280,7 +281,7 @@ class DataTreeModel(QAbstractItemModel):
             elif item.role == self.IsBoolRole:
                 item.itemValue = True if value == "true" else False
             elif item.role == self.IsStrRole:
-                item.itemValue = str(value)
+                item.itemValue = "\0" if item.isChar and not value else str(value)
             elif item.role == self.IsSequenceRole:
                 return
             elif item.role == self.IsArrayRole:
@@ -436,6 +437,10 @@ class DataTreeModel(QAbstractItemModel):
         self.endResetModel()
 
     @Slot(QModelIndex, result=bool)
+    def getIsChar(self, index):
+        return index.isValid() and index.internalPointer().isChar
+
+    @Slot(QModelIndex, result=bool)
     def getIsEnum(self, index):
         if index.isValid():
             item: DataTreeNode= index.internalPointer()
@@ -454,6 +459,8 @@ class DataTreeModel(QAbstractItemModel):
     def getStrValue(self, index):
         if index.isValid():
             item: DataTreeNode= index.internalPointer()
+            if item.isChar and item.itemValue == "\0":
+                return ""
             if item.itemValue:
                 return item.itemValue
         return ""
