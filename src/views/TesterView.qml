@@ -1167,7 +1167,7 @@ Rectangle {
 
                             if (dataTreeModel) {
                                 if (model.is_int) {
-                                    dataTreeModel.setData(treeView.index(row, column), parseInt(inputFieldInt.text))
+                                    dataTreeModel.setData(treeView.index(row, column), inputFieldInt.text)
                                 }
                             }
                         }
