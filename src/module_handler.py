@@ -584,6 +584,7 @@ class DataModelHandler(QObject):
                              else str(optType)).replace(".", "::")
                     optionalNode.dataType = self.getInitializedDataObj(inner)
                     optionalNode.itemArrayTypeName = inner
+                    optionalNode.itemArrayType = optType
                     rootNode.appendChild(optionalNode)
 
                 # string
@@ -689,6 +690,10 @@ class DataModelHandler(QObject):
 
             elif self.isSequence(theType):
                 seqRootNode = DataTreeNode("", theType, DataTreeModel.IsSequenceRole, parent=rootNode)
+                if rootNode.parentItem is not None:
+                    metaType = self.getMetaDataType(self.getRealType(rootNode.parentItem.itemArrayType))
+                    if metaType is not None:
+                        seqRootNode.maxElements = metaType.max_length
 
                 inner = theType.replace("::", ".")
                 if inner.startswith("typing.Annotated[typing.Sequence["):
