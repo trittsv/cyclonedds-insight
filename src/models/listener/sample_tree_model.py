@@ -157,6 +157,7 @@ class SampleTreeModel(QAbstractListModel):
     def _rebuild(self):
         rows = []
         pinned = []
+        enum_labels = self._payload.get("enumLabels", {})
         watch_ancestors = set()
         if self._watchStore is not None:
             for scope, path in self._watchStore.watches:
@@ -173,7 +174,8 @@ class SampleTreeModel(QAbstractListModel):
                 row = {"path": path,
                        "fieldLabel": ".".join(map(str, path)) if is_pinned else label,
                        "fieldValue": ("{%d}" if isinstance(value, dict) else "[%d]") % len(value)
-                       if container else ("" if value is None else json.dumps(value, ensure_ascii=False)),
+                       if container else enum_labels.get(json.dumps(path),
+                                                         "" if value is None else json.dumps(value, ensure_ascii=False)),
                        "depth": 0 if is_pinned else len(path),
                        "expandable": container and bool(value),
                        "expanded": path in self._expanded, "watched": watched,

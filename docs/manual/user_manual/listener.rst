@@ -140,7 +140,8 @@ The list follows new messages automatically. Scrolling, expanding a field,
 opening its context menu or selecting a value pauses automatic scrolling so the
 message remains available for inspection. Use the Auto scroll button to resume.
 Fields follow their datatype definition order, as in the Tester, including
-nested structures and array elements. Fields are indented below the heading. Click a node's name or its arrow to expand individual nodes, or press
+nested structures and array elements. Enum values show their symbolic name and
+numeric value, including in watched fields. Fields are indented below the heading. Click a node's name or its arrow to expand individual nodes, or press
 and hold any arrow to expand the entire message, including nested objects,
 sequences and arrays. Expansion is local to the displayed message and resets
 when it is replaced by a new sample. Right-click a field name or value to add it to the watchlist. Watched labels and values are

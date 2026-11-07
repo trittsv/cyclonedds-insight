@@ -390,8 +390,8 @@ class DataModelHandler(QObject):
         handler.customTypes = snapshot["customTypes"].copy()
         return handler
 
-    def sampleToJson(self, topic_type, sample):
-        """Use the existing preset tree conversion on the calling thread."""
+    def sampleToJson(self, topic_type, sample, enum_names=False):
+        """Convert a sample, optionally including enum labels for the listener."""
         missing = set()
         root = self.getRootNode(topic_type, missing)
         if missing:
@@ -399,8 +399,12 @@ class DataModelHandler(QObject):
         # This unparented model is local to the conversion; no deferred QObject
         # deletion or event loop is needed for an export running on a worker.
         tree = DataTreeModel(root)
-        tree.fromDataObject(sample, self)
-        return tree.toJson()
+        enum_labels = {} if enum_names else None
+        tree.fromDataObject(sample, self, enum_labels)
+        payload = tree.toJson()
+        if enum_labels:
+            payload["enumLabels"] = enum_labels
+        return payload
 
     def isInt(self, theType):
         args = typing.get_args(theType)

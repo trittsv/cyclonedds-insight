@@ -74,7 +74,7 @@ class ReceiverModel(QAbstractListModel):
             if "sampleCdr" in item:
                 sample_type = item["sampleType"]
                 sample = sample_type.deserialize(item["sampleCdr"])
-                payload = self._sample_handlers[sample_type].sampleToJson(item["topicType"], sample)
+                payload = self._sample_handlers[sample_type].sampleToJson(item["topicType"], sample, enum_names=True)
                 return payload, json.dumps(payload, ensure_ascii=False)
         except Exception as error:
             logging.error(f"Cannot display received sample: {error}")

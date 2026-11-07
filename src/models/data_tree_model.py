@@ -11,6 +11,7 @@
 """
 
 from loguru import logger as logging
+import json
 import re
 import copy
 from PySide6.QtCore import qtTrId, Qt, QModelIndex, QAbstractItemModel, Qt
@@ -319,27 +320,30 @@ class DataTreeModel(QAbstractItemModel):
 
         printNode(self.rootItem)
 
-    def fromDataObject(self, value, dataModelHandler):
+    def fromDataObject(self, value, dataModelHandler, enum_labels=None):
         """Populate the preset tree from a received DDS sample without string parsing."""
-        def populate(node, value):
+        def populate(node, value, path=()):
             if node.role == self.IsUnionRole:
                 raise ValueError(qtTrId("listener.error.union"))
             if node.role in (self.IsSequenceRole, self.IsArrayRole, self.IsOptionalRole):
                 values = ([value] if value is not None else []) if node.role == self.IsOptionalRole else value
                 node.childItems.clear()
-                for entry in values:
+                for index, entry in enumerate(values):
                     child = DataTreeNode("", "", self.IsSequenceElementRole, parent=node)
                     missing = set()
                     dataModelHandler.toNode(node.itemArrayTypeName, child, missing)
                     if missing:
                         raise ValueError(qtTrId("listener.error.types").replace("%1", ", ".join(sorted(missing))))
                     node.appendChild(child)
-                    populate(child, entry)
+                    populate(child, entry, path + (index,))
             elif node.childItems:
                 for child in node.childItems:
-                    populate(child, getattr(value, child.itemName) if child.itemName else value)
+                    populate(child, getattr(value, child.itemName) if child.itemName else value,
+                             path + (child.itemName,) if child.itemName else path)
             else:
                 node.itemValue = getattr(value, "value", value) if node.role == self.IsEnumRole else value
+                if node.role == self.IsEnumRole and enum_labels is not None and getattr(value, "name", None):
+                    enum_labels[json.dumps(path)] = f"{value.name} ({node.itemValue})"
         self.beginResetModel()
         try:
             populate(self.rootItem, value)
