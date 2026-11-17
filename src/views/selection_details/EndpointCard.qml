@@ -24,6 +24,9 @@ Item {
     required property bool isWriter
     required property var readerModel
     required property var writerModel
+    required property int domainId
+
+    signal createEndpointRequested(int entityType)
     required property string endpoint_key
     required property string endpoint_participant_key
     required property string endpoint_participant_instance_handle
@@ -42,6 +45,28 @@ Item {
 
     width: ListView.view ? ListView.view.width : 0
     height: 104
+
+    readonly property var ownerModel: card.isWriter ? testerModel : listenerModel
+    property bool isManagedEndpoint: false
+    readonly property color ownerColor: Constants.endpointOwnerColor(rootWindow.isDarkMode)
+
+    function refreshOwnership() {
+        isManagedEndpoint = ownerModel
+            && ownerModel.endpointIdForGuid(domainId, endpoint_key) !== ""
+    }
+
+    Component.onCompleted: refreshOwnership()
+    onOwnerModelChanged: refreshOwnership()
+    onDomainIdChanged: refreshOwnership()
+    onEndpoint_keyChanged: refreshOwnership()
+
+    Connections {
+        target: card.ownerModel
+        function onRowsInserted() { card.refreshOwnership() }
+        function onRowsRemoved() { card.refreshOwnership() }
+        function onModelReset() { card.refreshOwnership() }
+        function onDataChanged() { card.refreshOwnership() }
+    }
 
     readonly property color accentColor: card.isWriter
         ? rootWindow.isDarkMode ? "#8cc8ff" : "#145c9e"
@@ -67,6 +92,69 @@ Item {
         detailWindow.visible = true
     }
 
+    function openContextMenu() {
+        refreshOwnership()
+        const menu = isManagedEndpoint ? managedEndpointMenu : endpointMenu
+        menu.popup()
+    }
+
+    Action {
+        id: createReaderAction
+        text: qsTrId("listener.create.reader")
+        onTriggered: card.createEndpointRequested(3)
+    }
+
+    Action {
+        id: createWriterAction
+        text: qsTrId("tester.create.writer")
+        onTriggered: card.createEndpointRequested(4)
+    }
+
+    Menu {
+        id: endpointMenu
+        objectName: "endpointContextMenu"
+
+        MenuItem {
+            objectName: "createReaderAction"
+            action: createReaderAction
+        }
+
+        MenuItem {
+            objectName: "createWriterAction"
+            action: createWriterAction
+        }
+    }
+
+    // Keep native menu contents stable while the platform tracks hover and selection.
+    Menu {
+        id: managedEndpointMenu
+        objectName: "managedEndpointContextMenu"
+
+        MenuItem {
+            objectName: "createReaderAction"
+            action: createReaderAction
+        }
+
+        MenuItem {
+            objectName: "createWriterAction"
+            action: createWriterAction
+        }
+
+        MenuSeparator {}
+
+        MenuItem {
+            objectName: "deleteEndpointAction"
+            text: qsTrId("endpoint.delete")
+            onTriggered: {
+                if (card.isWriter) {
+                    testerModel.deleteEndpoint(card.domainId, card.endpoint_key)
+                } else {
+                    listenerModel.deleteEndpoint(card.domainId, card.endpoint_key)
+                }
+            }
+        }
+    }
+
     Rectangle {
         id: surface
         anchors.fill: parent
@@ -86,19 +174,38 @@ Item {
                         ? rootWindow.isDarkMode ? "#666666" : "#c2c2c2"
                         : Constants.designBorderColor(rootWindow.isDarkMode)
 
+        Rectangle {
+            objectName: "endpointOwnerStripe"
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: 2
+            anchors.topMargin: Constants.cardRadius
+            anchors.bottomMargin: Constants.cardRadius
+            width: 3
+            radius: 1.5
+            color: card.ownerColor
+            visible: card.isManagedEndpoint
+        }
+
         MouseArea {
             id: cardMouseArea
             anchors.fill: parent
             hoverEnabled: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
             cursorShape: Qt.PointingHandCursor
             onClicked: (mouse) => {
-                card.openDetails(mapToGlobal(mouse.x, mouse.y))
+                if (mouse.button === Qt.RightButton) {
+                    card.openContextMenu()
+                } else {
+                    card.openDetails(mapToGlobal(mouse.x, mouse.y))
+                }
             }
         }
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.leftMargin: 12
+            anchors.leftMargin: card.isManagedEndpoint ? 16 : 12
             anchors.rightMargin: 10
             anchors.topMargin: 6
             anchors.bottomMargin: 5
@@ -118,11 +225,33 @@ Item {
 
                 Label {
                     Layout.fillWidth: true
+                    Layout.minimumWidth: 0
                     text: card.endpoint_process_name.length > 0
                           ? card.endpoint_process_name
                           : qsTrId("entity.process.unknown")
                     font.bold: true
                     elide: Text.ElideRight
+                }
+
+                Rectangle {
+                    objectName: "endpointOwnerBadge"
+                    Layout.preferredWidth: ownerLabel.implicitWidth + 12
+                    Layout.preferredHeight: 20
+                    radius: Constants.badgeRadius
+                    color: Qt.rgba(card.ownerColor.r, card.ownerColor.g, card.ownerColor.b,
+                                   rootWindow.isDarkMode ? 0.18 : 0.1)
+                    border.color: Qt.rgba(card.ownerColor.r, card.ownerColor.g, card.ownerColor.b, 0.4)
+                    visible: card.isManagedEndpoint
+
+                    Label {
+                        id: ownerLabel
+                        objectName: "endpointOwnerLabel"
+                        anchors.centerIn: parent
+                        text: card.isWriter ? qsTrId("tab.tester") : qsTrId("tab.listener")
+                        color: card.ownerColor
+                        font.pixelSize: Constants.captionFontSize
+                        font.bold: true
+                    }
                 }
 
                 Label {
